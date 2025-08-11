@@ -91,6 +91,27 @@ export function SongSearch() {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
+          {/* Instructions */}
+          <div className="card bg-blue-50 border-blue-200">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">How to add songs to your band</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>• <strong>Spotify songs:</strong> Paste a Spotify track URL to automatically get song details</p>
+                  <p>• <strong>Manual entry:</strong> Click "Add Manually" to enter song details yourself</p>
+                  <p>• <strong>Preview songs:</strong> Listen to 30-second previews before suggesting</p>
+                  <p>• <strong>Add notes:</strong> Include practice notes or why you think the band should learn it</p>
+                  <p>• <strong>After suggesting:</strong> You'll be taken to see all song suggestions and can start voting</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Search section */}
           <div className="card">
             <div className="flex justify-between items-center mb-6">

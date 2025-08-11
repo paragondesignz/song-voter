@@ -12,7 +12,10 @@ import {
   Search,
   Lock,
   Mail,
-  User
+  User,
+  Settings,
+  MessageSquare,
+  Folder
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'react-hot-toast'
@@ -254,315 +257,376 @@ export function BandMembers() {
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Set Band Password Form */}
-        {showPasswordForm && (
-          <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Set Band Password</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Set a shared password that all band members will use to log in. Members can change their personal password after logging in.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Band Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="password"
-                    value={bandPassword}
-                    onChange={(e) => setBandPassword(e.target.value)}
-                    className="input-field pl-10"
-                    placeholder="Enter band password (min 6 characters)"
-                  />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Instructions */}
+            <div className="card bg-blue-50 border-blue-200">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
                 </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="input-field pl-10"
-                    placeholder="Confirm band password"
-                  />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">How to manage band members</h3>
+                  <div className="mt-2 text-sm text-blue-700">
+                    <p>• <strong>Add members:</strong> Click "Add Member" to invite new people to your band</p>
+                    <p>• <strong>Set passwords:</strong> Create a shared password for easy member access</p>
+                    <p>• <strong>Manage roles:</strong> Assign admin or member permissions as needed</p>
+                    <p>• <strong>Search members:</strong> Use the search bar to find specific band members quickly</p>
+                    <p>• <strong>Remove members:</strong> Click the menu (⋮) to remove members or change roles</p>
+                    <p>• <strong>Admin only:</strong> Some actions require admin privileges</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowPasswordForm(false)
-                    setBandPassword('')
-                    setConfirmPassword('')
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSetBandPassword}
-                  disabled={isUpdatingPassword}
-                  className="btn-primary"
-                >
-                  {isUpdatingPassword ? 'Setting...' : 'Set Password'}
-                </button>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Add Member Form */}
-        {showAddMemberForm && (
-          <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Add New Member</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Add a new member directly. They'll be able to log in using their email and the band's shared password.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="email"
-                    value={memberEmail}
-                    onChange={(e) => setMemberEmail(e.target.value)}
-                    className="input-field pl-10"
-                    placeholder="member@example.com"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={memberName}
-                    onChange={(e) => setMemberName(e.target.value)}
-                    className="input-field pl-10"
-                    placeholder="Member's name"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <select
-                  value={memberRole}
-                  onChange={(e) => setMemberRole(e.target.value as 'member' | 'admin')}
-                  className="input-field"
-                >
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  <strong>Login Instructions for New Member:</strong><br />
-                  Email: {memberEmail || '[member email]'}<br />
-                  Password: [Your band's shared password]<br />
-                  <br />
-                  <strong>Important:</strong> Members can update their personal password after logging in.<br />
-                  If login fails, the member should contact a band admin to verify their account was created correctly.
+            {/* Members list */}
+            {/* Set Band Password Form */}
+            {showPasswordForm && (
+              <div className="card mb-8">
+                <h2 className="text-xl font-semibold mb-4">Set Band Password</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Set a shared password that all band members will use to log in. Members can change their personal password after logging in.
                 </p>
-              </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowAddMemberForm(false)
-                    setMemberEmail('')
-                    setMemberName('')
-                    setMemberRole('member')
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreateMember}
-                  disabled={isCreatingMember}
-                  className="btn-primary"
-                >
-                  {isCreatingMember ? 'Creating...' : 'Add Member'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Search and Filter */}
-        <div className="card mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-field pl-10"
-              placeholder="Search members..."
-            />
-          </div>
-        </div>
-
-        {/* Members List */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">Band Members</h2>
-            <span className="text-sm text-gray-500">
-              {filteredMembers.length} of {members?.length || 0} members
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            {filteredMembers.map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-600">
-                      {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
-                    </span>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Band Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="password"
+                        value={bandPassword}
+                        onChange={(e) => setBandPassword(e.target.value)}
+                        className="input-field pl-10"
+                        placeholder="Enter band password (min 6 characters)"
+                      />
+                    </div>
                   </div>
                   
                   <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-medium text-gray-900">
-                        {member.user?.display_name}
-                      </h3>
-                      {member.user_id === user?.id && (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                          You
-                        </span>
-                      )}
-                      {member.role === 'admin' && (
-                        <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">
-                          Admin
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">{member.user?.email}</p>
-                    <div className="flex items-center space-x-4 mt-1 text-xs text-gray-500">
-                      <span>Joined {formatDistanceToNow(new Date(member.joined_at), { addSuffix: true })}</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="input-field pl-10"
+                        placeholder="Confirm band password"
+                      />
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center space-x-2">
-                  {member.user_id !== user?.id && (
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => {
+                        setShowPasswordForm(false)
+                        setBandPassword('')
+                        setConfirmPassword('')
+                      }}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSetBandPassword}
+                      disabled={isUpdatingPassword}
+                      className="btn-primary"
+                    >
+                      {isUpdatingPassword ? 'Setting...' : 'Set Password'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Add Member Form */}
+            {showAddMemberForm && (
+              <div className="card mb-8">
+                <h2 className="text-xl font-semibold mb-4">Add New Member</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Add a new member directly. They'll be able to log in using their email and the band's shared password.
+                </p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
                     <div className="relative">
-                      <button
-                        onClick={() => setSelectedMember(selectedMember === member.id ? null : member.id)}
-                        className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-                      >
-                        <MoreVertical className="w-4 h-4 text-gray-500" />
-                      </button>
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="email"
+                        value={memberEmail}
+                        onChange={(e) => setMemberEmail(e.target.value)}
+                        className="input-field pl-10"
+                        placeholder="member@example.com"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Display Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={memberName}
+                        onChange={(e) => setMemberName(e.target.value)}
+                        className="input-field pl-10"
+                        placeholder="Member's name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Role
+                    </label>
+                    <select
+                      value={memberRole}
+                      onChange={(e) => setMemberRole(e.target.value as 'member' | 'admin')}
+                      className="input-field"
+                    >
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Login Instructions for New Member:</strong><br />
+                      Email: {memberEmail || '[member email]'}<br />
+                      Password: [Your band's shared password]<br />
+                      <br />
+                      <strong>Important:</strong> Members can update their personal password after logging in.<br />
+                      If login fails, the member should contact a band admin to verify their account was created correctly.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => {
+                        setShowAddMemberForm(false)
+                        setMemberEmail('')
+                        setMemberName('')
+                        setMemberRole('member')
+                      }}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleCreateMember}
+                      disabled={isCreatingMember}
+                      className="btn-primary"
+                    >
+                      {isCreatingMember ? 'Creating...' : 'Add Member'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Search and Filter */}
+            <div className="card mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input-field pl-10"
+                  placeholder="Search members..."
+                />
+              </div>
+            </div>
+
+            {/* Members List */}
+            <div className="card">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Band Members</h2>
+                <span className="text-sm text-gray-500">
+                  {filteredMembers.length} of {members?.length || 0} members
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {filteredMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-600">
+                          {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
+                        </span>
+                      </div>
                       
-                      {selectedMember === member.id && (
-                        <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-48">
-                          <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-medium text-gray-900">
                             {member.user?.display_name}
-                          </div>
-                          
-                          {member.role === 'member' ? (
-                            <button
-                              onClick={() => handleUpdateRole(member.user_id, 'admin', member.user?.display_name || 'User')}
-                              disabled={updateMemberRole.isPending}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                            >
-                              Promote to Admin
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleUpdateRole(member.user_id, 'member', member.user?.display_name || 'User')}
-                              disabled={updateMemberRole.isPending}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                            >
-                              Demote to Member
-                            </button>
+                          </h3>
+                          {member.user_id === user?.id && (
+                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                              You
+                            </span>
                           )}
-                          
+                          {member.role === 'admin' && (
+                            <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600">{member.user?.email}</p>
+                        <div className="flex items-center space-x-4 mt-1 text-xs text-gray-500">
+                          <span>Joined {formatDistanceToNow(new Date(member.joined_at), { addSuffix: true })}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      {member.user_id !== user?.id && (
+                        <div className="relative">
                           <button
-                            onClick={() => handleRemoveMember(member.user_id, member.user?.display_name || 'User')}
-                            disabled={removeMember.isPending}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600"
+                            onClick={() => setSelectedMember(selectedMember === member.id ? null : member.id)}
+                            className="p-2 rounded-full hover:bg-gray-200 transition-colors"
                           >
-                            Remove from Band
+                            <MoreVertical className="w-4 h-4 text-gray-500" />
                           </button>
+                          
+                          {selectedMember === member.id && (
+                            <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-48">
+                              <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+                                {member.user?.display_name}
+                              </div>
+                              
+                              {member.role === 'member' ? (
+                                <button
+                                  onClick={() => handleUpdateRole(member.user_id, 'admin', member.user?.display_name || 'User')}
+                                  disabled={updateMemberRole.isPending}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                >
+                                  Promote to Admin
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleUpdateRole(member.user_id, 'member', member.user?.display_name || 'User')}
+                                  disabled={updateMemberRole.isPending}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                >
+                                  Demote to Member
+                                </button>
+                              )}
+                              
+                              <button
+                                onClick={() => handleRemoveMember(member.user_id, member.user?.display_name || 'User')}
+                                disabled={removeMember.isPending}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600"
+                              >
+                                Remove from Band
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
+                ))}
+              </div>
+
+              {filteredMembers.length === 0 && searchQuery && (
+                <div className="text-center py-12">
+                  <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No members found</h3>
+                  <p className="text-gray-600">
+                    No members match your search "{searchQuery}"
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Band Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+              <div className="card">
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Users className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Members</p>
+                    <p className="text-2xl font-bold text-gray-900">{members?.length || 0}</p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {filteredMembers.length === 0 && searchQuery && (
-            <div className="text-center py-12">
-              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No members found</h3>
-              <p className="text-gray-600">
-                No members match your search "{searchQuery}"
-              </p>
-            </div>
-          )}
-        </div>
+              <div className="card">
+                <div className="flex items-center">
+                  <div className="p-3 bg-yellow-100 rounded-lg">
+                    <Shield className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Admins</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {members?.filter(m => m.role === 'admin').length || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-        {/* Band Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Members</p>
-                <p className="text-2xl font-bold text-gray-900">{members?.length || 0}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <Shield className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Admins</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {members?.filter(m => m.role === 'admin').length || 0}
-                </p>
+              <div className="card">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <UserPlus className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Available Spots</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {10 - (members?.length || 0)}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="card">
-            <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <UserPlus className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Available Spots</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {10 - (members?.length || 0)}
-                </p>
-              </div>
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="card">
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href={`/band/${bandId}`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                    <Shield className="h-4 w-4 mr-2 text-gray-500" />
+                    Band Dashboard
+                  </a>
+                </li>
+                                 <li>
+                   <a href={`/band/${bandId}/settings`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                     <Settings className="h-4 w-4 mr-2 text-gray-500" />
+                     Band Settings
+                   </a>
+                 </li>
+                <li>
+                  <a href={`/band/${bandId}/posts`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                    <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
+                    Band Posts
+                  </a>
+                </li>
+                <li>
+                  <a href={`/band/${bandId}/files`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                    <Folder className="h-4 w-4 mr-2 text-gray-500" />
+                    Band Files
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

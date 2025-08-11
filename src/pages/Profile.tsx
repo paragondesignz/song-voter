@@ -149,8 +149,31 @@ export function Profile() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="space-y-8 lg:col-span-2">
-          {/* Profile Information */}
+          {/* Main content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Instructions */}
+            <div className="card bg-blue-50 border-blue-200">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">How to manage your profile</h3>
+                  <div className="mt-2 text-sm text-blue-700">
+                    <p>• <strong>Update display name:</strong> Change how your name appears to band members</p>
+                    <p>• <strong>Change password:</strong> Update your personal login password anytime</p>
+                    <p>• <strong>Upload avatar:</strong> Add a profile picture to personalize your account</p>
+                    <p>• <strong>Band settings:</strong> Modify your band name and other band-specific settings</p>
+                    <p>• <strong>Account deletion:</strong> Permanently remove your account if needed</p>
+                    <p>• <strong>Save changes:</strong> Remember to click "Save" after making any updates</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Information */}
           <div className="card">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Profile Information</h2>
