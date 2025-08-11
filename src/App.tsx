@@ -14,7 +14,6 @@ import { BandSetup } from '@/pages/BandSetup'
 import { BandDashboard } from '@/pages/BandDashboard'
 import { SongSearch } from '@/pages/SongSearch'
 import { Suggestions } from '@/pages/Suggestions'
-import { Leaderboard } from '@/pages/Leaderboard'
 import { Rehearsals } from '@/pages/Rehearsals'
 import { RehearsalDetail } from '@/pages/RehearsalDetail'
 import { RehearsalEdit } from '@/pages/RehearsalEdit'
@@ -60,7 +59,6 @@ function AppContent() {
           <Route path="/band/:bandId" element={<BandDashboard />} />
           <Route path="/band/:bandId/search" element={<SongSearch />} />
           <Route path="/band/:bandId/suggestions" element={<Suggestions />} />
-          <Route path="/band/:bandId/leaderboard" element={<Leaderboard />} />
           <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
           <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
           <Route path="/band/:bandId/rehearsal/:rehearsalId/edit" element={<RehearsalEdit />} />

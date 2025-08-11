@@ -7,7 +7,7 @@ import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
-import { Search, Trophy, Filter, User, ExternalLink, Trash2, Edit, Clock } from 'lucide-react'
+import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'trending'

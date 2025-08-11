@@ -69,12 +69,6 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
     navigate('/profile')
   }
 
-  const handleLeaderboard = () => {
-    if (userBand) {
-      navigate(`/band/${userBand.id}/leaderboard`)
-    }
-  }
-
   const handleAnalytics = () => {
     if (userBand) {
       navigate(`/band/${userBand.id}/voting-analytics`)
