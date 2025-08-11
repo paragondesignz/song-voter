@@ -42,27 +42,7 @@ export function VotingAnalytics() {
         </div>
         
         <div className="space-y-8">
-          {/* Instructions */}
-          <div className="card bg-blue-50 border-blue-200">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">Understanding your voting analytics</h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>• <strong>Overall stats:</strong> See total ratings, average scores, and high-rated songs</p>
-                  <p>• <strong>Your voting:</strong> Track your personal rating history and patterns</p>
-                  <p>• <strong>Top songs:</strong> Discover which songs are most popular with your band</p>
-                  <p>• <strong>Recent activity:</strong> Monitor voting trends and engagement</p>
-                  <p>• <strong>Rating distribution:</strong> Understand how your band rates different songs</p>
-                  <p>• <strong>Use insights:</strong> Make informed decisions about which songs to practice</p>
-                </div>
-              </div>
-            </div>
-          </div>
+
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stats Overview */}
@@ -284,28 +264,7 @@ export function VotingAnalytics() {
         {/* Sidebar */}
         <div className="space-y-6">
 
-            {/* Rating Tips */}
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Rating Guide</h3>
-              <div className="space-y-3 text-sm text-gray-600">
-                <div className="flex items-start">
-                  <Star className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <p><strong>5 stars:</strong> Love this song, perfect for rehearsal</p>
-                </div>
-                <div className="flex items-start">
-                  <Star className="h-4 w-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
-                  <p><strong>4 stars:</strong> Great song, would enjoy playing it</p>
-                </div>
-                <div className="flex items-start">
-                  <Star className="h-4 w-4 text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
-                  <p><strong>3 stars:</strong> Neutral, okay to practice</p>
-                </div>
-                <div className="flex items-start">
-                  <Music className="h-4 w-4 text-purple-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <p>Higher rated songs are more likely to be selected for rehearsals</p>
-                </div>
-              </div>
-            </div>
+
 
             {/* Quick Stats */}
             <div className="card">

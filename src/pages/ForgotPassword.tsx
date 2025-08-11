@@ -38,9 +38,7 @@ export function ForgotPassword() {
           
           <h2 className="text-3xl font-bold mb-4 text-gray-900">Check Your Email</h2>
           
-          <p className="text-gray-600 mb-8">
-            We've sent a password reset link to your email address. Please check your inbox and follow the instructions.
-          </p>
+
 
           <Link
             to="/login"

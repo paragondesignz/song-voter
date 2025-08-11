@@ -267,27 +267,7 @@ export function BandMembers() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Instructions */}
-            <div className="card bg-blue-50 border-blue-200">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800">How to manage band members</h3>
-                  <div className="mt-2 text-sm text-blue-700">
-                    <p>• <strong>Add members:</strong> Click "Add Member" to invite new people to your band</p>
-                    <p>• <strong>Set passwords:</strong> Create a shared password for easy member access</p>
-                    <p>• <strong>Manage roles:</strong> Assign admin or member permissions as needed</p>
-                    <p>• <strong>Search members:</strong> Use the search bar to find specific band members quickly</p>
-                    <p>• <strong>Remove members:</strong> Click the menu (⋮) to remove members or change roles</p>
-                    <p>• <strong>Admin only:</strong> Some actions require admin privileges</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             {/* Members list */}
             {/* Set Band Password Form */}
@@ -407,16 +387,7 @@ export function BandMembers() {
                     </select>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800">
-                      <strong>Login Instructions for New Member:</strong><br />
-                      Email: {memberEmail || '[member email]'}<br />
-                      Password: [Your band's shared password]<br />
-                      <br />
-                      <strong>Important:</strong> Members can update their personal password after logging in.<br />
-                      If login fails, the member should contact a band admin to verify their account was created correctly.
-                    </p>
-                  </div>
+
 
                   <div className="flex justify-end space-x-3">
                     <button

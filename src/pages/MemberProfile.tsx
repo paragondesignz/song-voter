@@ -285,11 +285,7 @@ export function MemberProfile() {
               </div>
             </div>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> After changing your password, you'll need to use your new password to log in, not the band's shared password.
-              </p>
-            </div>
+
             
             <div className="flex justify-end">
               <button

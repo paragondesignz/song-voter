@@ -275,73 +275,9 @@ Present the information clearly and concisely. If some details are unavailable, 
               </div>
             </div>
 
-            {/* Example Questions */}
-            <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Try asking about:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <button
-                  onClick={() => setInputValue("What's the key and BPM of Bohemian Rhapsody by Queen?")}
-                  className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="font-medium text-gray-900">Song Analysis</div>
-                  <div className="text-sm text-gray-600">"What's the key and BPM of Bohemian Rhapsody?"</div>
-                </button>
-                
-                <button
-                  onClick={() => setInputValue("Tell me about the production of Hotel California by Eagles")}
-                  className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="font-medium text-gray-900">Production Details</div>
-                  <div className="text-sm text-gray-600">"Tell me about the production of Hotel California"</div>
-                </button>
-                
-                <button
-                  onClick={() => setInputValue("What instruments are used in Sweet Child O Mine by Guns N Roses?")}
-                  className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="font-medium text-gray-900">Instrumentation</div>
-                  <div className="text-sm text-gray-600">"What instruments are used in Sweet Child O Mine?"</div>
-                </button>
-                
-                <button
-                  onClick={() => setInputValue("Find me songs similar to Imagine by John Lennon")}
-                  className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="font-medium text-gray-900">Song Discovery</div>
-                  <div className="text-sm text-gray-600">"Find me songs similar to Imagine"</div>
-                </button>
-              </div>
-            </div>
 
-            {/* Features */}
-            <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">What I can help you with:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Music className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <h4 className="font-medium text-gray-900 mb-2">Song Analysis</h4>
-                  <p className="text-sm text-gray-600">Key, BPM, structure, and musical theory</p>
-                </div>
-                
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Disc3 className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <h4 className="font-medium text-gray-900 mb-2">Production Details</h4>
-                  <p className="text-sm text-gray-600">Recording techniques, instruments, and session info</p>
-                </div>
-                
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Guitar className="w-6 h-6 text-primary-600" />
-                  </div>
-                  <h4 className="font-medium text-gray-900 mb-2">Performance Tips</h4>
-                  <p className="text-sm text-gray-600">Cover advice, practice techniques, and insights</p>
-                </div>
-              </div>
-            </div>
+
+
           </div>
 
           {/* Sidebar */}
