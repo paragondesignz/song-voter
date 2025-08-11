@@ -35,7 +35,12 @@
     font-family: theme('fontFamily.heading');
   }
 
-  body { @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased; }
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
   /* Focus ring for accessibility */
   :focus-visible {
@@ -52,8 +57,10 @@
     box-shadow: 0 8px 24px rgba(10, 132, 255, 0.3);
   }
   .btn-secondary {
-    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border;
-    @apply bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)] hover:border-slate-500/40 shadow-soft;
+    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border shadow-soft;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border);
   }
   .btn-accent {
     @apply px-4 py-2 rounded-xl text-white font-medium transition-colors duration-200;
@@ -63,13 +70,17 @@
 
   /* Inputs */
   .input-field {
-    @apply w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow;
+    @apply w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow placeholder:text-gray-500;
+    background-color: var(--color-surface-2);
+    color: var(--color-text);
+    border-color: var(--color-border);
   }
 
   /* Card */
   .card {
-    @apply rounded-2xl p-6 border;
-    @apply bg-[var(--color-surface)] border-[var(--color-border)] shadow-[0_14px_36px_rgba(0,0,0,0.35)];
+    @apply rounded-2xl p-6 border shadow-[0_14px_36px_rgba(0,0,0,0.35)];
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
   }
 
   /* Page header shimmer bar */
