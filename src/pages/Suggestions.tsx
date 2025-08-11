@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useSongSuggestions, useVoteSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
 import { useAuth } from '@/context/AuthContext'
+import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { 
   ArrowLeft, 
   Music, 
@@ -12,8 +13,7 @@ import {
   Search,
   Plus,
   User,
-  ExternalLink,
-  Play
+  ExternalLink
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -184,15 +184,6 @@ export function Suggestions() {
                             </>
                           )}
                           
-                          {song.preview_url && (
-                            <>
-                              <span>•</span>
-                              <button className="text-primary-600 hover:text-primary-700 flex items-center">
-                                <Play className="w-3 h-3 mr-1" />
-                                Preview
-                              </button>
-                            </>
-                          )}
                           
                           {song.spotify_track_id && (
                             <>
@@ -213,6 +204,13 @@ export function Suggestions() {
                         {song.notes && (
                           <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
                             <strong>Note:</strong> {song.notes}
+                          </div>
+                        )}
+
+                        {/* Spotify Embed */}
+                        {song.spotify_track_id && (
+                          <div className="mt-4">
+                            <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
                           </div>
                         )}
                       </div>

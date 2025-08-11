@@ -259,6 +259,7 @@ export interface Database {
           title: string
           artist: string
           album_art_url: string | null
+          spotify_track_id: string | null
           suggested_by: string
           vote_count: number
           recent_votes: number

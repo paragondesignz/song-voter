@@ -4,11 +4,11 @@ import { useForm } from 'react-hook-form'
 import { useSpotifySearch } from '@/hooks/useSpotify'
 import { useSuggestSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
+import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { 
   Search, 
   ArrowLeft, 
   Music, 
-  Play, 
   Plus,
   Clock,
   ExternalLink
@@ -127,58 +127,59 @@ export function SongSearch() {
                 )}
 
                 {tracks.length > 0 && (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {tracks.map((track) => (
-                      <div key={track.spotify_track_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <div className="flex items-center">
-                          {track.album_art_url ? (
-                            <img
-                              src={track.album_art_url}
-                              alt={track.album}
-                              className="w-16 h-16 rounded-md mr-4"
-                            />
-                          ) : (
-                            <div className="w-16 h-16 bg-gray-300 rounded-md mr-4 flex items-center justify-center">
-                              <Music className="w-8 h-8 text-gray-500" />
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">{track.title}</h3>
-                            <p className="text-gray-600">{track.artist}</p>
-                            <p className="text-sm text-gray-500">{track.album}</p>
-                            <div className="flex items-center mt-1 space-x-4">
-                              {track.duration_ms && (
-                                <span className="text-xs text-gray-500 flex items-center">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {formatDuration(track.duration_ms)}
-                                </span>
-                              )}
-                              {track.preview_url && (
-                                <button className="text-xs text-primary-600 hover:text-primary-700 flex items-center">
-                                  <Play className="w-3 h-3 mr-1" />
-                                  Preview
-                                </button>
-                              )}
-                              <a
-                                href={track.external_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1" />
-                                Spotify
-                              </a>
+                      <div key={track.spotify_track_id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center flex-1">
+                            {track.album_art_url ? (
+                              <img
+                                src={track.album_art_url}
+                                alt={track.album}
+                                className="w-16 h-16 rounded-md mr-4 flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-300 rounded-md mr-4 flex-shrink-0 flex items-center justify-center">
+                                <Music className="w-8 h-8 text-gray-500" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-gray-900 truncate">{track.title}</h3>
+                              <p className="text-gray-600 truncate">{track.artist}</p>
+                              <p className="text-sm text-gray-500 truncate">{track.album}</p>
+                              <div className="flex items-center mt-1 space-x-4">
+                                {track.duration_ms && (
+                                  <span className="text-xs text-gray-500 flex items-center">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {formatDuration(track.duration_ms)}
+                                  </span>
+                                )}
+                                <a
+                                  href={track.external_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-primary-600 hover:text-primary-700 flex items-center"
+                                >
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  Open in Spotify
+                                </a>
+                              </div>
                             </div>
                           </div>
+                          <button
+                            onClick={() => handleSpotifySuggest(track)}
+                            disabled={suggestSong.isPending}
+                            className="btn-primary flex items-center ml-4"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Suggest
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleSpotifySuggest(track)}
-                          disabled={suggestSong.isPending}
-                          className="btn-primary flex items-center"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Suggest
-                        </button>
+                        
+                        {/* Spotify Embed */}
+                        <div className="mt-4">
+                          <SpotifyEmbed trackId={track.spotify_track_id} compact={true} height={80} />
+                        </div>
                       </div>
                     ))}
                   </div>

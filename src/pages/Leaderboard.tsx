@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLeaderboard } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
+import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { 
   ArrowLeft, 
   Music, 
@@ -182,6 +183,13 @@ export function Leaderboard() {
                               }`}>
                                 {position === 1 ? '🥇 Most Popular' : position === 2 ? '🥈 Runner Up' : '🥉 Third Place'}
                               </span>
+                            </div>
+                          )}
+
+                          {/* Spotify Embed for top 3 songs */}
+                          {position <= 3 && song.spotify_track_id && (
+                            <div className="mt-4">
+                              <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
                             </div>
                           )}
                         </div>
