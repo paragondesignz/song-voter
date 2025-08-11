@@ -20,3 +20,12 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     },
   },
 })
+
+// Expose for runtime diagnostics in browser console
+// Safe no-op on server
+try {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).supabase = supabase
+} catch {
+  // ignore
+}
