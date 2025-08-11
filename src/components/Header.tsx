@@ -14,12 +14,10 @@ import {
 import { toast } from 'react-hot-toast'
 
 interface HeaderProps {
-  title?: string
-  subtitle?: string
   actions?: React.ReactNode
 }
 
-export function Header({ title, subtitle, actions }: HeaderProps) {
+export function Header({ actions }: HeaderProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, signOut } = useAuth()
@@ -36,7 +34,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
   // Helper function to get button classes with active state
   const getButtonClasses = (isActive: boolean) => {
-    const baseClasses = "btn-secondary text-sm transition-all duration-200"
+    const baseClasses = "btn-secondary text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-400/30 hover:border-blue-300"
     if (isActive) {
       return `${baseClasses} border-blue-400 shadow-md shadow-blue-400/20`
     }

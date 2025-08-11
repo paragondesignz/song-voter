@@ -98,6 +98,9 @@ export interface Database {
           preview_url: string | null
           notes: string | null
           status: 'suggested' | 'in_rehearsal' | 'practiced'
+          bpm: number | null
+          musical_key: string | null
+          vocal_type: 'male' | 'female' | 'duet' | 'instrumental' | null
           created_at: string
         }
         Insert: {
@@ -113,6 +116,9 @@ export interface Database {
           preview_url?: string | null
           notes?: string | null
           status?: 'suggested' | 'in_rehearsal' | 'practiced'
+          bpm?: number | null
+          musical_key?: string | null
+          vocal_type?: 'male' | 'female' | 'duet' | 'instrumental' | null
           created_at?: string
         }
         Update: {
@@ -128,6 +134,9 @@ export interface Database {
           preview_url?: string | null
           notes?: string | null
           status?: 'suggested' | 'in_rehearsal' | 'practiced'
+          bpm?: number | null
+          musical_key?: string | null
+          vocal_type?: 'male' | 'female' | 'duet' | 'instrumental' | null
           created_at?: string
         }
       }
