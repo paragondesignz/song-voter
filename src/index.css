@@ -96,4 +96,10 @@
   .badge-accent {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/20 text-amber-800;
   }
+  /* Override legacy light utilities to dark surfaces */
+  .bg-gray-50 { background-color: var(--color-bg) !important; }
+  .bg-white { background-color: var(--color-surface) !important; }
+  .hover\:bg-gray-50:hover { background-color: var(--color-surface-2) !important; }
+  .hover\:bg-gray-100:hover { background-color: var(--color-surface-2) !important; }
+  .bg-gradient-to-br { background-image: none !important; background-color: var(--color-bg) !important; }
 }
