@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
-import { useSongSuggestions, useLeaderboard } from '@/hooks/useSongs'
+import { useSongSuggestions, useLeaderboard, useVoteSong, useVoteRateLimit } from '@/hooks/useSongs'
 import { useAuth } from '@/context/AuthContext'
 import { 
   Music, 
@@ -10,8 +10,9 @@ import {
   Calendar,
   ArrowLeft,
   Plus,
-  Heart,
-  Crown
+  Crown,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -24,8 +25,25 @@ export function BandDashboard() {
   const { data: members } = useBandMembers(bandId!)
   const { data: recentSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
   const { data: leaderboard } = useLeaderboard(bandId!)
+  const { data: rateLimit } = useVoteRateLimit(bandId!)
+  const voteSong = useVoteSong()
 
   const userRole = members?.find(m => m.user_id === user?.id)?.role
+
+  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
+    if (rateLimit && rateLimit.votesRemaining <= 0) {
+      return // Don't allow voting if rate limit exceeded
+    }
+
+    // If clicking the same vote type, remove the vote; otherwise set the new vote type
+    const voteType = currentVote === newVoteType ? null : newVoteType
+
+    await voteSong.mutateAsync({
+      songId,
+      bandId: bandId!,
+      voteType
+    })
+  }
 
   if (!band) {
     return (
@@ -140,9 +158,78 @@ export function BandDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Heart className="w-4 h-4 mr-1" />
-                          {song.vote_count || 0}
+                        {/* Voting buttons */}
+                        <div className="flex flex-col items-center space-y-1">
+                          <div className="flex items-center space-x-1">
+                            {/* Upvote button */}
+                            <button
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
+                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              className={`p-1 rounded-full transition-colors ${
+                                song.user_voted === 'upvote'
+                                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              } ${
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : ''
+                              }`}
+                              title={
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? "You've reached your voting limit for this hour"
+                                  : song.user_voted === 'upvote'
+                                  ? "Remove your upvote"
+                                  : "Upvote this song"
+                              }
+                            >
+                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className="text-xs font-medium text-green-600">
+                              {song.upvote_count || 0}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center space-x-1">
+                            {/* Downvote button */}
+                            <button
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
+                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              className={`p-1 rounded-full transition-colors ${
+                                song.user_voted === 'downvote'
+                                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              } ${
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : ''
+                              }`}
+                              title={
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? "You've reached your voting limit for this hour"
+                                  : song.user_voted === 'downvote'
+                                  ? "Remove your downvote"
+                                  : "Downvote this song"
+                              }
+                            >
+                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className="text-xs font-medium text-red-600">
+                              {song.downvote_count || 0}
+                            </span>
+                          </div>
+                          
+                          {/* Net score */}
+                          <div className="text-center">
+                            <span className={`text-xs font-bold ${
+                              (song.vote_count || 0) > 0 
+                                ? 'text-green-600' 
+                                : (song.vote_count || 0) < 0 
+                                ? 'text-red-600' 
+                                : 'text-gray-600'
+                            }`}>
+                              {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -199,9 +286,78 @@ export function BandDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <div className="flex items-center text-sm font-semibold text-primary-600">
-                          <Heart className="w-4 h-4 mr-1 fill-current" />
-                          {song.vote_count}
+                        {/* Voting buttons */}
+                        <div className="flex flex-col items-center space-y-1">
+                          <div className="flex items-center space-x-1">
+                            {/* Upvote button */}
+                            <button
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
+                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              className={`p-1 rounded-full transition-colors ${
+                                song.user_voted === 'upvote'
+                                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              } ${
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : ''
+                              }`}
+                              title={
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? "You've reached your voting limit for this hour"
+                                  : song.user_voted === 'upvote'
+                                  ? "Remove your upvote"
+                                  : "Upvote this song"
+                              }
+                            >
+                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className="text-xs font-medium text-green-600">
+                              {song.upvote_count || 0}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center space-x-1">
+                            {/* Downvote button */}
+                            <button
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
+                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              className={`p-1 rounded-full transition-colors ${
+                                song.user_voted === 'downvote'
+                                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              } ${
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : ''
+                              }`}
+                              title={
+                                (rateLimit && rateLimit.votesRemaining <= 0)
+                                  ? "You've reached your voting limit for this hour"
+                                  : song.user_voted === 'downvote'
+                                  ? "Remove your downvote"
+                                  : "Downvote this song"
+                              }
+                            >
+                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className="text-xs font-medium text-red-600">
+                              {song.downvote_count || 0}
+                            </span>
+                          </div>
+                          
+                          {/* Net score */}
+                          <div className="text-center">
+                            <span className={`text-xs font-bold ${
+                              (song.vote_count || 0) > 0 
+                                ? 'text-green-600' 
+                                : (song.vote_count || 0) < 0 
+                                ? 'text-red-600' 
+                                : 'text-gray-600'
+                            }`}>
+                              {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
