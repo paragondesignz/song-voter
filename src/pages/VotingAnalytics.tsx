@@ -62,8 +62,8 @@ export function VotingAnalytics() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Stats Overview */}
-          <div className="lg:col-span-2 space-y-6">
+            {/* Stats Overview */}
+            <div className="lg:col-span-2 space-y-6">
             {/* Overall Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="card">
@@ -277,9 +277,10 @@ export function VotingAnalytics() {
               </div>
             )}
           </div>
+        </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+        {/* Sidebar */}
+        <div className="space-y-6">
 
             {/* Rating Tips */}
             <div className="card">
