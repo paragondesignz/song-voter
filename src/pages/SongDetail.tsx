@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
-import { useSongSuggestions, useUpdateSongNotes } from '@/hooks/useSongs'
+import { useSongSuggestions } from '@/hooks/useSongs'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
@@ -11,10 +11,7 @@ import {
   ExternalLink,
   Music,
   User,
-  MessageSquare,
-  Edit,
-  Save,
-  X
+  MessageSquare
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
