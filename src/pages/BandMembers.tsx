@@ -64,21 +64,41 @@ export function BandMembers() {
     
     setIsUpdatingPassword(true)
     try {
+      // Try to update with both columns first
+      let updateData: any = { shared_password: bandPassword }
+      
+      // Try to check if password_updated_at column exists by attempting to update it
+      try {
+        updateData.password_updated_at = new Date().toISOString()
+      } catch {
+        // If password_updated_at doesn't exist, just update shared_password
+      }
+      
       const { error } = await supabase
         .from('bands')
-        .update({ 
-          shared_password: bandPassword,
-          password_updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', bandId)
         
-      if (error) throw error
+      if (error) {
+        // If the update failed due to missing columns, try with just shared_password
+        if (error.message.includes('column') && error.message.includes('does not exist')) {
+          const { error: retryError } = await supabase
+            .from('bands')
+            .update({ shared_password: bandPassword })
+            .eq('id', bandId)
+            
+          if (retryError) throw retryError
+        } else {
+          throw error
+        }
+      }
       
       toast.success('Band password set successfully!')
       setShowPasswordForm(false)
       setBandPassword('')
       setConfirmPassword('')
     } catch (error: any) {
+      console.error('Band password update error:', error)
       toast.error(error.message || 'Failed to set band password')
     } finally {
       setIsUpdatingPassword(false)

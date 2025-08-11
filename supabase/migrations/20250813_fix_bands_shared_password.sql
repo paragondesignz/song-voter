@@ -1,9 +1,20 @@
--- Add shared password field to bands table
-ALTER TABLE bands 
-ADD COLUMN shared_password TEXT,
-ADD COLUMN password_updated_at TIMESTAMPTZ DEFAULT NOW();
+-- Fix bands table shared password columns (add if not exists)
+DO $$ 
+BEGIN
+    -- Add shared_password column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'bands' AND column_name = 'shared_password') THEN
+        ALTER TABLE bands ADD COLUMN shared_password TEXT;
+    END IF;
+    
+    -- Add password_updated_at column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'bands' AND column_name = 'password_updated_at') THEN
+        ALTER TABLE bands ADD COLUMN password_updated_at TIMESTAMPTZ DEFAULT NOW();
+    END IF;
+END $$;
 
--- Add function to create band member accounts
+-- Create or replace the function (in case it doesn't exist)
 CREATE OR REPLACE FUNCTION create_band_member_account(
   p_email TEXT,
   p_band_id UUID,
@@ -79,7 +90,8 @@ $$;
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION create_band_member_account TO authenticated;
 
--- Add RLS policy for updating band shared password (admin only)
+-- Create or replace RLS policy for updating band shared password (admin only)
+DROP POLICY IF EXISTS "Admin can update band shared password" ON bands;
 CREATE POLICY "Admin can update band shared password"
   ON bands FOR UPDATE
   USING (
