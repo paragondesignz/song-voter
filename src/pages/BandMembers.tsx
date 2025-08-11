@@ -204,11 +204,14 @@ export function BandMembers() {
   if (!isCurrentUserAdmin) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          title="Band Members"
-          subtitle={band?.name}
-        />
+        <Header />
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Title */}
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-gray-900">Band Members</h1>
+            {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
+          </div>
+          
           <div className="card text-center py-12">
             <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-medium text-gray-900 mb-2">Admin Access Required</h2>
@@ -229,10 +232,7 @@ export function BandMembers() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
-        title="Manage Members"
-        subtitle={`${band?.name} • ${members?.length || 0}/10 members`}
-      />
+      <Header />
       
       {/* Management Actions */}
       <div className="bg-white border-b">
@@ -258,6 +258,12 @@ export function BandMembers() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Manage Members</h1>
+          <p className="text-lg text-gray-600 mt-2">{band?.name} • {members?.length || 0}/10 members</p>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
