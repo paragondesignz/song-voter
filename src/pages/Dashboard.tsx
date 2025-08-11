@@ -5,7 +5,6 @@ import { useUserBands } from '@/hooks/useBands'
 import { Users, Plus, LogOut, User } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Logo } from '@/components/Logo'
-import { DebugAuth } from '@/components/DebugAuth'
 
 export function Dashboard() {
   const { user, signOut } = useAuth()
@@ -16,12 +15,8 @@ export function Dashboard() {
     if (!isLoading && bands) {
       if (bands.length === 1) {
         // Auto-redirect to the single band
-        // eslint-disable-next-line no-console
-        console.log('✅ Found 1 band, redirecting to:', bands[0].name)
         navigate(`/band/${bands[0].id}`)
       } else if (bands.length === 0) {
-        // eslint-disable-next-line no-console
-        console.log('⚠️ No bands found, going to band setup')
         navigate('/band-setup')
       }
     }
@@ -134,7 +129,6 @@ export function Dashboard() {
           )}
         </div>
       </main>
-      <DebugAuth />
     </div>
   )
 }

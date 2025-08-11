@@ -32,27 +32,17 @@ export function useUserBands() {
   return useQuery({
     queryKey: ['bands', user?.id],
     queryFn: async () => {
-      // eslint-disable-next-line no-console
-      console.log('🔍 Fetching bands for user:', user?.id)
-      
-      // Try simpler approach first - get memberships then fetch bands separately
+      // Get memberships then fetch bands separately
       const { data: memberships, error: membershipsError } = await supabase
         .from('band_members')
         .select('band_id, role')
         .eq('user_id', user?.id)
 
-      // eslint-disable-next-line no-console
-      console.log('📊 Simple memberships result:', { memberships, error: membershipsError })
-
       if (membershipsError) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching memberships:', membershipsError)
         throw membershipsError
       }
 
       if (!memberships || memberships.length === 0) {
-        // eslint-disable-next-line no-console
-        console.log('⚠️ No memberships found, returning empty array')
         return []
       }
 
@@ -63,12 +53,7 @@ export function useUserBands() {
         .select('*')
         .in('id', bandIds)
 
-      // eslint-disable-next-line no-console
-      console.log('📊 Bands query result:', { bands, error: bandsError })
-
       if (bandsError) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching bands:', bandsError)
         throw bandsError
       }
 
