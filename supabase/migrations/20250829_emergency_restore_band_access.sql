@@ -12,6 +12,20 @@ ALTER TABLE public.bands ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.band_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop all existing policies to avoid conflicts
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "Band members can view profiles in their bands" ON profiles;
+DROP POLICY IF EXISTS "Temporary: Users can view all profiles" ON profiles;
+DROP POLICY IF EXISTS "Users can create bands" ON bands;
+DROP POLICY IF EXISTS "Band members can view their bands" ON bands;
+DROP POLICY IF EXISTS "Band admins can update band settings" ON bands;
+DROP POLICY IF EXISTS "Temporary: Users can view all bands" ON bands;
+DROP POLICY IF EXISTS "Band members can view members of their bands" ON band_members;
+DROP POLICY IF EXISTS "Band admins can manage members" ON band_members;
+DROP POLICY IF EXISTS "Users can join bands" ON band_members;
+DROP POLICY IF EXISTS "Temporary: Users can view all band members" ON band_members;
+
 -- Create very permissive policies to restore access
 -- Users can view all profiles (temporarily)
 CREATE POLICY "Temporary: Users can view all profiles" ON profiles
