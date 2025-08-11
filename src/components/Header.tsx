@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useProfile } from '@/hooks/useProfile'
 import { useUserBands } from '@/hooks/useBands'
@@ -20,12 +20,27 @@ interface HeaderProps {
 
 export function Header({ title, subtitle, actions }: HeaderProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, signOut } = useAuth()
   const { data: bands } = useUserBands()
   const { data: profile } = useProfile()
   const [showDropdown, setShowDropdown] = useState(false)
   
   const userBand = bands?.[0] // Since users only have one band
+
+  // Helper function to check if a route is active
+  const isActiveRoute = (path: string) => {
+    return location.pathname.includes(path)
+  }
+
+  // Helper function to get button classes with active state
+  const getButtonClasses = (isActive: boolean) => {
+    const baseClasses = "btn-secondary text-sm transition-all duration-200"
+    if (isActive) {
+      return `${baseClasses} border-blue-400 shadow-md shadow-blue-400/20`
+    }
+    return baseClasses
+  }
 
   const handleSignOut = async () => {
     try {
@@ -93,7 +108,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
             {userBand && (
               <button
                 onClick={handleLeaderboard}
-                className="btn-secondary text-sm"
+                className={getButtonClasses(isActiveRoute('/leaderboard'))}
               >
                 Leaderboard
               </button>
@@ -102,7 +117,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
             {userBand && (
               <button
                 onClick={handleAllSuggestions}
-                className="btn-secondary text-sm"
+                className={getButtonClasses(isActiveRoute('/suggestions'))}
               >
                 All Suggestions
               </button>
@@ -111,7 +126,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
             {userBand && (
               <button
                 onClick={handleAnalytics}
-                className="btn-secondary text-sm"
+                className={getButtonClasses(isActiveRoute('/voting-analytics'))}
               >
                 Analytics
               </button>

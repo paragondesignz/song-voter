@@ -5,6 +5,7 @@ import { useBand, useUserBandRole, useBandMembers } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
+import { BandSidebar } from '@/components/BandSidebar'
 import { 
   Music, 
   Clock, 
@@ -123,242 +124,241 @@ export function Suggestions() {
       <Header 
         title="Song Suggestions"
         subtitle={band?.name}
-        actions={(
-          <button
-            onClick={() => navigate(`/band/${bandId}/voting-analytics`)}
-            className="btn-secondary text-sm flex items-center"
-          >
-            <BarChart3 className="h-4 w-4 mr-1" />
-            Analytics
-          </button>
-        )}
       />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* Filters and search */}
-          <div className="card">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-field pl-10"
-                  placeholder="Search songs, artists, albums..."
-                />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Filters and search */}
+            <div className="card">
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="Search songs, artists, albums..."
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <Filter className="h-4 w-4 text-gray-500 mr-2" />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as SortOption)}
+                      className="select-field"
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="votes">Most Voted</option>
+                      <option value="alphabetical">Alphabetical</option>
+                      <option value="trending">Trending</option>
+                    </select>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {sortedSuggestions.length} songs
+                  </span>
+                </div>
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <Filter className="h-4 w-4 text-gray-500 mr-2" />
+            </div>
+
+            {/* Edit Suggester Modal */}
+            {editingSuggester && (
+               <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 max-w-md w-full mx-4 text-[var(--color-text)]">
+                  <h3 className="text-lg font-semibold mb-4">Change Song Suggester</h3>
+                  <p className="text-gray-400 mb-4 text-sm">
+                    Select who should be credited as the suggester for this song:
+                  </p>
                   <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="select-field"
+                    value={selectedNewSuggester}
+                    onChange={(e) => setSelectedNewSuggester(e.target.value)}
+                    className="select-field w-full mb-4"
                   >
-                    <option value="newest">Newest First</option>
-                    <option value="votes">Most Voted</option>
-                    <option value="alphabetical">Alphabetical</option>
-                    <option value="trending">Trending</option>
+                    <option value="">Select a band member...</option>
+                    {bandMembers?.map((member) => (
+                      <option key={member.user_id} value={member.user_id}>
+                        {member.user?.display_name} ({member.role})
+                      </option>
+                    ))}
                   </select>
-                </div>
-                <span className="text-sm text-gray-500">
-                  {sortedSuggestions.length} songs
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Edit Suggester Modal */}
-          {editingSuggester && (
-             <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-              <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 max-w-md w-full mx-4 text-[var(--color-text)]">
-                <h3 className="text-lg font-semibold mb-4">Change Song Suggester</h3>
-                <p className="text-gray-400 mb-4 text-sm">
-                  Select who should be credited as the suggester for this song:
-                </p>
-                <select
-                  value={selectedNewSuggester}
-                  onChange={(e) => setSelectedNewSuggester(e.target.value)}
-                  className="select-field w-full mb-4"
-                >
-                  <option value="">Select a band member...</option>
-                  {bandMembers?.map((member) => (
-                    <option key={member.user_id} value={member.user_id}>
-                      {member.user?.display_name} ({member.role})
-                    </option>
-                  ))}
-                </select>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => {
-                      setEditingSuggester(null)
-                      setSelectedNewSuggester('')
-                    }}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => handleUpdateSuggester(editingSuggester)}
-                    disabled={!selectedNewSuggester || updateSongSuggester.isPending}
-                    className="btn-primary"
-                  >
-                    {updateSongSuggester.isPending ? 'Updating...' : 'Update Suggester'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Songs list */}
-          {sortedSuggestions.length > 0 ? (
-            <div className="space-y-4">
-              {sortedSuggestions.map((song) => (
-                <div key={song.id} className="card hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center flex-1">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold text-gray-900 truncate">{song.title}</h3>
-                        </div>
-                        <p className="text-gray-600 truncate">{song.artist}</p>
-                        {song.album && (
-                          <p className="text-sm text-gray-500 truncate">{song.album}</p>
-                        )}
-                        
-                        <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                          <div className="flex items-center font-medium text-gray-600">
-                            <User className="w-3 h-3 mr-1" />
-                            Added by: {song.suggested_by_user?.display_name}
-                          </div>
-                          <span>•</span>
-                          <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
-                          
-                          {song.duration_ms && (
-                            <>
-                              <span>•</span>
-                              <div className="flex items-center">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {formatDuration(song.duration_ms)}
-                              </div>
-                            </>
-                          )}
-                          
-                          
-                          {song.spotify_track_id && (
-                            <>
-                              <span>•</span>
-                              <a
-                                href={`https://open.spotify.com/track/${song.spotify_track_id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary-600 hover:text-primary-700 flex items-center"
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1" />
-                                Spotify
-                              </a>
-                            </>
-                          )}
-                        </div>
-                        
-                        {song.notes && (
-                          <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
-                            <strong>Note:</strong> {song.notes}
-                          </div>
-                        )}
-
-                        {/* Spotify Embed */}
-                        {song.spotify_track_id && (
-                          <div className="mt-4">
-                            <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex items-center ml-4 space-x-4">
-                      {/* Star Rating */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <StarRating
-                          rating={song.user_rating || null}
-                          onRate={(rating) => handleRate(song.id, rating)}
-                          readonly={votingOnSong === song.id}
-                          size="md"
-                        />
-                        
-                        {/* Rating Info */}
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-900">
-                            {song.average_rating ? song.average_rating.toFixed(1) : '—'}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Admin controls */}
-                      {userRole === 'admin' && (
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => startEditingSuggester(song.id, song.suggested_by)}
-                            className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
-                            title="Change who suggested this song (Admin only)"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleRemoveSuggestion(song.id)}
-                            disabled={removeSuggestion.isPending}
-                            className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
-                            title="Remove suggestion (Admin only)"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={() => {
+                        setEditingSuggester(null)
+                        setSelectedNewSuggester('')
+                      }}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleUpdateSuggester(editingSuggester)}
+                      disabled={!selectedNewSuggester || updateSongSuggester.isPending}
+                      className="btn-primary"
+                    >
+                      {updateSongSuggester.isPending ? 'Updating...' : 'Update Suggester'}
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="card text-center py-12">
-              {searchQuery ? (
-                <>
-                  <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No songs found</h3>
-                  <p className="text-gray-600 mb-4">
-                    No songs match your search "{searchQuery}"
-                  </p>
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    Clear search
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Music className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No songs suggested yet</h3>
-                  <p className="text-gray-600 mb-6">
-                    Be the first to suggest a song for your band to practice!
-                  </p>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/search`)}
-                    className="btn-primary"
-                  >
-                    Suggest a Song
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+
+            {/* Songs list */}
+            {sortedSuggestions.length > 0 ? (
+              <div className="space-y-4">
+                {sortedSuggestions.map((song) => (
+                  <div key={song.id} className="card hover:shadow-lg transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center flex-1">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="font-semibold text-gray-900 truncate">{song.title}</h3>
+                          </div>
+                          <p className="text-gray-600 truncate">{song.artist}</p>
+                          {song.album && (
+                            <p className="text-sm text-gray-500 truncate">{song.album}</p>
+                          )}
+                          
+                          <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
+                            <div className="flex items-center font-medium text-gray-600">
+                              <User className="w-3 h-3 mr-1" />
+                              Added by: {song.suggested_by_user?.display_name}
+                            </div>
+                            <span>•</span>
+                            <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
+                            
+                            {song.duration_ms && (
+                              <>
+                                <span>•</span>
+                                <div className="flex items-center">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {formatDuration(song.duration_ms)}
+                                </div>
+                              </>
+                            )}
+                            
+                            
+                            {song.spotify_track_id && (
+                              <>
+                                <span>•</span>
+                                <a
+                                  href={`https://open.spotify.com/track/${song.spotify_track_id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary-600 hover:text-primary-700 flex items-center"
+                                >
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  Spotify
+                                </a>
+                              </>
+                            )}
+                          </div>
+                          
+                          {song.notes && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                              <strong>Note:</strong> {song.notes}
+                            </div>
+                          )}
+
+                          {/* Spotify Embed */}
+                          {song.spotify_track_id && (
+                            <div className="mt-4">
+                              <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center ml-4 space-x-4">
+                        {/* Star Rating */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <StarRating
+                            rating={song.user_rating || null}
+                            onRate={(rating) => handleRate(song.id, rating)}
+                            readonly={votingOnSong === song.id}
+                            size="md"
+                          />
+                          
+                          {/* Rating Info */}
+                          <div className="text-center">
+                            <div className="text-sm font-medium text-gray-900">
+                              {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Admin controls */}
+                        {userRole === 'admin' && (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => startEditingSuggester(song.id, song.suggested_by)}
+                              className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
+                              title="Change who suggested this song (Admin only)"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleRemoveSuggestion(song.id)}
+                              disabled={removeSuggestion.isPending}
+                              className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
+                              title="Remove suggestion (Admin only)"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="card text-center py-12">
+                {searchQuery ? (
+                  <>
+                    <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No songs found</h3>
+                    <p className="text-gray-600 mb-4">
+                      No songs match your search "{searchQuery}"
+                    </p>
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="text-primary-600 hover:text-primary-700 font-medium"
+                    >
+                      Clear search
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Music className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No songs suggested yet</h3>
+                    <p className="text-gray-600 mb-6">
+                      Be the first to suggest a song for your band to practice!
+                    </p>
+                    <button
+                      onClick={() => navigate(`/band/${bandId}/search`)}
+                      className="btn-primary"
+                    >
+                      Suggest a Song
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div>
+            <BandSidebar bandId={bandId!} />
+          </div>
         </div>
       </main>
     </div>
