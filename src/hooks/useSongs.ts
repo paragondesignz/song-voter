@@ -351,21 +351,34 @@ export function useVoteStats(bandId: string) {
 
       if (error) throw error
 
-      const totalVotes = data.length
-      const upvotes = data.filter(v => v.vote_type === 'upvote').length
-      const downvotes = data.filter(v => v.vote_type === 'downvote').length
-      const recentVotes = data.filter(v => {
+      const totalRatings = data.length
+      const ratings = data.map(v => parseInt(v.vote_type)).filter(rating => !isNaN(rating))
+      const averageRating = ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : 0
+      const highRatings = data.filter(v => parseInt(v.vote_type) >= 4).length
+      const lowRatings = data.filter(v => parseInt(v.vote_type) <= 2).length
+      const recentRatings = data.filter(v => {
         const voteDate = new Date(v.created_at)
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
         return voteDate > weekAgo
       }).length
 
+      // Distribution of ratings (1-5 stars)
+      const ratingDistribution = {
+        1: data.filter(v => v.vote_type === '1').length,
+        2: data.filter(v => v.vote_type === '2').length,
+        3: data.filter(v => v.vote_type === '3').length,
+        4: data.filter(v => v.vote_type === '4').length,
+        5: data.filter(v => v.vote_type === '5').length,
+      }
+
       return {
-        totalVotes,
-        upvotes,
-        downvotes,
-        recentVotes,
-        votes: data
+        totalRatings,
+        averageRating: Math.round(averageRating * 10) / 10,
+        highRatings,
+        lowRatings,
+        recentRatings,
+        ratingDistribution,
+        ratings: data
       }
     },
     enabled: !!bandId,
@@ -388,15 +401,18 @@ export function useUserVoteStats(bandId: string) {
 
       if (error) throw error
 
-      const totalVotes = data.length
-      const upvotes = data.filter(v => v.vote_type === 'upvote').length
-      const downvotes = data.filter(v => v.vote_type === 'downvote').length
+      const totalRatings = data.length
+      const ratings = data.map(v => parseInt(v.vote_type)).filter(rating => !isNaN(rating))
+      const averageRating = ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : 0
+      const highRatings = data.filter(v => parseInt(v.vote_type) >= 4).length
+      const lowRatings = data.filter(v => parseInt(v.vote_type) <= 2).length
 
       return {
-        totalVotes,
-        upvotes,
-        downvotes,
-        votes: data
+        totalRatings,
+        averageRating: Math.round(averageRating * 10) / 10,
+        highRatings,
+        lowRatings,
+        ratings: data
       }
     },
     enabled: !!bandId && !!user,

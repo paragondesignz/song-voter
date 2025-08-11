@@ -5,10 +5,11 @@ import {
   ArrowLeft, 
   BarChart3,
   TrendingUp,
-  ThumbsUp,
-  ThumbsDown,
+  Star,
+  Heart,
   Music
 } from 'lucide-react'
+import { StarRating } from '@/components/StarRating'
 import { formatDistanceToNow } from 'date-fns'
 
 export function VotingAnalytics() {
@@ -16,9 +17,9 @@ export function VotingAnalytics() {
   const navigate = useNavigate()
   
   const { data: band } = useBand(bandId!)
-  const { data: voteStats, isLoading: statsLoading } = useVoteStats(bandId!)
-  const { data: userVoteStats } = useUserVoteStats(bandId!)
-  const { data: voteHistory } = useVoteHistory(bandId!, 20)
+  const { data: ratingStats, isLoading: statsLoading } = useVoteStats(bandId!)
+  const { data: userRatingStats } = useUserVoteStats(bandId!)
+  const { data: ratingHistory } = useVoteHistory(bandId!, 20)
 
   if (statsLoading) {
     return (
@@ -60,8 +61,20 @@ export function VotingAnalytics() {
                     <BarChart3 className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Votes</p>
-                    <p className="text-2xl font-bold text-gray-900">{voteStats?.totalVotes || 0}</p>
+                    <p className="text-sm font-medium text-gray-600">Total Ratings</p>
+                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.totalRatings || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card">
+                <div className="flex items-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Star className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Average Rating</p>
+                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.averageRating || '—'}</p>
                   </div>
                 </div>
               </div>
@@ -69,23 +82,11 @@ export function VotingAnalytics() {
               <div className="card">
                 <div className="flex items-center">
                   <div className="p-2 bg-green-100 rounded-lg">
-                    <ThumbsUp className="h-6 w-6 text-green-600" />
+                    <Heart className="h-6 w-6 text-green-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Upvotes</p>
-                    <p className="text-2xl font-bold text-gray-900">{voteStats?.upvotes || 0}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="card">
-                <div className="flex items-center">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <ThumbsDown className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Downvotes</p>
-                    <p className="text-2xl font-bold text-gray-900">{voteStats?.downvotes || 0}</p>
+                    <p className="text-sm font-medium text-gray-600">High Ratings (4-5★)</p>
+                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.highRatings || 0}</p>
                   </div>
                 </div>
               </div>
@@ -97,64 +98,99 @@ export function VotingAnalytics() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">This Week</p>
-                    <p className="text-2xl font-bold text-gray-900">{voteStats?.recentVotes || 0}</p>
+                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.recentRatings || 0}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Your Voting Activity */}
-            {userVoteStats && (
+            {/* Your Rating Activity */}
+            {userRatingStats && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Your Voting Activity</h2>
+                <h2 className="text-xl font-semibold mb-4">Your Rating Activity</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">{userVoteStats.totalVotes}</p>
-                    <p className="text-sm text-blue-800">Total Votes Cast</p>
+                    <p className="text-2xl font-bold text-blue-600">{userRatingStats.totalRatings}</p>
+                    <p className="text-sm text-blue-800">Total Ratings Given</p>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <p className="text-2xl font-bold text-yellow-600">{userRatingStats.averageRating}</p>
+                    <p className="text-sm text-yellow-800">Your Avg Rating</p>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{userVoteStats.upvotes}</p>
-                    <p className="text-sm text-green-800">Songs You Liked</p>
-                  </div>
-                  <div className="text-center p-4 bg-red-50 rounded-lg">
-                    <p className="text-2xl font-bold text-red-600">{userVoteStats.downvotes}</p>
-                    <p className="text-sm text-red-800">Songs You Disliked</p>
+                    <p className="text-2xl font-bold text-green-600">{userRatingStats.highRatings}</p>
+                    <p className="text-sm text-green-800">High Ratings (4-5★)</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Recent Voting History */}
-            {voteHistory && voteHistory.length > 0 && (
+            {/* Rating Distribution */}
+            {ratingStats?.ratingDistribution && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Your Recent Votes</h2>
+                <h2 className="text-xl font-semibold mb-4">Rating Distribution</h2>
+                <div className="space-y-4">
+                  {Object.entries(ratingStats.ratingDistribution).map(([rating, count]) => {
+                    const percentage = ratingStats.totalRatings > 0 
+                      ? Math.round((count / ratingStats.totalRatings) * 100) 
+                      : 0
+                    return (
+                      <div key={rating} className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 w-16">
+                          <span className="text-sm font-medium">{rating}</span>
+                          <Star className="h-4 w-4 text-yellow-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="bg-gray-200 rounded-full h-3">
+                            <div
+                              className="bg-yellow-400 h-3 rounded-full transition-all duration-300"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div className="w-12 text-right">
+                          <span className="text-sm text-gray-600">{count}</span>
+                        </div>
+                        <div className="w-10 text-right">
+                          <span className="text-xs text-gray-500">{percentage}%</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Recent Rating History */}
+            {ratingHistory && ratingHistory.length > 0 && (
+              <div className="card">
+                <h2 className="text-xl font-semibold mb-4">Your Recent Ratings</h2>
                 <div className="space-y-3">
-                  {voteHistory.slice(0, 10).map((vote: any) => (
-                    <div key={vote.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  {ratingHistory.slice(0, 10).map((rating: any) => (
+                    <div key={rating.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-full ${
-                          vote.vote_type === 'upvote' 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-red-100 text-red-600'
-                        }`}>
-                          {vote.vote_type === 'upvote' ? (
-                            <ThumbsUp className="h-4 w-4" />
-                          ) : (
-                            <ThumbsDown className="h-4 w-4" />
-                          )}
+                        <div className="p-2 bg-yellow-100 rounded-full">
+                          <StarRating 
+                            rating={parseInt(rating.vote_type)} 
+                            readonly={true}
+                            size="sm"
+                          />
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">
-                            {vote.song_suggestion?.title}
+                            {rating.song_suggestion?.title}
                           </p>
                           <p className="text-sm text-gray-600">
-                            by {vote.song_suggestion?.artist}
+                            by {rating.song_suggestion?.artist}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
+                        <div className="text-lg font-bold text-yellow-600">
+                          {rating.vote_type}★
+                        </div>
                         <p className="text-sm text-gray-500">
-                          {formatDistanceToNow(new Date(vote.created_at), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(rating.created_at), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
@@ -167,21 +203,25 @@ export function VotingAnalytics() {
           {/* Sidebar */}
           <div className="space-y-6">
 
-            {/* Voting Tips */}
+            {/* Rating Tips */}
             <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Voting Tips</h3>
+              <h3 className="text-lg font-semibold mb-4">Rating Guide</h3>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-start">
-                  <ThumbsUp className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <p>Vote for songs you'd like to practice with your band</p>
+                  <Star className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+                  <p><strong>5 stars:</strong> Love this song, perfect for rehearsal</p>
                 </div>
                 <div className="flex items-start">
-                  <ThumbsDown className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <p>Downvote songs that don't fit your band's style</p>
+                  <Star className="h-4 w-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <p><strong>4 stars:</strong> Great song, would enjoy playing it</p>
+                </div>
+                <div className="flex items-start">
+                  <Star className="h-4 w-4 text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
+                  <p><strong>3 stars:</strong> Neutral, okay to practice</p>
                 </div>
                 <div className="flex items-start">
                   <Music className="h-4 w-4 text-purple-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <p>Songs with more votes are more likely to be selected for rehearsals</p>
+                  <p>Higher rated songs are more likely to be selected for rehearsals</p>
                 </div>
               </div>
             </div>
@@ -190,20 +230,30 @@ export function VotingAnalytics() {
             <div className="card">
               <h3 className="text-lg font-semibold mb-4">Quick Facts</h3>
               <div className="space-y-3">
-                {voteStats && (
+                {ratingStats && (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Upvote Rate</span>
+                      <span className="text-sm text-gray-600">High Rating Rate</span>
                       <span className="text-sm font-medium">
-                        {voteStats.totalVotes > 0 
-                          ? Math.round((voteStats.upvotes / voteStats.totalVotes) * 100)
+                        {ratingStats.totalRatings > 0 
+                          ? Math.round((ratingStats.highRatings / ratingStats.totalRatings) * 100)
                           : 0}%
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Activity This Week</span>
                       <span className="text-sm font-medium">
-                        {voteStats.recentVotes} votes
+                        {ratingStats.recentRatings} ratings
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Most Popular Rating</span>
+                      <span className="text-sm font-medium">
+                        {ratingStats.ratingDistribution && (() => {
+                          const entries = Object.entries(ratingStats.ratingDistribution)
+                          const mostPopular = entries.reduce((a, b) => a[1] > b[1] ? a : b)
+                          return `${mostPopular[0]}★`
+                        })()}
                       </span>
                     </div>
                   </>
