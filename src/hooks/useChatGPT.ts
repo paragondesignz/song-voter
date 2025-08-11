@@ -27,6 +27,15 @@ export function useChatGPT() {
     setError(null)
 
     try {
+      // Debug: Log all environment variables
+      console.log('Environment variables:', {
+        VITE_OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY,
+        VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+        VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        NODE_ENV: import.meta.env.NODE_ENV,
+        MODE: import.meta.env.MODE
+      })
+
       // You'll need to set this environment variable
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY
       if (!apiKey) {
