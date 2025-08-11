@@ -39,6 +39,8 @@ export interface Database {
           invite_code: string
           created_by: string
           created_at: string
+          shared_password: string | null
+          password_updated_at: string | null
         }
         Insert: {
           id?: string
@@ -46,6 +48,8 @@ export interface Database {
           invite_code?: string
           created_by: string
           created_at?: string
+          shared_password?: string | null
+          password_updated_at?: string | null
         }
         Update: {
           id?: string
@@ -53,6 +57,8 @@ export interface Database {
           invite_code?: string
           created_by?: string
           created_at?: string
+          shared_password?: string | null
+          password_updated_at?: string | null
         }
       }
       band_members: {

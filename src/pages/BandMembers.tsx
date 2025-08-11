@@ -378,7 +378,8 @@ export function BandMembers() {
                   Email: {memberEmail || '[member email]'}<br />
                   Password: [Your band's shared password]<br />
                   <br />
-                  Members can update their personal password after logging in.
+                  <strong>Important:</strong> Members can update their personal password after logging in.<br />
+                  If login fails, the member should contact a band admin to verify their account was created correctly.
                 </p>
               </div>
 

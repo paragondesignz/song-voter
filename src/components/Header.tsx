@@ -8,7 +8,8 @@ import {
   Plus,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Activity
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
@@ -125,6 +126,14 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                 Analytics
               </button>
             )}
+            {/* Admin Diagnostics Button */}
+            <button
+              onClick={() => navigate('/admin/diagnostics')}
+              className={getButtonClasses(isActiveRoute('/admin/diagnostics'))}
+            >
+              <Activity className="h-4 w-4 mr-1" />
+              Diagnostics
+            </button>
             {/* Suggest Song Button */}
             {userBand && (
               <button

@@ -41,59 +41,75 @@ serve(async (req) => {
       })
     }
 
-    // Create or upsert the auth user via Admin API
-    const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
-      email: p_email,
-      password: band.shared_password,
-      email_confirm: true,
-      user_metadata: { display_name: p_display_name },
-    })
-    if (createErr && createErr.message && !String(createErr.message).includes("already registered")) {
-      return new Response(JSON.stringify({ error: createErr.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Check if user already exists
+    const { data: existingUser } = await adminClient.auth.admin.listUsers()
+    const user = existingUser.users.find(u => u.email === p_email)
+
+    let userId: string
+
+    if (user) {
+      // User exists, update password to match band password
+      const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
+        password: band.shared_password
       })
+      if (updateError) throw updateError
+      userId = user.id
+    } else {
+      // Create new user
+      const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
+        email: p_email,
+        password: band.shared_password,
+        email_confirm: true,
+        user_metadata: { display_name: p_display_name },
+      })
+      if (createErr) throw createErr
+      userId = created.user!.id
     }
 
-    // Resolve the user id (new or existing)
-    const userId = created?.user?.id ?? (
-      await adminClient.from("profiles").select("id").eq("email", p_email).maybeSingle()
-    ).data?.id
-
-    if (!userId) {
-      // Fallback: look up auth.users
-      const { data: authUser } = await adminClient.from("auth.users").select("id").eq("email", p_email).maybeSingle()
-      if (!authUser?.id) {
-        return new Response(JSON.stringify({ error: "Failed to resolve user id" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
-      }
-      // Store on global for this request scope
-      (globalThis as unknown as { resolvedUserId?: string }).resolvedUserId = authUser.id
-    }
-
-    const resolvedId = (created?.user?.id) ?? ((globalThis as unknown as { resolvedUserId?: string }).resolvedUserId)
-    const finalUserId = resolvedId as string
-
-    // Ensure profile exists / upsert
+    // Ensure profile exists and is up to date
     const { error: profileErr } = await adminClient
       .from("profiles")
-      .upsert({ id: finalUserId, email: p_email, display_name: p_display_name }, { onConflict: "id" })
+      .upsert({ 
+        id: userId, 
+        email: p_email, 
+        display_name: p_display_name 
+      }, { 
+        onConflict: "id",
+        ignoreDuplicates: false
+      })
     if (profileErr) throw profileErr
 
     // Add to band_members (upsert role)
     const { error: memberErr } = await adminClient
       .from("band_members")
-      .upsert({ band_id: p_band_id, user_id: finalUserId, role: p_role })
+      .upsert({ 
+        band_id: p_band_id, 
+        user_id: userId, 
+        role: p_role 
+      }, {
+        onConflict: "band_id,user_id",
+        ignoreDuplicates: false
+      })
     if (memberErr) throw memberErr
 
-    return new Response(JSON.stringify({ user_id: finalUserId }), {
+    return new Response(JSON.stringify({ 
+      user_id: userId,
+      message: "Band member account created/updated successfully",
+      login_instructions: {
+        email: p_email,
+        password: "Use your band's shared password",
+        note: "You can change your password after logging in"
+      }
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   } catch (e) {
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    console.error("Create band member error:", e)
+    return new Response(JSON.stringify({ 
+      error: (e as Error).message,
+      details: "Failed to create band member account"
+    }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })

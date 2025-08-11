@@ -23,7 +23,18 @@ export function Login() {
       toast.success('Welcome back!')
       navigate('/dashboard')
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Failed to sign in')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign in'
+      
+      // Provide helpful error messages for common band member issues
+      if (errorMessage.includes('Invalid login credentials')) {
+        toast.error('Invalid email or password. If you\'re a band member, make sure you\'re using your band\'s shared password.')
+      } else if (errorMessage.includes('Email not confirmed')) {
+        toast.error('Please check your email and click the verification link before signing in.')
+      } else if (errorMessage.includes('Too many requests')) {
+        toast.error('Too many login attempts. Please wait a moment before trying again.')
+      } else {
+        toast.error(errorMessage)
+      }
     } finally {
       setLoading(false)
     }

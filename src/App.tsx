@@ -22,6 +22,7 @@ import { Profile } from '@/pages/Profile'
 import { VotingAnalytics } from '@/pages/VotingAnalytics'
 import { BandMembers } from '@/pages/BandMembers'
 import { MemberProfile } from '@/pages/MemberProfile'
+import { AdminDiagnostics } from '@/pages/AdminDiagnostics'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/band/:bandId/members" element={<BandMembers />} />
           <Route path="/band/:bandId/profile" element={<MemberProfile />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin/diagnostics" element={<AdminDiagnostics />} />
         </Route>
 
         {/* Default redirect */}

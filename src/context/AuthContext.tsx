@@ -11,6 +11,7 @@ interface AuthContextType {
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
+  ensureProfileExists: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -76,6 +77,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  const ensureProfileExists = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user?.id)
+      .single()
+
+    if (error && error.code === 'PGRST116') {
+      // Profile not found, create it
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({ id: user?.id, display_name: user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Band Member' })
+
+      if (profileError) throw profileError
+    } else if (error) {
+      throw error
+    }
+  }
+
   const value = {
     user,
     session,
@@ -85,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     resetPassword,
     updatePassword,
+    ensureProfileExists,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
