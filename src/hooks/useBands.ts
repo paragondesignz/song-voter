@@ -282,3 +282,115 @@ export function useUserBandRole(bandId: string) {
     enabled: !!bandId && !!user,
   })
 }
+
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ 
+      bandId, 
+      userId, 
+      newRole 
+    }: { 
+      bandId: string
+      userId: string
+      newRole: 'admin' | 'member'
+    }) => {
+      const { data, error } = await supabase
+        .from('band_members')
+        .update({ role: newRole })
+        .eq('band_id', bandId)
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, { bandId }) => {
+      queryClient.invalidateQueries({ queryKey: ['band-members', bandId] })
+      queryClient.invalidateQueries({ queryKey: ['user-band-role', bandId] })
+      toast.success('Member role updated successfully!')
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update member role')
+    },
+  })
+}
+
+export function useInviteMember() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ 
+      bandId, 
+      email,
+      role = 'member'
+    }: { 
+      bandId: string
+      email: string
+      role?: 'admin' | 'member'
+    }) => {
+      // First check if user exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single()
+
+      if (profileError) {
+        throw new Error('User with this email not found. They need to register first.')
+      }
+
+      // Check if user is already a member
+      const { data: existingMember } = await supabase
+        .from('band_members')
+        .select('id')
+        .eq('band_id', bandId)
+        .eq('user_id', profile.id)
+        .single()
+
+      if (existingMember) {
+        throw new Error('User is already a member of this band')
+      }
+
+      // Check member limit
+      const { data: memberCount } = await supabase
+        .from('band_members')
+        .select('id', { count: 'exact' })
+        .eq('band_id', bandId)
+
+      if (memberCount && memberCount.length >= 10) {
+        throw new Error('This band has reached the maximum number of members (10)')
+      }
+
+      // Add member
+      const { data, error } = await supabase
+        .from('band_members')
+        .insert({
+          band_id: bandId,
+          user_id: profile.id,
+          role
+        })
+        .select(`
+          *,
+          user:user_id (
+            display_name,
+            email,
+            avatar_url
+          )
+        `)
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, { bandId }) => {
+      queryClient.invalidateQueries({ queryKey: ['band-members', bandId] })
+      toast.success('Member invited successfully!')
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to invite member')
+    },
+  })
+}

@@ -10,7 +10,8 @@ import {
   Calendar,
   ArrowLeft,
   Plus,
-  Heart
+  Heart,
+  Crown
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -219,26 +220,48 @@ export function BandDashboard() {
           <div className="space-y-6">
             {/* Band members */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Band Members</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
+                {userRole === 'admin' && (
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/members`)}
+                    className="btn-secondary text-sm"
+                  >
+                    Manage Members
+                  </button>
+                )}
+              </div>
               <div className="space-y-3">
                 {members?.map((member) => (
                   <div key={member.id} className="flex items-center justify-between">
                     <div className="flex items-center">
-                      {member.user?.avatar_url ? (
-                        <img
-                          src={member.user.avatar_url}
-                          alt={member.user.display_name}
-                          className="w-8 h-8 rounded-full mr-3"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
-                          <Users className="w-4 h-4 text-gray-500" />
-                        </div>
-                      )}
+                      <div className="relative">
+                        {member.user?.avatar_url ? (
+                          <img
+                            src={member.user.avatar_url}
+                            alt={member.user.display_name}
+                            className="w-8 h-8 rounded-full mr-3"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <Users className="w-4 h-4 text-gray-500" />
+                          </div>
+                        )}
+                        {member.role === 'admin' && (
+                          <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full p-1">
+                            <Crown className="w-2 h-2" />
+                          </div>
+                        )}
+                      </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {member.user?.display_name}
-                        </p>
+                        <div className="flex items-center space-x-1">
+                          <p className="text-sm font-medium text-gray-900">
+                            {member.user?.display_name}
+                          </p>
+                          {member.role === 'admin' && (
+                            <Crown className="w-3 h-3 text-yellow-500" />
+                          )}
+                        </div>
                         <p className="text-xs text-gray-500">{member.role}</p>
                       </div>
                     </div>

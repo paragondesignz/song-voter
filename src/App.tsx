@@ -18,6 +18,7 @@ import { Rehearsals } from '@/pages/Rehearsals'
 import { RehearsalDetail } from '@/pages/RehearsalDetail'
 import { Profile } from '@/pages/Profile'
 import { VotingAnalytics } from '@/pages/VotingAnalytics'
+import { BandMembers } from '@/pages/BandMembers'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +54,7 @@ function App() {
               <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
               <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
               <Route path="/band/:bandId/voting-analytics" element={<VotingAnalytics />} />
+              <Route path="/band/:bandId/members" element={<BandMembers />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
 
