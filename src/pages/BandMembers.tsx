@@ -15,7 +15,10 @@ import {
   User,
   Settings,
   MessageSquare,
-  Folder
+  Folder,
+  Download,
+  Activity,
+  Send
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'react-hot-toast'
@@ -234,28 +237,6 @@ export function BandMembers() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      {/* Management Actions */}
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-end space-x-3">
-            <button
-              onClick={() => setShowPasswordForm(true)}
-              className="btn-secondary text-sm"
-            >
-              <Lock className="h-4 w-4 mr-1" />
-              Set Band Password
-            </button>
-            <button
-              onClick={() => setShowAddMemberForm(true)}
-              className="btn-primary text-sm"
-              disabled={members && members.length >= 10}
-            >
-              <UserPlus className="h-4 w-4 mr-1" />
-              Add Member
-            </button>
-          </div>
-        </div>
-      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
@@ -575,7 +556,64 @@ export function BandMembers() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Action Buttons */}
+            <div className="card">
+              <h3 className="text-lg font-semibold mb-4">Member Actions</h3>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowPasswordForm(true)}
+                  className="w-full btn-secondary text-sm justify-center"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  Set Band Password
+                </button>
+                <button
+                  onClick={() => setShowAddMemberForm(true)}
+                  className="w-full btn-primary text-sm justify-center"
+                  disabled={members && members.length >= 10}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Member
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="card">
+              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+              <ul className="space-y-3">
+                <li>
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/members/bulk-invite`)}
+                    className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
+                  >
+                    <Send className="h-4 w-4 mr-2 text-gray-500" />
+                    Bulk Invite Members
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/members/activity`)}
+                    className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
+                  >
+                    <Activity className="h-4 w-4 mr-2 text-gray-500" />
+                    Member Activity
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/members/export`)}
+                    className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
+                  >
+                    <Download className="h-4 w-4 mr-2 text-gray-500" />
+                    Export Members
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Quick Links */}
             <div className="card">
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-3">
@@ -585,12 +623,12 @@ export function BandMembers() {
                     Band Dashboard
                   </a>
                 </li>
-                                 <li>
-                   <a href={`/band/${bandId}/settings`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
-                     <Settings className="h-4 w-4 mr-2 text-gray-500" />
-                     Band Settings
-                   </a>
-                 </li>
+                <li>
+                  <a href={`/band/${bandId}/settings`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                    <Settings className="h-4 w-4 mr-2 text-gray-500" />
+                    Band Settings
+                  </a>
+                </li>
                 <li>
                   <a href={`/band/${bandId}/posts`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
                     <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />

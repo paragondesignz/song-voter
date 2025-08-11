@@ -11,6 +11,7 @@ export interface Band {
   created_at: string
   role?: string
   member_count?: number
+  shared_password?: string
 }
 
 export interface BandMember {

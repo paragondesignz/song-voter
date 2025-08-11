@@ -24,6 +24,9 @@ import { BandMembers } from '@/pages/BandMembers'
 import { MemberProfile } from '@/pages/MemberProfile'
 import { SongDetail } from '@/pages/SongDetail'
 import { AdminDiagnostics } from '@/pages/AdminDiagnostics'
+import { BulkInvite } from '@/pages/BulkInvite'
+import { MemberActivity } from '@/pages/MemberActivity'
+import { ExportMembers } from '@/pages/ExportMembers'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +72,9 @@ function AppContent() {
           <Route path="/band/:bandId/rehearsal/:rehearsalId/edit" element={<RehearsalEdit />} />
           <Route path="/band/:bandId/voting-analytics" element={<VotingAnalytics />} />
           <Route path="/band/:bandId/members" element={<BandMembers />} />
+          <Route path="/band/:bandId/members/bulk-invite" element={<BulkInvite />} />
+          <Route path="/band/:bandId/members/activity" element={<MemberActivity />} />
+          <Route path="/band/:bandId/members/export" element={<ExportMembers />} />
           <Route path="/band/:bandId/profile" element={<MemberProfile />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin/diagnostics" element={<AdminDiagnostics />} />

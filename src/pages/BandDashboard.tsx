@@ -297,20 +297,6 @@ export function BandDashboard() {
                             )}
                           </div>
                             
-                            {position <= 3 && (
-                              <div className="mb-2">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  position === 1
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : position === 2
-                                    ? 'bg-gray-100 text-gray-900'
-                                    : 'bg-amber-100 text-amber-800'
-                                }`}>
-                                  {position === 1 ? '🥇 Most Popular' : position === 2 ? '🥈 Runner Up' : '🥉 Third Place'}
-                                </span>
-                              </div>
-                            )}
-                            
                             {song.notes && (
                               <div className="mt-1 p-2 bg-blue-50 rounded text-xs text-blue-800 mb-2">
                                 <strong>Note:</strong> {song.notes}
@@ -319,13 +305,25 @@ export function BandDashboard() {
 
                             {/* Spotify Controls - Compact */}
                             {song.spotify_track_id && (
-                              <div className="mt-2 flex items-center space-x-2">
-                                <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors">
+                              <div className="mt-2 flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                                <button 
+                                  className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    // Add Spotify play functionality here if needed
+                                  }}
+                                >
                                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z"/>
                                   </svg>
                                 </button>
-                                <button className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-colors">
+                                <button 
+                                  className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    // Add Spotify pause functionality here if needed
+                                  }}
+                                >
                                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
                                   </svg>
