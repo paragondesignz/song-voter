@@ -48,7 +48,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   }
 
   return (
-    <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-gray-700/40">
+    <header className="bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Title */}
@@ -61,7 +61,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             </div>
             {(title || subtitle) && (
               <div>
-                {title && <h1 className="text-lg font-semibold">{title}</h1>}
+                {title && <h1 className="text-lg font-semibold text-[var(--color-text)]">{title}</h1>}
                 {subtitle && <p className="text-xs text-secondary">{subtitle}</p>}
               </div>
             )}
