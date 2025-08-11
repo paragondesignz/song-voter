@@ -124,13 +124,15 @@ export function BandMembers() {
     
     setIsCreatingMember(true)
     try {
-      const { error } = await supabase.rpc('create_band_member_account', {
-        p_email: memberEmail,
-        p_band_id: bandId,
-        p_role: memberRole,
-        p_display_name: memberName,
-        p_created_by: user?.id
+      const { data: edgeResp, error: edgeError } = await supabase.functions.invoke('create-band-member', {
+        body: {
+          p_email: memberEmail,
+          p_band_id: bandId,
+          p_role: memberRole,
+          p_display_name: memberName,
+        }
       })
+      const error = edgeError
       
       
       if (error) throw error
