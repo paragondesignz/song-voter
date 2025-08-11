@@ -78,16 +78,19 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
 
       {/* Band members */}
       <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
-          {userRole === 'admin' && (
-            <button
-              onClick={() => navigate(`/band/${bandId}/members`)}
-              className="btn-secondary text-sm"
-            >
-              Manage Members
-            </button>
-          )}
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{band?.name}</h2>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
+            {userRole === 'admin' && (
+              <button
+                onClick={() => navigate(`/band/${bandId}/members`)}
+                className="btn-secondary text-sm"
+              >
+                Manage Members
+              </button>
+            )}
+          </div>
         </div>
         <div className="space-y-3">
           {members?.map((member) => (
@@ -125,14 +128,6 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
               )}
             </div>
           ))}
-        </div>
-      </div>
-
-
-      {/* Band Summary */}
-      <div className="card">
-        <div className="text-sm text-gray-500">
-          <span className="text-gray-900 font-medium">{band?.name}</span> • Code: <span className="font-mono font-semibold">{band?.invite_code}</span> • {members?.length || 0} members
         </div>
       </div>
     </div>

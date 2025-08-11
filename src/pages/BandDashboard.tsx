@@ -7,7 +7,7 @@ import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
-import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock } from 'lucide-react'
+import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'trending'
@@ -20,15 +20,18 @@ export function BandDashboard() {
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
   const [editingSuggester, setEditingSuggester] = useState<string | null>(null)
   const [selectedNewSuggester, setSelectedNewSuggester] = useState<string>('')
+  const [currentPage, setCurrentPage] = useState(1)
   
   const { data: band } = useBand(bandId!)
-  const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
+  const { data: suggestions, isLoading, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
   const { data: bandMembers } = useBandMembers(bandId!)
   const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
   const updateSongSuggester = useUpdateSongSuggester()
   const cleanupRehearsalSongs = useCleanupRehearsalSongs()
+
+  const ITEMS_PER_PAGE = 10
 
   // Cleanup rehearsal songs on page load (silent, once per session)
   useEffect(() => {
@@ -117,6 +120,22 @@ export function BandDashboard() {
     }
   })
 
+  // Pagination logic
+  const totalPages = Math.ceil(sortedSuggestions.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const currentSuggestions = sortedSuggestions.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Reset to first page when search or sort changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, sortBy])
+
   if (!band) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -189,57 +208,23 @@ export function BandDashboard() {
               </div>
             </div>
 
-            {/* Edit Suggester Modal */}
-            {editingSuggester && (
-               <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 max-w-md w-full mx-4 text-[var(--color-text)]">
-                  <h3 className="text-lg font-semibold mb-4">Change Song Suggester</h3>
-                  <p className="text-gray-400 mb-4 text-sm">
-                    Select who should be credited as the suggester for this song:
-                  </p>
-                  <select
-                    value={selectedNewSuggester}
-                    onChange={(e) => setSelectedNewSuggester(e.target.value)}
-                    className="select-field w-full mb-4"
-                  >
-                    <option value="">Select a band member...</option>
-                    {bandMembers?.map((member) => (
-                      <option key={member.user_id} value={member.user_id}>
-                        {member.user?.display_name} ({member.role})
-                      </option>
-                    ))}
-                  </select>
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={() => {
-                        setEditingSuggester(null)
-                        setSelectedNewSuggester('')
-                      }}
-                      className="btn-secondary"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => handleUpdateSuggester(editingSuggester)}
-                      disabled={!selectedNewSuggester || updateSongSuggester.isPending}
-                      className="btn-primary"
-                    >
-                      {updateSongSuggester.isPending ? 'Updating...' : 'Update Suggester'}
-                    </button>
-                  </div>
-                </div>
+            {/* Current Leaderboard Title */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Current Leaderboard</h2>
+              <div className="text-sm text-gray-500">
+                Showing {startIndex + 1}-{Math.min(endIndex, sortedSuggestions.length)} of {sortedSuggestions.length} songs
               </div>
-            )}
+            </div>
 
             {/* Songs list */}
-            {sortedSuggestions.length > 0 ? (
-              <div className="space-y-3">
-                {sortedSuggestions.map((song, index) => {
-                  const position = index + 1
+            {currentSuggestions.length > 0 ? (
+              <div className="space-y-2">
+                {currentSuggestions.map((song, index) => {
+                  const position = startIndex + index + 1
                   return (
                     <div
                       key={song.id}
-                      className={`card border-2 transition-all hover:shadow-lg ${
+                      className={`card border-2 transition-all hover:shadow-lg p-3 ${
                         position === 1
                           ? 'border-yellow-400/40'
                           : position === 2
@@ -251,54 +236,51 @@ export function BandDashboard() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center flex-1">
-                          <div className="mr-6">
+                          <div className="mr-4">
                             {position === 1 ? (
-                              <div className="w-8 h-8 bg-yellow-100 text-yellow-800 rounded-full flex items-center justify-center font-bold text-sm">
-                                🥇
+                              <div className="relative">
+                                <div className="w-6 h-6 bg-yellow-100 text-yellow-800 rounded-full flex items-center justify-center font-bold text-xs">
+                                  🥇
+                                </div>
+                                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-yellow-600 text-xs">v</div>
                               </div>
                             ) : position === 2 ? (
-                              <div className="w-8 h-8 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center font-bold text-sm">
-                                🥈
+                              <div className="relative">
+                                <div className="w-6 h-6 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center font-bold text-xs">
+                                  🥈
+                                </div>
+                                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-gray-600 text-xs">v</div>
                               </div>
                             ) : position === 3 ? (
-                              <div className="w-8 h-8 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center font-bold text-sm">
-                                🥉
+                              <div className="relative">
+                                <div className="w-6 h-6 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center font-bold text-xs">
+                                  🥉
+                                </div>
+                                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-amber-600 text-xs">v</div>
                               </div>
                             ) : (
-                              <div className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-sm">
+                              <div className="w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-xs">
                                 {position}
                               </div>
                             )}
                           </div>
                           
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold truncate">
-                              {song.title}
-                            </h3>
-                            <p className="text-secondary truncate">{song.artist}</p>
-                            {song.album && (
-                              <p className="text-sm text-secondary mt-1">
-                                Album: {song.album}
-                              </p>
-                            )}
-                            {song.suggested_by_user && (
-                              <p className="text-xs text-secondary mt-1">
-                                Added by: {song.suggested_by_user.display_name}
-                              </p>
-                            )}
+                            <div className="flex items-center space-x-3 mb-1">
+                              <h3 className="text-base font-semibold truncate text-gray-900">
+                                {song.title}
+                              </h3>
+                              <span className="text-sm text-gray-500">•</span>
+                              <span className="text-sm text-gray-600 truncate">{song.artist}</span>
+                            </div>
                             
-                            <div className="flex items-center mt-2 space-x-4 text-sm text-secondary">
-                              <div className="flex items-center">
-                                <span className="font-medium">
-                                  {song.average_rating ? song.average_rating.toFixed(1) : '—'} avg
-                                </span>
-                              </div>
-                              
-                              <div className="flex items-center">
-                                <span className="font-medium">{song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}</span>
-                              </div>
-                              
-                              <span>•</span>
+                            <div className="flex items-center space-x-3 text-xs text-gray-500 mb-2">
+                              {song.suggested_by_user && (
+                                <>
+                                  <span>By: {song.suggested_by_user.display_name}</span>
+                                  <span>•</span>
+                                </>
+                              )}
                               <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
                               
                               {song.duration_ms && (
@@ -328,12 +310,12 @@ export function BandDashboard() {
                             </div>
                             
                             {position <= 3 && (
-                              <div className="mt-2">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              <div className="mb-2">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                   position === 1
                                     ? 'bg-yellow-100 text-yellow-800'
                                     : position === 2
-                                    ? 'bg-gray-100 text-gray-800'
+                                    ? 'bg-gray-100 text-gray-900'
                                     : 'bg-amber-100 text-amber-800'
                                 }`}>
                                   {position === 1 ? '🥇 Most Popular' : position === 2 ? '🥈 Runner Up' : '🥉 Third Place'}
@@ -342,59 +324,59 @@ export function BandDashboard() {
                             )}
                             
                             {song.notes && (
-                              <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                              <div className="mt-1 p-2 bg-blue-50 rounded text-xs text-blue-800 mb-2">
                                 <strong>Note:</strong> {song.notes}
                               </div>
                             )}
 
-                            {/* Spotify Embed */}
+                            {/* Spotify Embed - compact version */}
                             {song.spotify_track_id && (
-                              <div className="mt-4">
-                                <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
+                              <div className="mt-2">
+                                <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={60} />
                               </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="flex items-center ml-4 space-x-4">
+                        {/* Action buttons - compact layout */}
+                        <div className="flex items-center ml-3 space-x-3">
                           {/* Star Rating */}
-                          <div className="flex flex-col items-center space-y-2">
+                          <div className="flex flex-col items-center space-y-1">
                             <StarRating
                               rating={song.user_rating || null}
                               onRate={(rating) => handleRate(song.id, rating)}
                               readonly={votingOnSong === song.id}
-                              size="md"
+                              size="sm"
                             />
                             
                             {/* Rating Info */}
                             <div className="text-center">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-xs font-medium text-gray-900">
                                 {song.average_rating ? song.average_rating.toFixed(1) : '—'}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
+                                {song.total_ratings || 0}
                               </div>
                             </div>
                           </div>
 
                           {/* Admin controls */}
                           {userRole === 'admin' && (
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1">
                               <button
                                 onClick={() => startEditingSuggester(song.id, song.suggested_by)}
-                                className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
+                                className="p-2 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
                                 title="Change who suggested this song (Admin only)"
                               >
-                                <Edit className="w-5 h-5" />
+                                <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleRemoveSuggestion(song.id)}
                                 disabled={removeSuggestion.isPending}
-                                className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
+                                className="p-2 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
                                 title="Remove suggestion (Admin only)"
                               >
-                                <Trash2 className="w-5 h-5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           )}
@@ -435,6 +417,43 @@ export function BandDashboard() {
                     </button>
                   </>
                 )}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center space-x-2 mt-6">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                        page === currentPage
+                          ? 'bg-primary-600 text-white'
+                          : 'border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
