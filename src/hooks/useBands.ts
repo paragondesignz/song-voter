@@ -32,26 +32,29 @@ export function useUserBands() {
   return useQuery({
     queryKey: ['bands', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Read bands directly; RLS restricts to bands the user belongs to
+      const { data: bands, error: bandsError } = await supabase
+        .from('bands')
+        .select('*')
+
+      if (bandsError) throw bandsError
+
+      // Fetch this user's role per band, then merge client-side
+      const { data: roles } = await supabase
         .from('band_members')
-        .select(`
-          band_id,
-          role,
-          bands:band_id (
-            id,
-            name,
-            invite_code,
-            created_by,
-            created_at
-          )
-        `)
+        .select('band_id, role')
         .eq('user_id', user?.id)
 
-      if (error) throw error
+      const roleMap = new Map<string, string>()
+      roles?.forEach(r => roleMap.set(r.band_id, r.role))
 
-      return data.map((item: { bands: any; role: string }) => ({
-        ...item.bands,
-        role: item.role,
+      return (bands || []).map((b: any) => ({
+        id: b.id,
+        name: b.name,
+        invite_code: b.invite_code,
+        created_by: b.created_by,
+        created_at: b.created_at,
+        role: (roleMap.get(b.id) as 'admin' | 'member') || 'member',
       })) as Band[]
     },
     enabled: !!user,
