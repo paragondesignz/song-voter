@@ -13,17 +13,16 @@ export function Dashboard() {
   const { data: bands, isLoading } = useUserBands()
 
   useEffect(() => {
-    if (!isLoading) {
-      // TEMP: Force redirect to known Hands Off band if no bands found
-      if (bands && bands.length === 0) {
-        // eslint-disable-next-line no-console
-        console.log('⚠️ No bands found, redirecting to known Hands Off band')
-        // Known Hands Off band ID from migration logs
-        navigate('/band/6ea8b825-ec5d-4fe5-9858-9c92cfcae91f')
-        return
-      } else if (bands && bands.length === 1) {
+    if (!isLoading && bands) {
+      if (bands.length === 1) {
         // Auto-redirect to the single band
+        // eslint-disable-next-line no-console
+        console.log('✅ Found 1 band, redirecting to:', bands[0].name)
         navigate(`/band/${bands[0].id}`)
+      } else if (bands.length === 0) {
+        // eslint-disable-next-line no-console
+        console.log('⚠️ No bands found, going to band setup')
+        navigate('/band-setup')
       }
     }
   }, [bands, isLoading, navigate])
