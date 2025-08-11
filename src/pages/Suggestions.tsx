@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSongSuggestions, useRateSong, useRemoveSuggestion, useUpdateSongSuggester } from '@/hooks/useSongs'
 import { useBand, useUserBandRole, useBandMembers } from '@/hooks/useBands'
-import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { BandSidebar } from '@/components/BandSidebar'

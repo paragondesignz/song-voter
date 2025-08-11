@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { useSpotifySearch } from '@/hooks/useSpotify'
+import { useSpotifyEmbed } from '@/hooks/useSpotify'
 import { useSuggestSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
-import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { Header } from '@/components/Header'
 import { 
   Search, 
   Music, 
   Plus,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Link
 } from 'lucide-react'
 
 interface ManualSongForm {
@@ -25,9 +25,10 @@ export function SongSearch() {
   const { bandId } = useParams<{ bandId: string }>()
   const navigate = useNavigate()
   const [showManualForm, setShowManualForm] = useState(false)
+  const [spotifyUrl, setSpotifyUrl] = useState('')
   
   const { data: band } = useBand(bandId!)
-  const { query, setQuery, tracks, isLoading, hasQuery } = useSpotifySearch()
+  const { track, isLoading, error, handleUrlSubmit, clearTrack } = useSpotifyEmbed()
   const suggestSong = useSuggestSong()
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ManualSongForm>()
@@ -38,8 +39,30 @@ export function SongSearch() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const handleSpotifySuggest = async (track: any) => {
-    await suggestSong.mutateAsync({ bandId: bandId!, track })
+  const handleSpotifyUrlSubmit = async () => {
+    if (!spotifyUrl.trim()) return
+    
+    const trackData = await handleUrlSubmit(spotifyUrl)
+    if (trackData) {
+      // Track is now loaded and ready for suggestion
+    }
+  }
+
+  const handleSpotifySuggest = async () => {
+    if (!track) return
+    
+    await suggestSong.mutateAsync({ 
+      bandId: bandId!, 
+      track: {
+        title: track.title,
+        artist: track.artist,
+        album: track.album,
+        spotify_track_id: track.spotify_track_id,
+        duration_ms: track.duration_ms,
+        album_art_url: track.album_art_url,
+        preview_url: track.preview_url
+      }
+    })
     navigate(`/band/${bandId}/suggestions`)
   }
 
@@ -73,211 +96,182 @@ export function SongSearch() {
           {/* Search section */}
           <div className="card">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Search Spotify</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Add Spotify Song</h2>
               <button
                 onClick={() => setShowManualForm(!showManualForm)}
                 className="text-primary-600 hover:text-primary-700 text-sm font-medium"
               >
-                {showManualForm ? 'Search Spotify' : 'Add Manually'}
+                {showManualForm ? 'Add Spotify Song' : 'Add Manually'}
               </button>
             </div>
 
             {!showManualForm ? (
               <>
-                <div className="relative mb-6">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="input-field pl-10"
-                    placeholder="Search for songs, artists, or albums..."
-                  />
+                <div className="mb-6">
+                  <label htmlFor="spotify-url" className="block text-sm font-medium text-gray-700 mb-2">
+                    Paste Spotify Track URL
+                  </label>
+                  <div className="flex space-x-2">
+                    <div className="flex-1 relative">
+                      <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        id="spotify-url"
+                        type="url"
+                        value={spotifyUrl}
+                        onChange={(e) => setSpotifyUrl(e.target.value)}
+                        className="input-field pl-10"
+                        placeholder="https://open.spotify.com/track/..."
+                      />
+                    </div>
+                    <button
+                      onClick={handleSpotifyUrlSubmit}
+                      disabled={!spotifyUrl.trim() || isLoading}
+                      className="btn-primary px-4 py-2"
+                    >
+                      {isLoading ? 'Loading...' : 'Load Track'}
+                    </button>
+                  </div>
+                  {error && (
+                    <p className="text-red-600 text-sm mt-2">{error}</p>
+                  )}
                 </div>
 
-                {/* Loading state */}
-                {isLoading && (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                    <p className="text-gray-600 mt-2">Searching...</p>
-                  </div>
-                )}
-
-                {/* Search results */}
-                {!isLoading && hasQuery && tracks.length === 0 && (
-                  <div className="text-center py-8">
-                    <Music className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No songs found</p>
-                  </div>
-                )}
-
-                {tracks.length > 0 && (
-                  <div className="space-y-6">
-                    {tracks.map((track) => (
-                      <div key={track.spotify_track_id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center flex-1">
-                            {track.album_art_url ? (
-                              <img
-                                src={track.album_art_url}
-                                alt={track.album}
-                                className="w-16 h-16 rounded-md mr-4 flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="w-16 h-16 bg-gray-300 rounded-md mr-4 flex-shrink-0 flex items-center justify-center">
-                                <Music className="w-8 h-8 text-gray-500" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-gray-900 truncate">{track.title}</h3>
-                              <p className="text-gray-600 truncate">{track.artist}</p>
-                              <p className="text-sm text-gray-500 truncate">{track.album}</p>
-                              <div className="flex items-center mt-1 space-x-4">
-                                {track.duration_ms && (
-                                  <span className="text-xs text-gray-500 flex items-center">
-                                    <Clock className="w-3 h-3 mr-1" />
-                                    {formatDuration(track.duration_ms)}
-                                  </span>
-                                )}
-                                <a
-                                  href={track.external_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-primary-600 hover:text-primary-700 flex items-center"
-                                >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  Open in Spotify
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleSpotifySuggest(track)}
-                            disabled={suggestSong.isPending}
-                            className="btn-primary flex items-center ml-4"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Suggest
-                          </button>
-                        </div>
-                        
-                        {/* Spotify Controls - Compact */}
-                        {track.spotify_track_id && (
-                          <div className="mt-3 flex items-center space-x-2">
-                            <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z"/>
-                              </svg>
-                            </button>
-                            <button className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-colors">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                              </svg>
-                            </button>
-                            <div className="flex items-center space-x-1">
-                              <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                              </svg>
-                              <div className="w-12 h-1 bg-gray-200 rounded-full">
-                                <div className="w-8 h-1 bg-gray-400 rounded-full"></div>
-                              </div>
-                            </div>
-                            <a
-                              href={`https://open.spotify.com/track/${track.spotify_track_id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-green-600 hover:text-green-700 font-medium"
-                            >
-                              Spotify
-                            </a>
-                          </div>
+                {/* Track Preview */}
+                {track && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{track.title}</h3>
+                        <p className="text-gray-600 mb-1">
+                          <span className="font-medium">Artist:</span> {track.artist}
+                        </p>
+                        {track.album && (
+                          <p className="text-gray-600 mb-1">
+                            <span className="font-medium">Album:</span> {track.album}
+                          </p>
+                        )}
+                        {track.duration_ms && (
+                          <p className="text-gray-600 mb-1">
+                            <span className="font-medium">Duration:</span> {formatDuration(track.duration_ms)}
+                          </p>
                         )}
                       </div>
-                    ))}
+                      <div className="ml-4">
+                        <a
+                          href={track.external_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary-600 hover:text-primary-700 flex items-center text-sm"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          Open in Spotify
+                        </a>
+                      </div>
+                    </div>
+                    
+                    {/* Spotify Embed */}
+                    <div className="mt-4">
+                      <iframe
+                        src={`https://open.spotify.com/embed/track/${track.spotify_track_id}?utm_source=generator&theme=0`}
+                        width="100%"
+                        height="80"
+                        frameBorder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                        title="Spotify player"
+                      />
+                    </div>
+
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={handleSpotifySuggest}
+                        disabled={suggestSong.isPending}
+                        className="btn-primary flex items-center"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Suggest Song
+                      </button>
+                    </div>
                   </div>
                 )}
 
-                {!hasQuery && !isLoading && (
-                  <div className="text-center py-12">
-                    <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Search for Songs</h3>
-                    <p className="text-gray-600 mb-4">
-                      Search Spotify's catalog to find and suggest songs for your band
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Can't find what you're looking for?{' '}
-                      <button
-                        onClick={() => setShowManualForm(true)}
-                        className="text-primary-600 hover:text-primary-700 font-medium"
-                      >
-                        Add it manually
-                      </button>
-                    </p>
-                  </div>
-                )}
+                {/* Instructions */}
+                <div className="text-center py-8">
+                  <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">How to Add Songs</h3>
+                  <p className="text-gray-600 mb-4">
+                    1. Go to Spotify and find the song you want to suggest<br/>
+                    2. Copy the track URL from the address bar<br/>
+                    3. Paste it above and click "Load Track"<br/>
+                    4. Review the track details and click "Suggest Song"
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Can't find what you're looking for? Use the "Add Manually" option above.
+                  </p>
+                </div>
               </>
             ) : (
-              /* Manual form */
               <form onSubmit={handleSubmit(handleManualSuggest)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                       Song Title *
                     </label>
                     <input
-                      {...register('title', { required: 'Song title is required' })}
+                      id="title"
+                      type="text"
+                      {...register('title', { required: 'Title is required' })}
                       className="input-field"
-                      placeholder="Bohemian Rhapsody"
+                      placeholder="Enter song title"
                     />
                     {errors.title && (
-                      <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                      <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
                     )}
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="artist" className="block text-sm font-medium text-gray-700 mb-2">
                       Artist *
                     </label>
                     <input
+                      id="artist"
+                      type="text"
                       {...register('artist', { required: 'Artist is required' })}
                       className="input-field"
-                      placeholder="Queen"
+                      placeholder="Enter artist name"
                     />
                     {errors.artist && (
-                      <p className="mt-1 text-sm text-red-600">{errors.artist.message}</p>
+                      <p className="text-red-600 text-sm mt-1">{errors.artist.message}</p>
                     )}
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Album
-                    </label>
-                    <input
-                      {...register('album')}
-                      className="input-field"
-                      placeholder="A Night at the Opera (optional)"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Notes
-                    </label>
-                    <input
-                      {...register('notes')}
-                      className="input-field"
-                      placeholder="Any additional notes (optional)"
-                    />
-                  </div>
                 </div>
-
+                <div>
+                  <label htmlFor="album" className="block text-sm font-medium text-gray-700 mb-2">
+                    Album
+                  </label>
+                  <input
+                    id="album"
+                    type="text"
+                    {...register('album')}
+                    className="input-field"
+                    placeholder="Enter album name (optional)"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    id="notes"
+                    {...register('notes')}
+                    rows={3}
+                    className="input-field"
+                    placeholder="Any additional notes about this song..."
+                  />
+                </div>
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowManualForm(false)
-                      reset()
-                    }}
+                    onClick={() => setShowManualForm(false)}
                     className="btn-secondary"
                   >
                     Cancel
@@ -285,9 +279,10 @@ export function SongSearch() {
                   <button
                     type="submit"
                     disabled={suggestSong.isPending}
-                    className="btn-primary"
+                    className="btn-primary flex items-center"
                   >
-                    {suggestSong.isPending ? 'Suggesting...' : 'Suggest Song'}
+                    <Plus className="w-4 h-4 mr-2" />
+                    Suggest Song
                   </button>
                 </div>
               </form>

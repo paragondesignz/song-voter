@@ -5,7 +5,7 @@ import { useSongSuggestions, useRateSong, useCleanupRehearsalSongs, useRemoveSug
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
-import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+
 import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight, Bot } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 

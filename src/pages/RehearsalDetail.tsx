@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { useRehearsal, useRehearsalSetlist, useAutoSelectSongs, useRemoveFromSetlist } from '@/hooks/useRehearsals'
 import { useLeaderboard } from '@/hooks/useSongs'
-import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+
 import { 
   ArrowLeft, 
   Calendar,

@@ -60,9 +60,9 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
                           <span> at {rehearsal.start_time}</span>
                         )}
                       </p>
-                      {rehearsal.song_selection_cutoff && (
+                      {rehearsal.selection_deadline && (
                         <p className="text-xs text-gray-500 mt-1">
-                          Song selection cutoff: {new Date(rehearsal.song_selection_cutoff).toLocaleDateString('en-US', {
+                          Song selection cutoff: {new Date(rehearsal.selection_deadline).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                           })}
