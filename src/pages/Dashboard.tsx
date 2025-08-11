@@ -5,6 +5,7 @@ import { useUserBands } from '@/hooks/useBands'
 import { Users, Plus, LogOut, User } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Logo } from '@/components/Logo'
+import { DebugAuth } from '@/components/DebugAuth'
 
 export function Dashboard() {
   const { user, signOut } = useAuth()
@@ -129,6 +130,7 @@ export function Dashboard() {
           )}
         </div>
       </main>
+      <DebugAuth />
     </div>
   )
 }

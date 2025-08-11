@@ -32,10 +32,16 @@ export function useUserBands() {
   return useQuery({
     queryKey: ['bands', user?.id],
     queryFn: async () => {
+      // eslint-disable-next-line no-console
+      console.log('🔍 Fetching bands for user:', user?.id)
+      
       // Read bands directly; RLS restricts to bands the user belongs to
       const { data: bands, error: bandsError } = await supabase
         .from('bands')
         .select('*')
+
+      // eslint-disable-next-line no-console
+      console.log('📊 Bands query result:', { bands, error: bandsError })
 
       if (bandsError) throw bandsError
 
