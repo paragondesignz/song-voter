@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSongSuggestions, useVoteSong, useRemoveSuggestion } from '@/hooks/useSongs'
+import { useSongSuggestions, useVoteSong, useRemoveSuggestion, useVoteRateLimit } from '@/hooks/useSongs'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { useAuth } from '@/context/AuthContext'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
@@ -14,7 +14,9 @@ import {
   Plus,
   User,
   ExternalLink,
-  Trash2
+  Trash2,
+  BarChart3,
+  Timer
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -30,6 +32,7 @@ export function Suggestions() {
   const { data: band } = useBand(bandId!)
   const { data: suggestions, isLoading } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
+  const { data: rateLimit } = useVoteRateLimit(bandId!)
   const voteSong = useVoteSong()
   const removeSuggestion = useRemoveSuggestion()
 
@@ -39,11 +42,16 @@ export function Suggestions() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const handleVote = async (songId: string, isCurrentlyVoted: boolean) => {
+  const handleVote = async (songId: string, isCurrentlyVoted: boolean, voteType: 'upvote' | 'downvote' = 'upvote') => {
+    if (rateLimit && rateLimit.votesRemaining <= 0) {
+      return // Don't allow voting if rate limit exceeded
+    }
+
     await voteSong.mutateAsync({
       songId,
       bandId: bandId!,
-      isVoting: !isCurrentlyVoted
+      isVoting: !isCurrentlyVoted,
+      voteType
     })
   }
 
@@ -102,13 +110,35 @@ export function Suggestions() {
                 <p className="text-xs text-gray-500">{band?.name}</p>
               </div>
             </div>
-            <button
-              onClick={() => navigate(`/band/${bandId}/search`)}
-              className="btn-primary text-sm"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Suggest Song
-            </button>
+            <div className="flex items-center space-x-3">
+              {/* Rate Limit Indicator */}
+              {rateLimit && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-lg">
+                  <Timer className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">
+                    {rateLimit.votesRemaining} votes left
+                  </span>
+                </div>
+              )}
+              
+              {/* Analytics Button */}
+              <button
+                onClick={() => navigate(`/band/${bandId}/voting-analytics`)}
+                className="btn-secondary text-sm"
+              >
+                <BarChart3 className="h-4 w-4 mr-1" />
+                Analytics
+              </button>
+              
+              {/* Suggest Song Button */}
+              <button
+                onClick={() => navigate(`/band/${bandId}/search`)}
+                className="btn-primary text-sm"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Suggest Song
+              </button>
+            </div>
           </div>
         </div>
       </header>
