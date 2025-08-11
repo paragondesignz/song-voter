@@ -19,65 +19,6 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
 
   return (
     <div className="space-y-6">
-      {/* Band Summary */}
-      <div className="card">
-        <div className="text-sm text-gray-500">
-          <span className="text-gray-900 font-medium">{band?.name}</span> • Code: <span className="font-mono font-semibold">{band?.invite_code}</span> • {members?.length || 0} members
-        </div>
-      </div>
-
-      {/* Band members */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
-          {userRole === 'admin' && (
-            <button
-              onClick={() => navigate(`/band/${bandId}/members`)}
-              className="btn-secondary text-sm"
-            >
-              Manage Members
-            </button>
-          )}
-        </div>
-        <div className="space-y-3">
-          {members?.map((member) => (
-            <div key={member.id} className="flex items-center justify-between">
-              <div className="flex items-center">
-                {member.user?.avatar_url ? (
-                  <img
-                    src={member.user.avatar_url}
-                    alt={member.user.display_name}
-                    className="w-8 h-8 rounded-full mr-3 object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">
-                      {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {member.user?.display_name}
-                    </p>
-                    {member.role === 'admin' && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                        Admin
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500">{member.user?.email}</p>
-                </div>
-              </div>
-              {member.user_id === user?.id && (
-                <span className="text-xs text-primary-600 font-medium">You</span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Upcoming Rehearsals */}
       <div className="card">
         <div className="flex justify-between items-center mb-4">
@@ -133,6 +74,66 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
             <p className="text-gray-600 text-sm">No upcoming rehearsals scheduled</p>
           </div>
         )}
+      </div>
+
+      {/* Band members */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
+          {userRole === 'admin' && (
+            <button
+              onClick={() => navigate(`/band/${bandId}/members`)}
+              className="btn-secondary text-sm"
+            >
+              Manage Members
+            </button>
+          )}
+        </div>
+        <div className="space-y-3">
+          {members?.map((member) => (
+            <div key={member.id} className="flex items-center justify-between">
+              <div className="flex items-center">
+                {member.user?.avatar_url ? (
+                  <img
+                    src={member.user.avatar_url}
+                    alt={member.user.display_name}
+                    className="w-8 h-8 rounded-full mr-3 object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
+                    <span className="text-xs font-medium text-gray-600">
+                      {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium text-gray-900">
+                      {member.user?.display_name}
+                    </p>
+                    {member.role === 'admin' && (
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                        Admin
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">{member.user?.email}</p>
+                </div>
+              </div>
+              {member.user_id === user?.id && (
+                <span className="text-xs text-primary-600 font-medium">You</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+
+      {/* Band Summary */}
+      <div className="card">
+        <div className="text-sm text-gray-500">
+          <span className="text-gray-900 font-medium">{band?.name}</span> • Code: <span className="font-mono font-semibold">{band?.invite_code}</span> • {members?.length || 0} members
+        </div>
       </div>
     </div>
   )

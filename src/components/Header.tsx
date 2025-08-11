@@ -60,6 +60,12 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
     }
   }
 
+  const handleAnalytics = () => {
+    if (userBand) {
+      navigate(`/band/${userBand.id}/voting-analytics`)
+    }
+  }
+
   return (
     <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-[var(--color-border)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,6 +105,15 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                 className="btn-secondary text-sm"
               >
                 All Suggestions
+              </button>
+            )}
+            {/* Analytics Button */}
+            {userBand && (
+              <button
+                onClick={handleAnalytics}
+                className="btn-secondary text-sm"
+              >
+                Analytics
               </button>
             )}
             {/* Suggest Song Button */}

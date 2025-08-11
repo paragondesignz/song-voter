@@ -4,6 +4,7 @@ import { useBand, useBandMembers } from '@/hooks/useBands'
 import { useSongSuggestions, useLeaderboard, useRateSong, useCleanupRehearsalSongs } from '@/hooks/useSongs'
 import { useBandRehearsals, useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { useAuth } from '@/context/AuthContext'
+import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { 
@@ -282,147 +283,8 @@ export function BandDashboard() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Band members */}
-            <div className="card">
-              <div className="mb-2 text-sm text-gray-500">
-                <span className="text-gray-900 font-medium">{band.name}</span> • Code: <span className="font-mono font-semibold">{band.invite_code}</span> • {members?.length || 0} members
-              </div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
-                {userRole === 'admin' && (
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/members`)}
-                    className="btn-secondary text-sm"
-                  >
-                    Manage Members
-                  </button>
-                )}
-              </div>
-              <div className="space-y-3">
-                {members?.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
-                        <span className="text-xs font-medium text-gray-600">
-                          {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm font-medium text-gray-900">
-                            {member.user?.display_name}
-                          </p>
-                          {member.role === 'admin' && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                              Admin
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500">{member.user?.email}</p>
-                      </div>
-                    </div>
-                    {member.user_id === user?.id && (
-                      <span className="text-xs text-primary-600 font-medium">You</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Upcoming Rehearsals */}
-            <div className="card">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Upcoming Rehearsals</h3>
-                <button
-                  onClick={() => navigate(`/band/${bandId}/rehearsals`)}
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                >
-                  {userRole === 'admin' ? 'Manage' : 'View All'}
-                </button>
-              </div>
-              
-              {rehearsals && rehearsals.length > 0 ? (
-                <div className="space-y-3">
-                  {rehearsals
-                    .filter(rehearsal => {
-                      const rehearsalDate = new Date(rehearsal.rehearsal_date)
-                      const today = new Date()
-                      today.setHours(0, 0, 0, 0)
-                      return rehearsalDate >= today
-                    })
-                    .slice(0, 3)
-                    .map((rehearsal) => (
-                      <div 
-                        key={rehearsal.id} 
-                        className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                        onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}`)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{rehearsal.name}</h4>
-                            <p className="text-sm text-gray-600">
-                              {new Date(rehearsal.rehearsal_date).toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                              {rehearsal.start_time && (
-                                <span> at {rehearsal.start_time}</span>
-                              )}
-                            </p>
-                            {rehearsal.location && (
-                              <p className="text-xs text-gray-500 mt-1">{rehearsal.location}</p>
-                            )}
-                            <div className="flex items-center mt-2 space-x-4 text-xs">
-                              <span className={`px-2 py-1 rounded-full ${
-                                rehearsal.status === 'planning'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : rehearsal.status === 'songs_selected'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
-                                {rehearsal.status === 'planning' 
-                                  ? 'Planning' 
-                                  : rehearsal.status === 'songs_selected'
-                                  ? 'Songs Selected'
-                                  : 'Completed'
-                                }
-                              </span>
-                              <span className="text-gray-500">
-                                {rehearsal.songs_to_learn} songs to learn
-                              </span>
-                            </div>
-                            {/* Show selected songs after cutoff date */}
-                            {rehearsal.selection_deadline && 
-                             new Date() > new Date(rehearsal.selection_deadline) && 
-                             rehearsal.status !== 'planning' && (
-                              <RehearsalSelectedSongs rehearsalId={rehearsal.id} maxSongs={3} />
-                            )}
-                          </div>
-                          <div className="ml-4">
-                            <Calendar className="h-5 w-5 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-sm mb-4">No upcoming rehearsals scheduled</p>
-                  {userRole === 'admin' && (
-                    <button
-                      onClick={() => navigate(`/band/${bandId}/rehearsals`)}
-                      className="btn-primary text-sm"
-                    >
-                      Schedule Rehearsal
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+          <div>
+            <BandSidebar bandId={bandId!} />
           </div>
         </div>
       </main>
