@@ -22,6 +22,7 @@ import { Profile } from '@/pages/Profile'
 import { VotingAnalytics } from '@/pages/VotingAnalytics'
 import { BandMembers } from '@/pages/BandMembers'
 import { MemberProfile } from '@/pages/MemberProfile'
+import { SongDetail } from '@/pages/SongDetail'
 import { AdminDiagnostics } from '@/pages/AdminDiagnostics'
 
 const queryClient = new QueryClient({
@@ -61,6 +62,7 @@ function AppContent() {
           <Route path="/band/:bandId" element={<BandDashboard />} />
           <Route path="/band/:bandId/search" element={<SongSearch />} />
           <Route path="/band/:bandId/suggestions" element={<Suggestions />} />
+          <Route path="/band/:bandId/song/:songId" element={<SongDetail />} />
           <Route path="/band/:bandId/ai-finder" element={<AISongFinder />} />
           <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
           <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />

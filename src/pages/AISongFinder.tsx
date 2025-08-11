@@ -54,28 +54,30 @@ export function AISongFinder() {
                 </div>
               </div>
               
-              {/* GPT Embed */}
-              <div className="p-4">
-                <iframe
-                  src="https://chatgpt.com/g/g-6899e85fd0348191aec344b0f99a72af-hands-off-musicologist"
-                  width="100%"
-                  height="600px"
-                  frameBorder="0"
-                  allow="clipboard-write"
-                  className="rounded-lg border border-gray-200"
-                  title="Hands Off Musicologist - AI Song Assistant"
-                />
+              {/* Direct Link to ChatGPT */}
+              <div className="p-8 text-center">
+                <Bot className="w-16 h-16 text-primary-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Access Your AI Musicologist
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Get personalized song recommendations, music theory explanations, and practice tips from our AI music expert.
+                </p>
                 
-                <div className="mt-4 text-center">
+                <div className="space-y-3">
                   <a
                     href="https://chatgpt.com/g/g-6899e85fd0348191aec344b0f99a72af-hands-off-musicologist"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-primary-600 hover:text-primary-700 font-medium"
+                    className="inline-flex items-center space-x-2 btn-primary px-6 py-3 text-lg"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>Open in new tab</span>
+                    <Bot className="w-5 h-5" />
+                    <span>Open AI Musicologist</span>
                   </a>
+                  
+                  <p className="text-sm text-gray-500">
+                    Opens in a new tab for the best experience
+                  </p>
                 </div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useSpotifyEmbed, type SpotifyTrack } from '@/hooks/useSpotify'
 import { useSuggestSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
+import { useChatGPT, type SongSearchResult } from '@/hooks/useChatGPT'
 import { Header } from '@/components/Header'
 import { 
   Music, 
@@ -12,7 +13,9 @@ import {
   Link,
   Bot,
   Search,
-  Loader2
+  Loader2,
+  Check,
+  X
 } from 'lucide-react'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 
@@ -23,15 +26,6 @@ interface ManualSongForm {
   notes: string
 }
 
-interface AISearchResult {
-  title: string
-  artist: string
-  album?: string
-  year?: string
-  genre?: string
-  confidence: number
-}
-
 export function SongSearch() {
   const { bandId } = useParams<{ bandId: string }>()
   const navigate = useNavigate()
@@ -40,12 +34,14 @@ export function SongSearch() {
   const [spotifyUrl, setSpotifyUrl] = useState('')
   const [editableTrack, setEditableTrack] = useState<SpotifyTrack | null>(null)
   const [aiSearchQuery, setAiSearchQuery] = useState('')
-  const [aiSearchResults, setAiSearchResults] = useState<AISearchResult[]>([])
-  const [isAISearching, setIsAISearching] = useState(false)
+  const [aiSearchResults, setAiSearchResults] = useState<SongSearchResult[]>([])
+  const [selectedResult, setSelectedResult] = useState<SongSearchResult | null>(null)
+  const [showConfirmation, setShowConfirmation] = useState(false)
   
   const { data: band } = useBand(bandId!)
   const { isLoading, error, handleUrlSubmit } = useSpotifyEmbed()
   const suggestSong = useSuggestSong()
+  const { searchSong, isSearching: isAISearching, error: aiError, clearError } = useChatGPT()
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ManualSongForm>()
 
@@ -104,58 +100,42 @@ export function SongSearch() {
   const handleAISearch = async () => {
     if (!aiSearchQuery.trim()) return
     
-    setIsAISearching(true)
-    setAiSearchResults([])
+    clearError()
+    const results = await searchSong(aiSearchQuery)
     
-    try {
-      // This would integrate with your ChatGPT setup
-      // For now, I'll simulate the AI search results
-      // You can replace this with actual ChatGPT API calls
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock AI search results - replace with actual ChatGPT integration
-      const mockResults: AISearchResult[] = [
-        {
-          title: aiSearchQuery,
-          artist: "The Beatles",
-          album: "Abbey Road",
-          year: "1969",
-          genre: "Rock",
-          confidence: 0.95
-        },
-        {
-          title: aiSearchQuery,
-          artist: "Led Zeppelin",
-          album: "Led Zeppelin IV",
-          year: "1971",
-          genre: "Rock",
-          confidence: 0.87
-        }
-      ]
-      
-      setAiSearchResults(mockResults)
-    } catch (error) {
-      console.error('AI search failed:', error)
-    } finally {
-      setIsAISearching(false)
+    if (results.length > 0) {
+      setAiSearchResults(results)
     }
   }
 
-  const handleAISearchResult = (result: AISearchResult) => {
+  const handleAISearchResult = (result: SongSearchResult) => {
+    setSelectedResult(result)
+    setShowConfirmation(true)
+  }
+
+  const confirmAISearchResult = () => {
+    if (!selectedResult) return
+    
     setEditableTrack({
-      title: result.title,
-      artist: result.artist,
-      album: result.album || '',
+      title: selectedResult.title,
+      artist: selectedResult.artist,
+      album: selectedResult.album || '',
       spotify_track_id: null,
       duration_ms: null,
       album_art_url: null,
       preview_url: null
     })
+    
+    setShowConfirmation(false)
+    setSelectedResult(null)
     setShowAISearch(false)
     setAiSearchResults([])
     setAiSearchQuery('')
+  }
+
+  const cancelAISearchResult = () => {
+    setShowConfirmation(false)
+    setSelectedResult(null)
   }
 
   return (
@@ -418,6 +398,19 @@ export function SongSearch() {
                 <p className="text-xs text-gray-500 mt-2">
                   ChatGPT will analyze your description and find the most likely song matches
                 </p>
+                {aiError && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-700">
+                      <strong>AI Search Error:</strong> {aiError}
+                    </p>
+                    <button
+                      onClick={clearError}
+                      className="text-xs text-red-600 hover:text-red-800 mt-1 underline"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* AI Search Results */}
@@ -551,6 +544,85 @@ export function SongSearch() {
           )}
         </div>
       </main>
+
+      {/* AI Search Result Confirmation Modal */}
+      {showConfirmation && selectedResult && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Confirm Song Details</h3>
+              <button
+                onClick={cancelAISearchResult}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-800 mb-2">AI Found This Song:</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Title:</span>
+                    <span className="font-medium text-gray-900">{selectedResult.title}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Artist:</span>
+                    <span className="font-medium text-gray-900">{selectedResult.artist}</span>
+                  </div>
+                  {selectedResult.album && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Album:</span>
+                      <span className="font-medium text-gray-900">{selectedResult.album}</span>
+                    </div>
+                  )}
+                  {selectedResult.year && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Year:</span>
+                      <span className="font-medium text-gray-900">{selectedResult.year}</span>
+                    </div>
+                  )}
+                  {selectedResult.genre && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Genre:</span>
+                      <span className="font-medium text-gray-900">{selectedResult.genre}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Confidence:</span>
+                    <span className="font-medium text-green-600">
+                      {Math.round(selectedResult.confidence * 100)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {selectedResult.reasoning && (
+                <div className="text-sm text-gray-600">
+                  <strong>AI Reasoning:</strong> {selectedResult.reasoning}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelAISearchResult}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAISearchResult}
+                className="btn-primary flex items-center"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Use These Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

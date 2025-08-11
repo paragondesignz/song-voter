@@ -240,7 +240,7 @@ export function BandDashboard() {
                   return (
                     <div
                       key={song.id}
-                      className={`card border-2 transition-all hover:shadow-lg p-3 ${
+                      className={`card border-2 transition-all hover:shadow-lg p-3 cursor-pointer ${
                         position === 1
                           ? 'border-yellow-400/40'
                           : position === 2
@@ -249,6 +249,7 @@ export function BandDashboard() {
                           ? 'border-amber-400/30'
                           : 'border-[var(--color-border)]'
                       }`}
+                      onClick={() => navigate(`/band/${bandId}/song/${song.id}`)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center flex-1">

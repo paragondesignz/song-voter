@@ -239,7 +239,11 @@ export function Suggestions() {
             {sortedSuggestions.length > 0 ? (
               <div className="space-y-4">
                 {sortedSuggestions.map((song) => (
-                  <div key={song.id} className="card hover:shadow-lg transition-shadow">
+                  <div 
+                    key={song.id} 
+                    className="card hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/band/${bandId}/song/${song.id}`)}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center flex-1">
                         <div className="flex-1 min-w-0">
