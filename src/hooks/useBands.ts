@@ -114,11 +114,17 @@ export function useCreateBand() {
 
   return useMutation({
     mutationFn: async (name: string) => {
+      // Get the current session to ensure we have a valid user
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('You must be logged in to create a band')
+      }
+
       const { data: band, error: bandError } = await supabase
         .from('bands')
         .insert({
           name,
-          created_by: user?.id,
+          created_by: session.user.id,
         })
         .select()
         .single()
@@ -129,7 +135,7 @@ export function useCreateBand() {
         .from('band_members')
         .insert({
           band_id: band.id,
-          user_id: user?.id,
+          user_id: session.user.id,
           role: 'admin',
         })
 
@@ -153,6 +159,12 @@ export function useJoinBand() {
 
   return useMutation({
     mutationFn: async (inviteCode: string) => {
+      // Get the current session to ensure we have a valid user
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('You must be logged in to join a band')
+      }
+
       const { data: band, error: bandError } = await supabase
         .from('bands')
         .select('id, name')
@@ -165,7 +177,7 @@ export function useJoinBand() {
         .from('band_members')
         .select('id')
         .eq('band_id', band.id)
-        .eq('user_id', user?.id)
+        .eq('user_id', session.user.id)
         .single()
 
       if (existingMember) throw new Error('You are already a member of this band')
@@ -183,7 +195,7 @@ export function useJoinBand() {
         .from('band_members')
         .insert({
           band_id: band.id,
-          user_id: user?.id,
+          user_id: session.user.id,
           role: 'member',
         })
 
@@ -230,11 +242,17 @@ export function useLeaveBand() {
 
   return useMutation({
     mutationFn: async (bandId: string) => {
+      // Get the current session to ensure we have a valid user
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('You must be logged in to leave a band')
+      }
+
       const { error } = await supabase
         .from('band_members')
         .delete()
         .eq('band_id', bandId)
-        .eq('user_id', user?.id)
+        .eq('user_id', session.user.id)
 
       if (error) throw error
     },
