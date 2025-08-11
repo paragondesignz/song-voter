@@ -202,6 +202,14 @@ export function useVoteSong() {
       }
 
       if (voteType) {
+        // Check if user already has a vote
+        const { data: existingVote } = await supabase
+          .from('song_votes')
+          .select('id')
+          .eq('song_suggestion_id', songId)
+          .eq('voter_id', session.user.id)
+          .single()
+
         // Add or update vote using upsert
         const { error } = await supabase
           .from('song_votes')
@@ -217,14 +225,7 @@ export function useVoteSong() {
 
         if (error) throw error
 
-        // Update rate limit only for new votes
-        const { data: existingVote } = await supabase
-          .from('song_votes')
-          .select('id')
-          .eq('song_suggestion_id', songId)
-          .eq('voter_id', session.user.id)
-          .single()
-
+        // Update rate limit only for new votes (not updates)
         if (!existingVote) {
           await updateVoteRateLimit(session.user.id, bandId)
         }
