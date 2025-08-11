@@ -14,8 +14,13 @@ export function Dashboard() {
 
   useEffect(() => {
     if (!isLoading) {
+      // TEMP: Force redirect to known Hands Off band if no bands found
       if (bands && bands.length === 0) {
-        navigate('/band-setup')
+        // eslint-disable-next-line no-console
+        console.log('⚠️ No bands found, redirecting to known Hands Off band')
+        // Known Hands Off band ID from migration logs
+        navigate('/band/6ea8b825-ec5d-4fe5-9858-9c92cfcae91f')
+        return
       } else if (bands && bands.length === 1) {
         // Auto-redirect to the single band
         navigate(`/band/${bands[0].id}`)

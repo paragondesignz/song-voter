@@ -90,6 +90,19 @@ export function BandSetup() {
             </button>
           </div>
 
+          {/* TEMP: Direct access to Hands Off band */}
+          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800 mb-3">
+              <strong>Quick Access:</strong> Can't see your "Hands Off" band? Click here:
+            </p>
+            <button
+              onClick={() => navigate('/band/6ea8b825-ec5d-4fe5-9858-9c92cfcae91f')}
+              className="btn-primary"
+            >
+              Go to "Hands Off" Band
+            </button>
+          </div>
+
           {mode === 'create' ? (
             <form onSubmit={handleSubmitCreate(onCreateBand)} className="space-y-6">
               <div>
