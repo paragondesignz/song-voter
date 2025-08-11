@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSongSuggestions, useVoteSong, useRemoveSuggestion, useVoteRateLimit } from '@/hooks/useSongs'
+import { useSongSuggestions, useVoteSong, useRemoveSuggestion } from '@/hooks/useSongs'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { 
@@ -15,8 +15,7 @@ import {
   User,
   ExternalLink,
   Trash2,
-  BarChart3,
-  Timer
+  BarChart3
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -31,7 +30,6 @@ export function Suggestions() {
   const { data: band } = useBand(bandId!)
   const { data: suggestions, isLoading } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
-  const { data: rateLimit } = useVoteRateLimit(bandId!)
   const voteSong = useVoteSong()
   const removeSuggestion = useRemoveSuggestion()
 
@@ -42,10 +40,6 @@ export function Suggestions() {
   }
 
   const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
-    if (rateLimit && rateLimit.votesRemaining <= 0) {
-      return // Don't allow voting if rate limit exceeded
-    }
-
     // If clicking the same vote type, remove the vote; otherwise set the new vote type
     const voteType = currentVote === newVoteType ? null : newVoteType
 
@@ -111,17 +105,7 @@ export function Suggestions() {
                 <p className="text-xs text-gray-500">{band?.name}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              {/* Rate Limit Indicator */}
-              {rateLimit && (
-                <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-lg">
-                  <Timer className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">
-                    {rateLimit.votesRemaining} votes left
-                  </span>
-                </div>
-              )}
-              
+            <div className="flex items-center space-x-3">              
               {/* Analytics Button */}
               <button
                 onClick={() => navigate(`/band/${bandId}/voting-analytics`)}
@@ -267,20 +251,14 @@ export function Suggestions() {
                           {/* Upvote button */}
                           <button
                             onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                            disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                            disabled={voteSong.isPending}
                             className={`p-2 rounded-full transition-colors ${
                               song.user_voted === 'upvote'
                                 ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            } ${
-                              (rateLimit && rateLimit.votesRemaining <= 0)
-                                ? 'opacity-50 cursor-not-allowed'
-                                : ''
                             }`}
                             title={
-                              (rateLimit && rateLimit.votesRemaining <= 0)
-                                ? "You've reached your voting limit for this hour"
-                                : song.user_voted === 'upvote'
+                              song.user_voted === 'upvote'
                                 ? "Remove your upvote"
                                 : "Upvote this song"
                             }
@@ -296,20 +274,14 @@ export function Suggestions() {
                           {/* Downvote button */}
                           <button
                             onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                            disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                            disabled={voteSong.isPending}
                             className={`p-2 rounded-full transition-colors ${
                               song.user_voted === 'downvote'
                                 ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            } ${
-                              (rateLimit && rateLimit.votesRemaining <= 0)
-                                ? 'opacity-50 cursor-not-allowed'
-                                : ''
                             }`}
                             title={
-                              (rateLimit && rateLimit.votesRemaining <= 0)
-                                ? "You've reached your voting limit for this hour"
-                                : song.user_voted === 'downvote'
+                              song.user_voted === 'downvote'
                                 ? "Remove your downvote"
                                 : "Downvote this song"
                             }

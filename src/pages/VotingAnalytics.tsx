@@ -1,17 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
-import { useVoteStats, useUserVoteStats, useVoteRateLimit, useVoteHistory } from '@/hooks/useSongs'
+import { useVoteStats, useUserVoteStats, useVoteHistory } from '@/hooks/useSongs'
 import { 
   ArrowLeft, 
   BarChart3,
   TrendingUp,
-  Clock,
   ThumbsUp,
   ThumbsDown,
-  Music,
-  Timer
+  Music
 } from 'lucide-react'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 
 export function VotingAnalytics() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -20,7 +18,6 @@ export function VotingAnalytics() {
   const { data: band } = useBand(bandId!)
   const { data: voteStats, isLoading: statsLoading } = useVoteStats(bandId!)
   const { data: userVoteStats } = useUserVoteStats(bandId!)
-  const { data: rateLimit } = useVoteRateLimit(bandId!)
   const { data: voteHistory } = useVoteHistory(bandId!, 20)
 
   if (statsLoading) {
@@ -169,49 +166,6 @@ export function VotingAnalytics() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Rate Limit Status */}
-            {rateLimit && (
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-4">Vote Limit Status</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm font-medium mb-2">
-                      <span>Votes Remaining</span>
-                      <span>{rateLimit.votesRemaining}/50</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${((50 - rateLimit.votesRemaining) / 50) * 100}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  {rateLimit.votesRemaining === 0 && (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <div className="flex items-center">
-                        <Timer className="h-5 w-5 text-yellow-600 mr-2" />
-                        <div>
-                          <p className="text-sm font-medium text-yellow-800">Vote limit reached</p>
-                          <p className="text-xs text-yellow-700">
-                            Resets {formatDistanceToNow(rateLimit.resetTime, { addSuffix: true })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="text-xs text-gray-500">
-                    <div className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Window resets: {format(rateLimit.resetTime, 'MMM d, h:mm a')}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Voting Tips */}
             <div className="card">
@@ -224,10 +178,6 @@ export function VotingAnalytics() {
                 <div className="flex items-start">
                   <ThumbsDown className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
                   <p>Downvote songs that don't fit your band's style</p>
-                </div>
-                <div className="flex items-start">
-                  <Timer className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <p>You can cast up to 50 votes per hour</p>
                 </div>
                 <div className="flex items-start">
                   <Music className="h-4 w-4 text-purple-600 mr-2 mt-0.5 flex-shrink-0" />

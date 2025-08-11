@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
-import { useSongSuggestions, useLeaderboard, useVoteSong, useVoteRateLimit } from '@/hooks/useSongs'
+import { useSongSuggestions, useLeaderboard, useVoteSong } from '@/hooks/useSongs'
 import { useAuth } from '@/context/AuthContext'
 import { 
   Music, 
@@ -25,16 +25,11 @@ export function BandDashboard() {
   const { data: members } = useBandMembers(bandId!)
   const { data: recentSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
   const { data: leaderboard } = useLeaderboard(bandId!)
-  const { data: rateLimit } = useVoteRateLimit(bandId!)
   const voteSong = useVoteSong()
 
   const userRole = members?.find(m => m.user_id === user?.id)?.role
 
   const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
-    if (rateLimit && rateLimit.votesRemaining <= 0) {
-      return // Don't allow voting if rate limit exceeded
-    }
-
     // If clicking the same vote type, remove the vote; otherwise set the new vote type
     const voteType = currentVote === newVoteType ? null : newVoteType
 
@@ -164,20 +159,14 @@ export function BandDashboard() {
                             {/* Upvote button */}
                             <button
                               onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              disabled={voteSong.isPending}
                               className={`p-1 rounded-full transition-colors ${
                                 song.user_voted === 'upvote'
                                   ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : ''
                               }`}
                               title={
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? "You've reached your voting limit for this hour"
-                                  : song.user_voted === 'upvote'
+                                song.user_voted === 'upvote'
                                   ? "Remove your upvote"
                                   : "Upvote this song"
                               }
@@ -193,20 +182,14 @@ export function BandDashboard() {
                             {/* Downvote button */}
                             <button
                               onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              disabled={voteSong.isPending}
                               className={`p-1 rounded-full transition-colors ${
                                 song.user_voted === 'downvote'
                                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : ''
                               }`}
                               title={
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? "You've reached your voting limit for this hour"
-                                  : song.user_voted === 'downvote'
+                                song.user_voted === 'downvote'
                                   ? "Remove your downvote"
                                   : "Downvote this song"
                               }
@@ -292,20 +275,14 @@ export function BandDashboard() {
                             {/* Upvote button */}
                             <button
                               onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              disabled={voteSong.isPending}
                               className={`p-1 rounded-full transition-colors ${
                                 song.user_voted === 'upvote'
                                   ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : ''
                               }`}
                               title={
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? "You've reached your voting limit for this hour"
-                                  : song.user_voted === 'upvote'
+                                song.user_voted === 'upvote'
                                   ? "Remove your upvote"
                                   : "Upvote this song"
                               }
@@ -321,20 +298,14 @@ export function BandDashboard() {
                             {/* Downvote button */}
                             <button
                               onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                              disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                              disabled={voteSong.isPending}
                               className={`p-1 rounded-full transition-colors ${
                                 song.user_voted === 'downvote'
                                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? 'opacity-50 cursor-not-allowed'
-                                  : ''
                               }`}
                               title={
-                                (rateLimit && rateLimit.votesRemaining <= 0)
-                                  ? "You've reached your voting limit for this hour"
-                                  : song.user_voted === 'downvote'
+                                song.user_voted === 'downvote'
                                   ? "Remove your downvote"
                                   : "Downvote this song"
                               }
