@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useBand, useBandMembers } from '@/hooks/useBands'
+import { useBand } from '@/hooks/useBands'
 import { useSongSuggestions, useLeaderboard, useRateSong, useCleanupRehearsalSongs } from '@/hooks/useSongs'
-import { useRehearsalSetlist } from '@/hooks/useRehearsals'
-import { useAuth } from '@/context/AuthContext'
+// import { useAuth } from '@/context/AuthContext'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
@@ -14,18 +13,17 @@ import { formatDistanceToNow } from 'date-fns'
 
 export function BandDashboard() {
   const { bandId } = useParams<{ bandId: string }>()
-  const { user } = useAuth()
+  // const { user } = useAuth()
   const navigate = useNavigate()
   
   const { data: band } = useBand(bandId!)
-  const { data: members } = useBandMembers(bandId!)
   const { data: recentSuggestions, refetch: refetchSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard(bandId!)
   const rateSong = useRateSong()
   const cleanupRehearsalSongs = useCleanupRehearsalSongs()
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
-  // userRole handled within sidebar where needed
+  // Sidebar handles user role and related actions
 
   // Cleanup rehearsal songs on page load (silent, once per session)
   useEffect(() => {

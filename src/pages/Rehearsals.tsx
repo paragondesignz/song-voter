@@ -5,7 +5,6 @@ import { Header } from '@/components/Header'
 import { BandSidebar } from '@/components/BandSidebar'
 import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { 
-  ArrowLeft, 
   Calendar,
   Plus,
   MapPin,
