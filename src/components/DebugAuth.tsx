@@ -19,19 +19,37 @@ export function DebugAuth() {
       }
     })
 
-    // Test a simple query
-    supabase
-      .from('profiles')
-      .select('*')
-      .limit(1)
-      .then(({ data, error }) => {
-        if (error) {
-          setTestQuery({ error: error.message, code: error.code })
-        } else {
-          setTestQuery({ success: true, data })
-        }
+    // Test multiple queries
+    const runTests = async () => {
+      // Test profiles
+      const profilesResult = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id || '')
+        
+      // Test bands
+      const bandsResult = await supabase
+        .from('bands')
+        .select('*')
+        .limit(5)
+        
+      // Test band members
+      const membersResult = await supabase
+        .from('band_members')
+        .select('*')
+        .eq('user_id', user?.id || '')
+        
+      setTestQuery({
+        profiles: profilesResult,
+        bands: bandsResult,
+        members: membersResult
       })
-  }, [])
+    }
+    
+    if (user) {
+      runTests()
+    }
+  }, [user])
 
   const fixUserData = async () => {
     try {
