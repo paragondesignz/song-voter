@@ -75,6 +75,12 @@
     color: var(--color-text);
     border-color: var(--color-border);
   }
+  .select-field {
+    @apply rounded-md px-3 py-2 border text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/60;
+    background-color: var(--color-surface-2);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
 
   /* Card */
   .card {

@@ -162,7 +162,7 @@ export function Suggestions() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="select-field"
                   >
                     <option value="newest">Newest First</option>
                     <option value="votes">Most Voted</option>
@@ -179,16 +179,16 @@ export function Suggestions() {
 
           {/* Edit Suggester Modal */}
           {editingSuggester && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+             <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+              <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-6 max-w-md w-full mx-4 text-[var(--color-text)]">
                 <h3 className="text-lg font-semibold mb-4">Change Song Suggester</h3>
-                <p className="text-gray-600 mb-4 text-sm">
+                <p className="text-gray-400 mb-4 text-sm">
                   Select who should be credited as the suggester for this song:
                 </p>
                 <select
                   value={selectedNewSuggester}
                   onChange={(e) => setSelectedNewSuggester(e.target.value)}
-                  className="input-field w-full mb-4"
+                  className="select-field w-full mb-4"
                 >
                   <option value="">Select a band member...</option>
                   {bandMembers?.map((member) => (
