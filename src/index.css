@@ -3,25 +3,69 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-primary: #0A84FF;
+    --color-secondary: #FF3366;
+    --color-accent: #FFD60A;
+    --color-bg: #F9FAFB;
+    --color-surface: #FFFFFF;
+    --color-text: #111827;
+    --color-text-secondary: #6B7280;
+    --radius: 12px;
+  }
+
+  html {
+    font-family: theme('fontFamily.sans');
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: theme('fontFamily.heading');
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased;
+  }
+
+  /* Focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
 @layer components {
+  /* Buttons */
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary-600 text-white px-4 py-2 rounded-xl shadow-soft hover:bg-primary-700 active:scale-[0.99] transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
   .btn-secondary {
-    @apply bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-white text-gray-900 px-4 py-2 rounded-xl border border-gray-200 hover:border-primary-200 hover:text-primary-700 shadow-soft transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+  .btn-accent {
+    @apply bg-secondary-600 text-white px-4 py-2 rounded-xl shadow-soft hover:bg-secondary-700 transition-colors duration-200 font-medium;
+  }
+
+  /* Inputs */
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2 rounded-xl border border-gray-300 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow;
   }
-  
+
+  /* Card */
   .card {
-    @apply bg-white rounded-lg shadow-md p-6;
+    @apply bg-[var(--color-surface)] rounded-2xl shadow-elevated p-6 border border-gray-100;
+  }
+
+  /* Page header shimmer bar */
+  .header-bar {
+    @apply bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-600 h-1 w-full rounded-full opacity-70;
+  }
+}
+
+@layer utilities {
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+  .badge-accent {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/20 text-amber-800;
   }
 }

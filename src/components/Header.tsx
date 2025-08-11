@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useProfile } from '@/hooks/useProfile'
 import { useUserBands } from '@/hooks/useBands'
 import { Logo } from '@/components/Logo'
 import { 
@@ -20,6 +21,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { data: bands } = useUserBands()
+  const { data: profile } = useProfile()
   const [showDropdown, setShowDropdown] = useState(false)
   
   const userBand = bands?.[0] // Since users only have one band
@@ -85,11 +87,11 @@ export function Header({ title, subtitle }: HeaderProps) {
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                  {user?.user_metadata?.avatar_url ? (
+                  {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
                     <img
-                      src={user.user_metadata.avatar_url}
+                      src={profile?.avatar_url || (user?.user_metadata?.avatar_url as string)}
                       alt="Profile"
-                      className="w-8 h-8 rounded-full"
+                      className="w-8 h-8 rounded-full object-cover"
                     />
                   ) : (
                     <User className="w-4 h-4 text-gray-500" />
