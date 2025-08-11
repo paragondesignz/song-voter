@@ -1,6 +1,5 @@
 -- Update materialized view to include spotify_track_id for embed support
 DROP MATERIALIZED VIEW IF EXISTS song_leaderboard;
-
 CREATE MATERIALIZED VIEW song_leaderboard AS
 SELECT 
   ss.id,

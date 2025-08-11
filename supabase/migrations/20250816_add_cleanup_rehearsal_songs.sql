@@ -1,7 +1,5 @@
 -- Create RPC to finalize past rehearsals and move their songs to "practiced"
--- This function is called from the app on dashboard load.
--- It marks any past rehearsals as completed and updates songs in those
--- rehearsals' setlists to status = 'practiced'. Returns number of songs updated.
+-- Timestamped migration to avoid version conflicts
 
 CREATE OR REPLACE FUNCTION cleanup_rehearsal_songs()
 RETURNS integer
@@ -39,9 +37,5 @@ BEGIN
   RETURN updated_count;
 END;
 $$;
-
--- Expose via PostgREST (RPC): no explicit grants needed for functions in public schema
--- SECURITY DEFINER ensures the function can perform updates while still
--- scoping by auth.uid() so users can only affect their own bands' data.
 
 

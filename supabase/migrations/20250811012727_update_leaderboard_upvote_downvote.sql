@@ -1,6 +1,5 @@
 -- Drop the existing materialized view
 DROP MATERIALIZED VIEW IF EXISTS song_leaderboard;
-
 -- Create updated materialized view for upvote/downvote system
 CREATE MATERIALIZED VIEW song_leaderboard AS
 SELECT 
@@ -43,10 +42,8 @@ LEFT JOIN (
 ) recent_votes ON s.id = recent_votes.song_suggestion_id
 WHERE (COALESCE(upvotes.count, 0) + COALESCE(downvotes.count, 0)) > 0
 ORDER BY vote_count DESC, upvote_count DESC;
-
 -- Create index for performance
 CREATE INDEX IF NOT EXISTS idx_song_leaderboard_band_vote_count 
 ON song_leaderboard (band_id, vote_count DESC);
-
 -- Refresh the materialized view
 REFRESH MATERIALIZED VIEW song_leaderboard;
