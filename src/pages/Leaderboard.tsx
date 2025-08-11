@@ -4,8 +4,8 @@ import { useLeaderboard, useRateSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
+import { Header } from '@/components/Header'
 import { 
-  ArrowLeft, 
   Music, 
   Trophy, 
   Heart,
@@ -73,27 +73,8 @@ export function Leaderboard() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-[var(--color-border)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate(`/band/${bandId}`)}
-                className="mr-4 text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <Trophy className="h-6 w-6 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-lg font-semibold">Leaderboard</h1>
-                <p className="text-xs text-secondary">{band?.name}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-gray-50">
+      <Header title="Leaderboard" subtitle={band?.name} />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Time frame selector */}
