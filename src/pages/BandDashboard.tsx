@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useBand, useUserBandRole } from '@/hooks/useBands'
+import { useUserBandRole } from '@/hooks/useBands'
 import { useSongSuggestions, useRateSong, useCleanupRehearsalSongs, useRemoveSuggestion } from '@/hooks/useSongs'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 
-import { Search, Trophy, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User } from 'lucide-react'
+import { Search, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes'
@@ -20,7 +20,6 @@ export function BandDashboard() {
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   
-  const { data: band } = useBand(bandId!)
   const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
   const rateSong = useRateSong()
@@ -117,14 +116,6 @@ export function BandDashboard() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <Trophy className="h-8 w-8 text-yellow-500 mr-3" />
-            Song Rankings
-          </h1>
-          {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
-        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
