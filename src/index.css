@@ -14,15 +14,17 @@
     --radius: 12px;
   }
 
-  /* Light dashboard look: soft light background with dark navy cards */
-  .theme-dashboard {
-    --color-bg: #F4F7FB;           /* light bluish background */
-    --color-surface: #0F172A;      /* slate-900 navy card */
-    --color-text: #0B1220;         /* near-black heading */
-    --color-text-secondary: #6B7280; /* muted */
-    --color-primary: #0A84FF;      /* bright blue buttons */
-    --color-secondary: #111827;    /* deep text */
-    --color-accent: #FFD60A;       /* highlight */
+  /* Full dark mode dashboard palette matching reference */
+  .theme-darkboard {
+    --color-bg: #0B0F14;             /* deep neutral background */
+    --color-surface: #111827;        /* card surface */
+    --color-surface-2: #0F172A;      /* secondary surface */
+    --color-border: rgba(148, 163, 184, 0.12); /* slate-400/12 */
+    --color-text: #E5E7EB;           /* light text */
+    --color-text-secondary: #9CA3AF; /* muted text */
+    --color-primary: #0A84FF;        /* bright blue accents */
+    --color-secondary: #A855F7;      /* purple accent */
+    --color-accent: #F59E0B;         /* amber accent */
   }
 
   html {
@@ -46,29 +48,28 @@
   /* Buttons */
   .btn-primary {
     @apply px-4 py-2 rounded-xl font-medium text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-    background: linear-gradient(180deg, #0EA5FF, #0A84FF);
-    box-shadow: 0 12px 24px rgba(14,165,255,0.35);
+    background: linear-gradient(180deg, #0A84FF, #0A6DE0);
+    box-shadow: 0 8px 24px rgba(10, 132, 255, 0.3);
   }
   .btn-secondary {
     @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border;
-    @apply bg-[var(--color-surface)] text-[var(--color-text)] border-gray-700/40 hover:border-gray-500/50 shadow-soft;
+    @apply bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)] hover:border-slate-500/40 shadow-soft;
   }
   .btn-accent {
     @apply px-4 py-2 rounded-xl text-white font-medium transition-colors duration-200;
-    background: linear-gradient(180deg, theme(colors.secondary.600), theme(colors.secondary.700));
-    box-shadow: 0 8px 24px rgba(168,85,247,0.25);
+    background: linear-gradient(180deg, #A855F7, #7E22CE);
+    box-shadow: 0 8px 24px rgba(168,85,247,0.32);
   }
 
   /* Inputs */
   .input-field {
-    @apply w-full px-3 py-2 rounded-xl bg-transparent border border-gray-700/50 text-[var(--color-text)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow;
-    backdrop-filter: saturate(120%) blur(2px);
+    @apply w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow;
   }
 
   /* Card */
   .card {
-    @apply rounded-3xl p-6 border;
-    @apply bg-[var(--color-surface)] border-slate-800 shadow-[0_16px_40px_rgba(2,6,23,0.35)];
+    @apply rounded-2xl p-6 border;
+    @apply bg-[var(--color-surface)] border-[var(--color-border)] shadow-[0_14px_36px_rgba(0,0,0,0.35)];
   }
 
   /* Page header shimmer bar */

@@ -76,7 +76,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <div className="theme-dashboard">
+          <div className="theme-darkboard">
             <AppContent />
           </div>
         </Router>
