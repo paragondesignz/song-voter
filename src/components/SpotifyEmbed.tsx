@@ -26,6 +26,14 @@ export function SpotifyEmbed({ trackId, compact = false, height = 152 }: Spotify
     return (
       <div className="bg-gray-100 rounded-lg p-4 text-center">
         <p className="text-sm text-gray-600">Preview not available</p>
+        <a 
+          href={`https://open.spotify.com/track/${trackId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-block"
+        >
+          Open in Spotify
+        </a>
       </div>
     )
   }
@@ -37,7 +45,7 @@ export function SpotifyEmbed({ trackId, compact = false, height = 152 }: Spotify
           className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center"
           style={{ height: embedHeight }}
         >
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-spotify-green"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
         </div>
       )}
       <iframe
@@ -46,12 +54,13 @@ export function SpotifyEmbed({ trackId, compact = false, height = 152 }: Spotify
         height={embedHeight}
         frameBorder="0"
         allowTransparency={true}
-        allow="encrypted-media"
+        allow="encrypted-media; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
         className="rounded-lg"
         onLoad={handleLoad}
         onError={handleError}
         title="Spotify player"
+        sandbox="allow-scripts allow-same-origin allow-presentation"
       />
     </div>
   )

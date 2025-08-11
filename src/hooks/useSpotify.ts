@@ -36,25 +36,43 @@ export function useSpotifyEmbed() {
     return `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`
   }
 
-  // Fetch track metadata from Spotify embed
+  // Fetch track metadata from Spotify API via our edge function
   const fetchTrackMetadata = async (trackId: string): Promise<SpotifyTrack> => {
     setIsLoading(true)
     setError(null)
     
     try {
-      // For now, we'll create a basic track object
-      // In a real implementation, you might want to scrape the embed page
-      // or use a different approach to get metadata
+      // Use our get-track-metadata edge function to get track details
+      const response = await fetch('/functions/v1/get-track-metadata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ trackId })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch track metadata from Spotify')
+      }
+
+      const data = await response.json()
+      
+      if (!data.track) {
+        throw new Error('Track not found on Spotify')
+      }
+
+      const spotifyTrack = data.track
+      
       const track: SpotifyTrack = {
         spotify_track_id: trackId,
-        title: 'Track Title', // This would be extracted from the embed
-        artist: 'Artist Name', // This would be extracted from the embed
-        album: 'Album Name', // This would be extracted from the embed
-        duration_ms: null,
-        album_art_url: null,
-        preview_url: null,
-        external_url: `https://open.spotify.com/track/${trackId}`,
-        popularity: 0
+        title: spotifyTrack.title,
+        artist: spotifyTrack.artist,
+        album: spotifyTrack.album,
+        duration_ms: spotifyTrack.duration_ms,
+        album_art_url: spotifyTrack.album_art_url,
+        preview_url: spotifyTrack.preview_url,
+        external_url: spotifyTrack.external_url,
+        popularity: spotifyTrack.popularity
       }
       
       setTrack(track)

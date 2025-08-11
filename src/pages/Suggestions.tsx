@@ -1,20 +1,29 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdateMemberRole } from '@/hooks/useBands'
+import { useAuth } from '@/context/AuthContext'
 import { useSongSuggestions, useRateSong, useRemoveSuggestion, useUpdateSongSuggester } from '@/hooks/useSongs'
-import { useBand, useUserBandRole, useBandMembers } from '@/hooks/useBands'
-
-import { StarRating } from '@/components/StarRating'
+import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/Header'
+import { StarRating } from '@/components/StarRating'
+import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { BandSidebar } from '@/components/BandSidebar'
 import { 
-  Music, 
-  Clock, 
-  Filter,
+  Users,
+  UserPlus,
+  MoreVertical,
+  Shield,
   Search,
+  Lock,
+  Mail,
   User,
+  Clock,
   ExternalLink,
+  Star,
+  Filter,
+  Edit,
   Trash2,
-  Edit
+  Music
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -287,33 +296,12 @@ export function Suggestions() {
 
                           {/* Spotify Controls - Compact */}
                           {song.spotify_track_id && (
-                            <div className="mt-4 flex items-center space-x-2">
-                              <button className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z"/>
-                                </svg>
-                              </button>
-                              <button className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-colors">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                                </svg>
-                              </button>
-                              <div className="flex items-center space-x-1">
-                                <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                                </svg>
-                                <div className="w-12 h-1 bg-gray-200 rounded-full">
-                                  <div className="w-8 h-1 bg-gray-400 rounded-full"></div>
-                                </div>
-                              </div>
-                              <a
-                                href={`https://open.spotify.com/track/${song.spotify_track_id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-green-600 hover:text-green-700 font-medium"
-                              >
-                                Spotify
-                              </a>
+                            <div className="mt-4">
+                              <SpotifyEmbed 
+                                trackId={song.spotify_track_id} 
+                                compact={true}
+                                height={80}
+                              />
                             </div>
                           )}
                         </div>

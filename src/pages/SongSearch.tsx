@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Link
 } from 'lucide-react'
+import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 
 interface ManualSongForm {
   title: string
@@ -190,14 +191,10 @@ export function SongSearch() {
                     
                     {/* Spotify Embed */}
                     <div className="mt-4">
-                      <iframe
-                        src={`https://open.spotify.com/embed/track/${track.spotify_track_id}?utm_source=generator&theme=0`}
-                        width="100%"
-                        height="80"
-                        frameBorder="0"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        loading="lazy"
-                        title="Spotify player"
+                      <SpotifyEmbed 
+                        trackId={track.spotify_track_id} 
+                        compact={false}
+                        height={80}
                       />
                     </div>
 
