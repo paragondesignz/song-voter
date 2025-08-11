@@ -77,7 +77,7 @@ export function BandDashboard() {
     }
   }
 
-  const startEditingSuggester = (currentSuggesterId: string) => {
+  const startEditingSuggester = () => {
     // Function kept for potential future use
   }
 
@@ -354,7 +354,7 @@ export function BandDashboard() {
                           {userRole === 'admin' && (
                             <div className="flex items-center space-x-1">
                               <button
-                                onClick={() => startEditingSuggester(song.suggested_by)}
+                                onClick={() => startEditingSuggester()}
                                 className="p-2 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
                                 title="Change who suggested this song (Admin only)"
                               >
