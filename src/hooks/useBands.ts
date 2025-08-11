@@ -110,7 +110,6 @@ export function useBandMembers(bandId: string) {
 
 export function useCreateBand() {
   const queryClient = useQueryClient()
-  const { user } = useAuth()
 
   return useMutation({
     mutationFn: async (name: string) => {
@@ -155,7 +154,6 @@ export function useCreateBand() {
 
 export function useJoinBand() {
   const queryClient = useQueryClient()
-  const { user } = useAuth()
 
   return useMutation({
     mutationFn: async (inviteCode: string) => {
@@ -238,7 +236,6 @@ export function useRemoveBandMember() {
 
 export function useLeaveBand() {
   const queryClient = useQueryClient()
-  const { user } = useAuth()
 
   return useMutation({
     mutationFn: async (bandId: string) => {
