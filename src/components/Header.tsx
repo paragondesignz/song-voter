@@ -113,7 +113,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                 onClick={() => navigate(`/band/${userBand.id}/ai-finder`)}
                 className={getButtonClasses(isActiveRoute('/ai-finder'))}
               >
-                AI Song Finder
+                AI Song Detail Finder
               </button>
             )}
             {/* Analytics Button */}

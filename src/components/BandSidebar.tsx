@@ -60,6 +60,14 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
                           <span> at {rehearsal.start_time}</span>
                         )}
                       </p>
+                      {rehearsal.song_selection_cutoff && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Song selection cutoff: {new Date(rehearsal.song_selection_cutoff).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </p>
+                      )}
                     </div>
                     <div className="ml-4">
                       <Calendar className="h-5 w-5 text-gray-400" />
