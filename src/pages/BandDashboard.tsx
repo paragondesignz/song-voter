@@ -17,7 +17,6 @@ export function BandDashboard() {
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
-  const [selectedNewSuggester, setSelectedNewSuggester] = useState<string>('')
   const [currentPage, setCurrentPage] = useState(1)
   
   const { data: band } = useBand(bandId!)
@@ -78,8 +77,8 @@ export function BandDashboard() {
     }
   }
 
-  const startEditingSuggester = (songId: string, currentSuggesterId: string) => {
-    setSelectedNewSuggester(currentSuggesterId)
+  const startEditingSuggester = (currentSuggesterId: string) => {
+    // Function kept for potential future use
   }
 
   const filteredSuggestions = suggestions?.filter(song =>
@@ -355,7 +354,7 @@ export function BandDashboard() {
                           {userRole === 'admin' && (
                             <div className="flex items-center space-x-1">
                               <button
-                                onClick={() => startEditingSuggester(song.id, song.suggested_by)}
+                                onClick={() => startEditingSuggester(song.suggested_by)}
                                 className="p-2 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
                                 title="Change who suggested this song (Admin only)"
                               >
