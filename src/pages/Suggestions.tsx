@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSongSuggestions, useVoteSong, useRemoveSuggestion, useVoteRateLimit } from '@/hooks/useSongs'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
-import { useAuth } from '@/context/AuthContext'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { 
   ArrowLeft, 
   Music, 
-  Heart, 
+  ThumbsUp, 
+  ThumbsDown, 
   Clock, 
   Filter,
   Search,
@@ -24,7 +24,6 @@ type SortOption = 'newest' | 'votes' | 'alphabetical' | 'trending'
 
 export function Suggestions() {
   const { bandId } = useParams<{ bandId: string }>()
-  const { user } = useAuth()
   const navigate = useNavigate()
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [searchQuery, setSearchQuery] = useState('')
@@ -42,15 +41,17 @@ export function Suggestions() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const handleVote = async (songId: string, isCurrentlyVoted: boolean, voteType: 'upvote' | 'downvote' = 'upvote') => {
+  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
     if (rateLimit && rateLimit.votesRemaining <= 0) {
       return // Don't allow voting if rate limit exceeded
     }
 
+    // If clicking the same vote type, remove the vote; otherwise set the new vote type
+    const voteType = currentVote === newVoteType ? null : newVoteType
+
     await voteSong.mutateAsync({
       songId,
       bandId: bandId!,
-      isVoting: !isCurrentlyVoted,
       voteType
     })
   }
@@ -260,37 +261,79 @@ export function Suggestions() {
 
                     {/* Action buttons */}
                     <div className="flex items-center ml-4 space-x-2">
-                      {/* Vote button */}
-                      <div className="flex flex-col items-center">
-                        <button
-                          onClick={() => handleVote(song.id, song.user_voted || false)}
-                          disabled={song.suggested_by === user?.id || voteSong.isPending || (rateLimit && rateLimit.votesRemaining <= 0)}
-                          className={`p-3 rounded-full transition-colors ${
-                            song.user_voted
-                              ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          } ${
-                            song.suggested_by === user?.id
-                              ? 'opacity-50 cursor-not-allowed'
-                              : (rateLimit && rateLimit.votesRemaining <= 0)
-                              ? 'opacity-50 cursor-not-allowed'
-                              : ''
-                          }`}
-                          title={
-                            song.suggested_by === user?.id 
-                              ? "Can't vote on your own suggestion" 
-                              : (rateLimit && rateLimit.votesRemaining <= 0)
-                              ? "You've reached your voting limit for this hour"
-                              : song.user_voted
-                              ? "Remove your vote"
-                              : "Vote for this song"
-                          }
-                        >
-                          <Heart className={`w-5 h-5 ${song.user_voted ? 'fill-current' : ''}`} />
-                        </button>
-                        <span className="text-sm font-semibold text-gray-900 mt-1">
-                          {song.vote_count || 0}
-                        </span>
+                      {/* Vote buttons */}
+                      <div className="flex flex-col items-center space-y-2">
+                        <div className="flex items-center space-x-1">
+                          {/* Upvote button */}
+                          <button
+                            onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
+                            disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                            className={`p-2 rounded-full transition-colors ${
+                              song.user_voted === 'upvote'
+                                ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            } ${
+                              (rateLimit && rateLimit.votesRemaining <= 0)
+                                ? 'opacity-50 cursor-not-allowed'
+                                : ''
+                            }`}
+                            title={
+                              (rateLimit && rateLimit.votesRemaining <= 0)
+                                ? "You've reached your voting limit for this hour"
+                                : song.user_voted === 'upvote'
+                                ? "Remove your upvote"
+                                : "Upvote this song"
+                            }
+                          >
+                            <ThumbsUp className={`w-4 h-4 ${song.user_voted === 'upvote' ? 'fill-current' : ''}`} />
+                          </button>
+                          <span className="text-xs font-medium text-green-600">
+                            {song.upvote_count || 0}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-1">
+                          {/* Downvote button */}
+                          <button
+                            onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
+                            disabled={voteSong.isPending || Boolean(rateLimit && rateLimit.votesRemaining <= 0)}
+                            className={`p-2 rounded-full transition-colors ${
+                              song.user_voted === 'downvote'
+                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            } ${
+                              (rateLimit && rateLimit.votesRemaining <= 0)
+                                ? 'opacity-50 cursor-not-allowed'
+                                : ''
+                            }`}
+                            title={
+                              (rateLimit && rateLimit.votesRemaining <= 0)
+                                ? "You've reached your voting limit for this hour"
+                                : song.user_voted === 'downvote'
+                                ? "Remove your downvote"
+                                : "Downvote this song"
+                            }
+                          >
+                            <ThumbsDown className={`w-4 h-4 ${song.user_voted === 'downvote' ? 'fill-current' : ''}`} />
+                          </button>
+                          <span className="text-xs font-medium text-red-600">
+                            {song.downvote_count || 0}
+                          </span>
+                        </div>
+                        
+                        {/* Net score */}
+                        <div className="text-center">
+                          <span className={`text-sm font-bold ${
+                            (song.vote_count || 0) > 0 
+                              ? 'text-green-600' 
+                              : (song.vote_count || 0) < 0 
+                              ? 'text-red-600' 
+                              : 'text-gray-600'
+                          }`}>
+                            {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
+                          </span>
+                          <div className="text-xs text-gray-500">net</div>
+                        </div>
                       </div>
 
                       {/* Admin remove button */}

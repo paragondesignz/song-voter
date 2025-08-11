@@ -22,8 +22,10 @@ export interface SongSuggestion {
     display_name: string
     avatar_url?: string
   }
-  vote_count?: number
-  user_voted?: boolean
+  vote_count?: number // Net score (upvotes - downvotes)
+  upvote_count?: number
+  downvote_count?: number
+  user_voted?: 'upvote' | 'downvote' | null
 }
 
 export interface SongVote {
@@ -75,11 +77,20 @@ export function useSongSuggestions(bandId: string, options?: {
 
       if (error) throw error
 
-      return data.map((song: any) => ({
-        ...song,
-        vote_count: song.votes?.length || 0,
-        user_voted: song.votes?.some((vote: any) => vote.voter_id === user?.id) || false,
-      })) as SongSuggestion[]
+      return data.map((song: any) => {
+        const userVote = song.votes?.find((vote: any) => vote.voter_id === user?.id)
+        const upvotes = song.votes?.filter((vote: any) => vote.vote_type === 'upvote').length || 0
+        const downvotes = song.votes?.filter((vote: any) => vote.vote_type === 'downvote').length || 0
+        const netScore = upvotes - downvotes
+        
+        return {
+          ...song,
+          vote_count: netScore,
+          upvote_count: upvotes,
+          downvote_count: downvotes,
+          user_voted: userVote?.vote_type || null, // 'upvote', 'downvote', or null
+        }
+      }) as SongSuggestion[]
     },
     enabled: !!bandId && !!user,
   })
@@ -173,13 +184,11 @@ export function useVoteSong() {
     mutationFn: async ({
       songId,
       bandId,
-      isVoting,
-      voteType = 'upvote'
+      voteType
     }: {
       songId: string
       bandId: string
-      isVoting: boolean
-      voteType?: 'upvote' | 'downvote'
+      voteType: 'upvote' | 'downvote' | null // null means remove vote
     }) => {
       // Get current session
       const { data: { session } } = await supabase.auth.getSession()
@@ -187,24 +196,38 @@ export function useVoteSong() {
         throw new Error('You must be logged in to vote')
       }
 
-      // Check rate limit
-      await checkVoteRateLimit(session.user.id, bandId)
+      // Check rate limit only when adding/changing votes
+      if (voteType) {
+        await checkVoteRateLimit(session.user.id, bandId)
+      }
 
-      if (isVoting) {
-        // Add vote
+      if (voteType) {
+        // Add or update vote using upsert
         const { error } = await supabase
           .from('song_votes')
-          .insert({
+          .upsert({
             band_id: bandId,
             song_suggestion_id: songId,
             voter_id: session.user.id,
             vote_type: voteType,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'song_suggestion_id,voter_id'
           })
 
         if (error) throw error
 
-        // Update rate limit
-        await updateVoteRateLimit(session.user.id, bandId)
+        // Update rate limit only for new votes
+        const { data: existingVote } = await supabase
+          .from('song_votes')
+          .select('id')
+          .eq('song_suggestion_id', songId)
+          .eq('voter_id', session.user.id)
+          .single()
+
+        if (!existingVote) {
+          await updateVoteRateLimit(session.user.id, bandId)
+        }
       } else {
         // Remove vote
         const { error } = await supabase
@@ -222,9 +245,7 @@ export function useVoteSong() {
       queryClient.invalidateQueries({ queryKey: ['vote-stats', bandId] })
     },
     onError: (error: any) => {
-      if (error.code === '23505') {
-        toast.error('You have already voted for this song')
-      } else if (error.message === 'RATE_LIMIT_EXCEEDED') {
+      if (error.message === 'RATE_LIMIT_EXCEEDED') {
         toast.error('You have reached your voting limit. Try again later.')
       } else {
         toast.error(error.message || 'Failed to vote')
