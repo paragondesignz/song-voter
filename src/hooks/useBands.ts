@@ -87,7 +87,7 @@ export function useBand(bandId: string) {
       if (bandError) throw bandError
 
       // Fetch member count separately (head request for performance)
-      const { count, error: countError } = await supabase
+      const { count } = await supabase
         .from('band_members')
         .select('id', { count: 'exact', head: true })
         .eq('band_id', bandId)
