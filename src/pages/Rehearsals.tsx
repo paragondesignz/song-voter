@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
-import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal } from '@/hooks/useRehearsals'
+import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { 
   ArrowLeft, 
   Calendar,
@@ -15,6 +15,35 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
+
+// Component to show selected songs for a rehearsal
+function RehearsalSelectedSongs({ rehearsalId, maxSongs = 5 }: { rehearsalId: string; maxSongs?: number }) {
+  const { data: setlist } = useRehearsalSetlist(rehearsalId)
+  
+  if (!setlist || setlist.length === 0) return null
+  
+  return (
+    <div className="mt-3 p-3 bg-white rounded border border-green-200">
+      <p className="text-sm font-medium text-green-700 mb-2">Final song selections:</p>
+      <div className="space-y-1">
+        {setlist.slice(0, maxSongs).map((item, index) => (
+          <div key={item.id} className="flex items-center text-sm text-gray-700">
+            <span className="w-6 text-center font-medium text-green-600">{index + 1}.</span>
+            <span className="truncate ml-2">
+              <span className="font-medium">{item.song_suggestion?.title}</span> 
+              <span className="text-gray-500"> - {item.song_suggestion?.artist}</span>
+            </span>
+          </div>
+        ))}
+        {setlist.length > maxSongs && (
+          <div className="text-sm text-gray-500 ml-8">
+            +{setlist.length - maxSongs} more song{setlist.length - maxSongs !== 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export function Rehearsals() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -272,6 +301,13 @@ export function Rehearsals() {
                     
                     {rehearsal.description && (
                       <p className="mt-3 text-sm text-gray-600">{rehearsal.description}</p>
+                    )}
+                    
+                    {/* Show selected songs after cutoff date */}
+                    {rehearsal.selection_deadline && 
+                     new Date() > new Date(rehearsal.selection_deadline) && 
+                     rehearsal.status !== 'planning' && (
+                      <RehearsalSelectedSongs rehearsalId={rehearsal.id} maxSongs={5} />
                     )}
                     
                     <div className="mt-4 flex space-x-3">

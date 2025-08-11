@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useLeaderboard, useVoteSong } from '@/hooks/useSongs'
+import { useLeaderboard, useRateSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+import { StarRating } from '@/components/StarRating'
 import { 
   ArrowLeft, 
   Music, 
@@ -11,8 +12,6 @@ import {
   TrendingUp,
   Medal,
   Crown,
-  ThumbsUp,
-  ThumbsDown
 } from 'lucide-react'
 
 type TimeFrame = 'all' | 'month' | 'week'
@@ -24,27 +23,25 @@ export function Leaderboard() {
   
   const { data: band } = useBand(bandId!)
   const { data: leaderboard, isLoading, refetch } = useLeaderboard(bandId!, timeFrame)
-  const voteSong = useVoteSong()
-  const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
+  const rateSong = useRateSong()
+  const [ratingOnSong, setRatingOnSong] = useState<string | null>(null)
 
-  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
+  const handleRate = async (songId: string, rating: number | null) => {
     try {
-      setVotingOnSong(songId)
-      // If clicking the same vote type, remove the vote; otherwise set the new vote type
-      const voteType = currentVote === newVoteType ? null : newVoteType
+      setRatingOnSong(songId)
 
-      await voteSong.mutateAsync({
+      await rateSong.mutateAsync({
         songId,
         bandId: bandId!,
-        voteType
+        rating
       })
       
-      // Refetch to get updated vote counts
+      // Refetch to get updated ratings
       await refetch()
     } catch (error) {
-      console.error('Vote error:', error)
+      console.error('Rating error:', error)
     } finally {
-      setVotingOnSong(null)
+      setRatingOnSong(null)
     }
   }
 
@@ -191,7 +188,13 @@ export function Leaderboard() {
                           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
                             <div className="flex items-center">
                               <Heart className="w-4 h-4 mr-1 text-red-500" />
-                              <span className="font-medium">{song.vote_count} votes</span>
+                              <span className="font-medium">
+                                {song.average_rating ? song.average_rating.toFixed(1) : '—'} avg
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center">
+                              <span className="font-medium">{song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}</span>
                             </div>
                             
                             {song.recent_votes > 0 && (
@@ -225,66 +228,23 @@ export function Leaderboard() {
                         </div>
                       </div>
 
-                      {/* Vote buttons */}
-                      <div className="flex flex-col items-center ml-4 space-y-1">
-                        <div className="flex items-center space-x-1">
-                          {/* Upvote button */}
-                          <button
-                            onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                            disabled={votingOnSong === song.id}
-                            className={`p-2 rounded-full transition-all ${
-                              song.user_voted === 'upvote'
-                                ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                            title={
-                              song.user_voted === 'upvote'
-                                ? "Remove your upvote"
-                                : "Upvote this song"
-                            }
-                          >
-                            <ThumbsUp className={`w-4 h-4 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                          </button>
-                          <span className="text-sm font-medium text-green-600">
-                            {song.upvote_count || 0}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center space-x-1">
-                          {/* Downvote button */}
-                          <button
-                            onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                            disabled={votingOnSong === song.id}
-                            className={`p-2 rounded-full transition-all ${
-                              song.user_voted === 'downvote'
-                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                            title={
-                              song.user_voted === 'downvote'
-                                ? "Remove your downvote"
-                                : "Downvote this song"
-                            }
-                          >
-                            <ThumbsDown className={`w-4 h-4 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                          </button>
-                          <span className="text-sm font-medium text-red-600">
-                            {song.downvote_count || 0}
-                          </span>
-                        </div>
+                      {/* Star Rating */}
+                      <div className="flex flex-col items-center ml-4 space-y-2">
+                        <StarRating
+                          rating={song.user_rating}
+                          onRate={(rating) => handleRate(song.id, rating)}
+                          readonly={ratingOnSong === song.id}
+                          size="md"
+                        />
                         
-                        {/* Net score */}
+                        {/* Rating Info */}
                         <div className="text-center">
-                          <span className={`text-lg font-bold ${
-                            (song.vote_count || 0) > 0 
-                              ? 'text-green-600' 
-                              : (song.vote_count || 0) < 0 
-                              ? 'text-red-600' 
-                              : 'text-gray-600'
-                          }`}>
-                            {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
-                          </span>
-                          <div className="text-xs text-gray-500">net</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -321,15 +281,15 @@ export function Leaderboard() {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-600">
-                    {leaderboard.reduce((sum, song) => sum + song.vote_count, 0)}
+                    {leaderboard.reduce((sum, song) => sum + (song.total_ratings || 0), 0)}
                   </div>
-                  <div className="text-sm text-gray-600">Total Votes Cast</div>
+                  <div className="text-sm text-gray-600">Total Ratings Cast</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary-600">
-                    {leaderboard[0]?.vote_count || 0}
+                    {leaderboard[0]?.average_rating?.toFixed(1) || '—'}
                   </div>
-                  <div className="text-sm text-gray-600">Highest Score</div>
+                  <div className="text-sm text-gray-600">Highest Average</div>
                 </div>
               </div>
             </div>

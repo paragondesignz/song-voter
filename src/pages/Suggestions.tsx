@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSongSuggestions, useRateSong, useRemoveSuggestion } from '@/hooks/useSongs'
-import { useBand, useUserBandRole } from '@/hooks/useBands'
+import { useSongSuggestions, useRateSong, useRemoveSuggestion, useUpdateSongSuggester } from '@/hooks/useSongs'
+import { useBand, useUserBandRole, useBandMembers } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
 import { 
@@ -16,7 +16,8 @@ import {
   User,
   ExternalLink,
   Trash2,
-  BarChart3
+  BarChart3,
+  Edit
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -28,12 +29,16 @@ export function Suggestions() {
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
+  const [editingSuggester, setEditingSuggester] = useState<string | null>(null)
+  const [selectedNewSuggester, setSelectedNewSuggester] = useState<string>('')
   
   const { data: band } = useBand(bandId!)
   const { data: suggestions, isLoading, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
+  const { data: bandMembers } = useBandMembers(bandId!)
   const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
+  const updateSongSuggester = useUpdateSongSuggester()
 
   const formatDuration = (durationMs: number) => {
     const minutes = Math.floor(durationMs / 60000)
@@ -67,6 +72,24 @@ export function Suggestions() {
         bandId: bandId!
       })
     }
+  }
+
+  const handleUpdateSuggester = async (songId: string) => {
+    if (!selectedNewSuggester) return
+    
+    await updateSongSuggester.mutateAsync({
+      songId,
+      newSuggesterId: selectedNewSuggester
+    })
+    
+    setEditingSuggester(null)
+    setSelectedNewSuggester('')
+    await refetch()
+  }
+
+  const startEditingSuggester = (songId: string, currentSuggesterId: string) => {
+    setEditingSuggester(songId)
+    setSelectedNewSuggester(currentSuggesterId)
   }
 
   const filteredSuggestions = suggestions?.filter(song =>
@@ -175,6 +198,48 @@ export function Suggestions() {
             </div>
           </div>
 
+          {/* Edit Suggester Modal */}
+          {editingSuggester && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <h3 className="text-lg font-semibold mb-4">Change Song Suggester</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  Select who should be credited as the suggester for this song:
+                </p>
+                <select
+                  value={selectedNewSuggester}
+                  onChange={(e) => setSelectedNewSuggester(e.target.value)}
+                  className="input-field w-full mb-4"
+                >
+                  <option value="">Select a band member...</option>
+                  {bandMembers?.map((member) => (
+                    <option key={member.user_id} value={member.user_id}>
+                      {member.user?.display_name} ({member.role})
+                    </option>
+                  ))}
+                </select>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setEditingSuggester(null)
+                      setSelectedNewSuggester('')
+                    }}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleUpdateSuggester(editingSuggester)}
+                    disabled={!selectedNewSuggester || updateSongSuggester.isPending}
+                    className="btn-primary"
+                  >
+                    {updateSongSuggester.isPending ? 'Updating...' : 'Update Suggester'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Songs list */}
           {sortedSuggestions.length > 0 ? (
             <div className="space-y-4">
@@ -275,16 +340,25 @@ export function Suggestions() {
                         </div>
                       </div>
 
-                      {/* Admin remove button */}
+                      {/* Admin controls */}
                       {userRole === 'admin' && (
-                        <button
-                          onClick={() => handleRemoveSuggestion(song.id)}
-                          disabled={removeSuggestion.isPending}
-                          className="p-3 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600"
-                          title="Remove suggestion (Admin only)"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => startEditingSuggester(song.id, song.suggested_by)}
+                            className="p-3 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600"
+                            title="Change who suggested this song (Admin only)"
+                          >
+                            <Edit className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleRemoveSuggestion(song.id)}
+                            disabled={removeSuggestion.isPending}
+                            className="p-3 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600"
+                            title="Remove suggestion (Admin only)"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>

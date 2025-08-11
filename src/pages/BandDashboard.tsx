@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
-import { useSongSuggestions, useLeaderboard, useVoteSong } from '@/hooks/useSongs'
-import { useBandRehearsals } from '@/hooks/useRehearsals'
+import { useSongSuggestions, useLeaderboard, useRateSong } from '@/hooks/useSongs'
+import { useBandRehearsals, useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { useAuth } from '@/context/AuthContext'
+import { StarRating } from '@/components/StarRating'
 import { 
   Music, 
   Users, 
@@ -19,6 +20,34 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
+// Component to show selected songs for a rehearsal
+function RehearsalSelectedSongs({ rehearsalId, maxSongs = 3 }: { rehearsalId: string; maxSongs?: number }) {
+  const { data: setlist } = useRehearsalSetlist(rehearsalId)
+  
+  if (!setlist || setlist.length === 0) return null
+  
+  return (
+    <div className="mt-2 space-y-1">
+      <p className="text-xs font-medium text-green-600">Final selections:</p>
+      <div className="space-y-1">
+        {setlist.slice(0, maxSongs).map((item, index) => (
+          <div key={item.id} className="flex items-center text-xs text-gray-600">
+            <span className="w-4 text-center font-medium">{index + 1}.</span>
+            <span className="truncate ml-1">
+              {item.song_suggestion?.title} - {item.song_suggestion?.artist}
+            </span>
+          </div>
+        ))}
+        {setlist.length > maxSongs && (
+          <div className="text-xs text-gray-500">
+            +{setlist.length - maxSongs} more song{setlist.length - maxSongs !== 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function BandDashboard() {
   const { bandId } = useParams<{ bandId: string }>()
   const { user } = useAuth()
@@ -29,31 +58,29 @@ export function BandDashboard() {
   const { data: recentSuggestions, refetch: refetchSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard(bandId!)
   const { data: rehearsals } = useBandRehearsals(bandId!)
-  const voteSong = useVoteSong()
+  const rateSong = useRateSong()
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
   const userRole = members?.find(m => m.user_id === user?.id)?.role
 
-  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote', isFromLeaderboard: boolean = false) => {
+  const handleRate = async (songId: string, rating: number | null, isFromLeaderboard: boolean = false) => {
     try {
       setVotingOnSong(songId)
-      // If clicking the same vote type, remove the vote; otherwise set the new vote type
-      const voteType = currentVote === newVoteType ? null : newVoteType
 
-      await voteSong.mutateAsync({
+      await rateSong.mutateAsync({
         songId,
         bandId: bandId!,
-        voteType
+        rating
       })
       
-      // Refetch to get updated vote counts
+      // Refetch to get updated ratings
       if (isFromLeaderboard) {
         await refetchLeaderboard()
       } else {
         await refetchSuggestions()
       }
     } catch (error) {
-      console.error('Vote error:', error)
+      console.error('Rating error:', error)
     } finally {
       setVotingOnSong(null)
     }
@@ -179,65 +206,18 @@ export function BandDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {/* Voting buttons */}
+                        {/* Star Rating */}
                         <div className="flex flex-col items-center space-y-1">
-                          <div className="flex items-center space-x-1">
-                            {/* Upvote button */}
-                            <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote', false)}
-                              disabled={votingOnSong === song.id}
-                              className={`p-1 rounded-full transition-all ${
-                                song.user_voted === 'upvote'
-                                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                              title={
-                                song.user_voted === 'upvote'
-                                  ? "Remove your upvote"
-                                  : "Upvote this song"
-                              }
-                            >
-                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                            </button>
-                            <span className="text-xs font-medium text-green-600">
-                              {song.upvote_count || 0}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center space-x-1">
-                            {/* Downvote button */}
-                            <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote', false)}
-                              disabled={votingOnSong === song.id}
-                              className={`p-1 rounded-full transition-all ${
-                                song.user_voted === 'downvote'
-                                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                              title={
-                                song.user_voted === 'downvote'
-                                  ? "Remove your downvote"
-                                  : "Downvote this song"
-                              }
-                            >
-                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                            </button>
-                            <span className="text-xs font-medium text-red-600">
-                              {song.downvote_count || 0}
-                            </span>
-                          </div>
-                          
-                          {/* Net score */}
+                          <StarRating
+                            rating={song.user_rating}
+                            onRate={(rating) => handleRate(song.id, rating, false)}
+                            readonly={votingOnSong === song.id}
+                            size="sm"
+                          />
                           <div className="text-center">
-                            <span className={`text-xs font-bold ${
-                              (song.vote_count || 0) > 0 
-                                ? 'text-green-600' 
-                                : (song.vote_count || 0) < 0 
-                                ? 'text-red-600' 
-                                : 'text-gray-600'
-                            }`}>
-                              {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
-                            </span>
+                            <div className="text-xs font-medium text-gray-900">
+                              {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -300,65 +280,18 @@ export function BandDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {/* Voting buttons */}
+                        {/* Star Rating */}
                         <div className="flex flex-col items-center space-y-1">
-                          <div className="flex items-center space-x-1">
-                            {/* Upvote button */}
-                            <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote', false)}
-                              disabled={votingOnSong === song.id}
-                              className={`p-1 rounded-full transition-all ${
-                                song.user_voted === 'upvote'
-                                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                              title={
-                                song.user_voted === 'upvote'
-                                  ? "Remove your upvote"
-                                  : "Upvote this song"
-                              }
-                            >
-                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                            </button>
-                            <span className="text-xs font-medium text-green-600">
-                              {song.upvote_count || 0}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center space-x-1">
-                            {/* Downvote button */}
-                            <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote', false)}
-                              disabled={votingOnSong === song.id}
-                              className={`p-1 rounded-full transition-all ${
-                                song.user_voted === 'downvote'
-                                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                              title={
-                                song.user_voted === 'downvote'
-                                  ? "Remove your downvote"
-                                  : "Downvote this song"
-                              }
-                            >
-                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                            </button>
-                            <span className="text-xs font-medium text-red-600">
-                              {song.downvote_count || 0}
-                            </span>
-                          </div>
-                          
-                          {/* Net score */}
+                          <StarRating
+                            rating={song.user_rating}
+                            onRate={(rating) => handleRate(song.id, rating, false)}
+                            readonly={votingOnSong === song.id}
+                            size="sm"
+                          />
                           <div className="text-center">
-                            <span className={`text-xs font-bold ${
-                              (song.vote_count || 0) > 0 
-                                ? 'text-green-600' 
-                                : (song.vote_count || 0) < 0 
-                                ? 'text-red-600' 
-                                : 'text-gray-600'
-                            }`}>
-                              {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
-                            </span>
+                            <div className="text-xs font-medium text-gray-900">
+                              {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -495,6 +428,12 @@ export function BandDashboard() {
                                 {rehearsal.songs_to_learn} songs to learn
                               </span>
                             </div>
+                            {/* Show selected songs after cutoff date */}
+                            {rehearsal.selection_deadline && 
+                             new Date() > new Date(rehearsal.selection_deadline) && 
+                             rehearsal.status !== 'planning' && (
+                              <RehearsalSelectedSongs rehearsalId={rehearsal.id} maxSongs={3} />
+                            )}
                           </div>
                           <div className="ml-4">
                             <Calendar className="h-5 w-5 text-gray-400" />
