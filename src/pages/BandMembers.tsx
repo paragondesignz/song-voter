@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdateMemberRole, useInviteMember } from '@/hooks/useBands'
+import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdateMemberRole } from '@/hooks/useBands'
 import { useAuth } from '@/context/AuthContext'
 import { 
   ArrowLeft, 
@@ -15,12 +15,7 @@ import {
   Search
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { useForm } from 'react-hook-form'
-
-interface InviteFormData {
-  email: string
-  role: 'admin' | 'member'
-}
+import { toast } from 'react-hot-toast'
 
 export function BandMembers() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -35,18 +30,6 @@ export function BandMembers() {
   const { data: userRole } = useUserBandRole(bandId!)
   const removeMember = useRemoveBandMember()
   const updateMemberRole = useUpdateMemberRole()
-  const inviteMember = useInviteMember()
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<InviteFormData>({
-    defaultValues: {
-      role: 'member'
-    }
-  })
 
   const isCurrentUserAdmin = userRole === 'admin'
   const filteredMembers = members?.filter(member =>
@@ -54,15 +37,6 @@ export function BandMembers() {
     member.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || []
 
-  const handleInviteMember = async (data: InviteFormData) => {
-    await inviteMember.mutateAsync({
-      bandId: bandId!,
-      email: data.email,
-      role: data.role
-    })
-    reset()
-    setShowInviteForm(false)
-  }
 
   const handleRemoveMember = async (userId: string, memberName: string) => {
     if (window.confirm(`Are you sure you want to remove ${memberName} from the band? This action cannot be undone.`)) {
@@ -157,79 +131,55 @@ export function BandMembers() {
               disabled={members && members.length >= 10}
             >
               <UserPlus className="h-4 w-4 mr-1" />
-              Invite Member
+              Share Invite Code
             </button>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Invite Member Form */}
+        {/* Invite Instructions */}
         {showInviteForm && (
           <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Invite New Member</h2>
-            <form onSubmit={handleSubmit(handleInviteMember)} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
-                    }
-                  })}
-                  type="email"
-                  className="input-field"
-                  placeholder="member@example.com"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-                )}
+            <h2 className="text-xl font-semibold mb-4">Invite New Members</h2>
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="font-medium text-blue-900 mb-2">Share Invite Code</h3>
+                <p className="text-sm text-blue-800 mb-4">
+                  Share this invite code with new members. They can join the band by entering this code on their dashboard.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <div className="flex-1 p-3 bg-white border border-blue-200 rounded-lg">
+                    <code className="text-lg font-mono font-bold text-blue-900">{band?.invite_code}</code>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(band?.invite_code || '')
+                      toast.success('Invite code copied to clipboard!')
+                    }}
+                    className="btn-primary text-sm"
+                  >
+                    Copy Code
+                  </button>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role
-                </label>
-                <select
-                  {...register('role')}
-                  className="input-field"
-                >
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> The user must already have an account to be invited. 
-                  They can also join using the invite code: <strong>{band?.invite_code}</strong>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  <strong>Note:</strong> New members must first create an account on the app, then use this invite code to join your band.
+                  All new members will join as regular members and can be promoted to admin later.
                 </p>
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end">
                 <button
-                  type="button"
-                  onClick={() => {
-                    setShowInviteForm(false)
-                    reset()
-                  }}
+                  onClick={() => setShowInviteForm(false)}
                   className="btn-secondary"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={inviteMember.isPending}
-                  className="btn-primary"
-                >
-                  {inviteMember.isPending ? 'Inviting...' : 'Send Invite'}
+                  Close
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         )}
 

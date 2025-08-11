@@ -264,7 +264,7 @@ export function Suggestions() {
                       <div className="flex flex-col items-center">
                         <button
                           onClick={() => handleVote(song.id, song.user_voted || false)}
-                          disabled={song.suggested_by === user?.id || voteSong.isPending}
+                          disabled={song.suggested_by === user?.id || voteSong.isPending || (rateLimit && rateLimit.votesRemaining <= 0)}
                           className={`p-3 rounded-full transition-colors ${
                             song.user_voted
                               ? 'bg-red-100 text-red-600 hover:bg-red-200'
@@ -272,9 +272,19 @@ export function Suggestions() {
                           } ${
                             song.suggested_by === user?.id
                               ? 'opacity-50 cursor-not-allowed'
+                              : (rateLimit && rateLimit.votesRemaining <= 0)
+                              ? 'opacity-50 cursor-not-allowed'
                               : ''
                           }`}
-                          title={song.suggested_by === user?.id ? "Can't vote on your own suggestion" : "Vote for this song"}
+                          title={
+                            song.suggested_by === user?.id 
+                              ? "Can't vote on your own suggestion" 
+                              : (rateLimit && rateLimit.votesRemaining <= 0)
+                              ? "You've reached your voting limit for this hour"
+                              : song.user_voted
+                              ? "Remove your vote"
+                              : "Vote for this song"
+                          }
                         >
                           <Heart className={`w-5 h-5 ${song.user_voted ? 'fill-current' : ''}`} />
                         </button>
