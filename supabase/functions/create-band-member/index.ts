@@ -69,8 +69,8 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         })
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(globalThis as any).resolvedUserId = authUser.id
+      // Store on global for this request scope
+      (globalThis as unknown as { resolvedUserId?: string }).resolvedUserId = authUser.id
     }
 
     const resolvedId = (created?.user?.id) ?? ((globalThis as unknown as { resolvedUserId?: string }).resolvedUserId)

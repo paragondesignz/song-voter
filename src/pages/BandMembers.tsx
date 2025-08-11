@@ -124,7 +124,7 @@ export function BandMembers() {
     
     setIsCreatingMember(true)
     try {
-      const { data: edgeResp, error: edgeError } = await supabase.functions.invoke('create-band-member', {
+      const { error: edgeError } = await supabase.functions.invoke('create-band-member', {
         body: {
           p_email: memberEmail,
           p_band_id: bandId,
