@@ -174,6 +174,9 @@ export function SongSearch() {
                             className="input-field w-full"
                             placeholder="Enter song title"
                           />
+                          {editableTrack.title !== 'Track from Spotify' && (
+                            <p className="text-xs text-green-600 mt-1">✓ Extracted from Spotify</p>
+                          )}
                         </div>
                         
                         <div className="mb-4">
@@ -187,6 +190,9 @@ export function SongSearch() {
                             className="input-field w-full"
                             placeholder="Enter artist name"
                           />
+                          {editableTrack.artist !== 'Artist from Spotify' && (
+                            <p className="text-xs text-green-600 mt-1">✓ Extracted from Spotify</p>
+                          )}
                         </div>
                         
                         <div className="mb-4">
@@ -200,7 +206,23 @@ export function SongSearch() {
                             className="input-field w-full"
                             placeholder="Enter album name"
                           />
+                          {editableTrack.album !== 'Album from Spotify' && (
+                            <p className="text-xs text-green-600 mt-1">✓ Extracted from Spotify</p>
+                          )}
                         </div>
+                        
+                        {editableTrack.album_art_url && (
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Album Art
+                            </label>
+                            <img 
+                              src={editableTrack.album_art_url} 
+                              alt="Album art" 
+                              className="w-16 h-16 rounded-md object-cover"
+                            />
+                          </div>
+                        )}
                         
                         {editableTrack.duration_ms && (
                           <div className="mb-4">
