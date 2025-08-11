@@ -1,6 +1,5 @@
 -- Allow band members to view profiles of other members in the same bands
 DO $$ BEGIN
-  -- Create policy if it doesn't already exist
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies 
     WHERE schemaname = 'public' 
@@ -22,7 +21,7 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- Backfill missing profiles for users that are already band members
+-- Backfill missing profiles for band members from auth.users
 INSERT INTO profiles (id, email, display_name)
 SELECT u.id,
        COALESCE(u.email, concat(u.id::text, '@unknown.local')) AS email,
