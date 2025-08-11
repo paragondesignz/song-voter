@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
-import { useSongSuggestions } from '@/hooks/useSongs'
+import { useSongSuggestions, useUpdateSongNotes } from '@/hooks/useSongs'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
-import { 
-  ArrowLeft, 
-  Clock, 
-  ExternalLink, 
-  Music, 
+import {
+  ArrowLeft,
+  Clock,
+  ExternalLink,
+  Music,
   User,
-  MessageSquare
+  MessageSquare,
+  Edit,
+  Save,
+  X
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -158,8 +161,8 @@ export function SongDetail() {
                     {/* Notes */}
                     {song.notes && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-blue-800 mb-2">Notes</h3>
-                        <p className="text-blue-700">{song.notes}</p>
+                        <h3 className="text-sm font-medium text-blue-900 mb-2">Notes</h3>
+                        <p className="text-blue-900">{song.notes}</p>
                       </div>
                     )}
 
@@ -229,7 +232,7 @@ export function SongDetail() {
                     value={discussionContent}
                     onChange={(e) => setDiscussionContent(e.target.value)}
                     placeholder="Share your thoughts about this song..."
-                    className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 placeholder-gray-600"
                     rows={4}
                     required
                   />
