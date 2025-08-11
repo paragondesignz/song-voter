@@ -22,10 +22,9 @@ export interface SongSuggestion {
     display_name: string
     avatar_url?: string
   }
-  vote_count?: number // Net score (upvotes - downvotes)
-  upvote_count?: number
-  downvote_count?: number
-  user_voted?: 'upvote' | 'downvote' | null
+  average_rating?: number // Average star rating (1-5)
+  total_ratings?: number
+  user_rating?: number | null // User's star rating (1-5)
 }
 
 export interface SongVote {
@@ -80,16 +79,15 @@ export function useSongSuggestions(bandId: string, options?: {
 
       return data.map((song: any) => {
         const userVote = song.votes?.find((vote: any) => vote.voter_id === user?.id)
-        const upvotes = song.votes?.filter((vote: any) => vote.vote_type === 'upvote').length || 0
-        const downvotes = song.votes?.filter((vote: any) => vote.vote_type === 'downvote').length || 0
-        const netScore = upvotes - downvotes
+        const ratings = song.votes?.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating)) || []
+        const totalRatings = ratings.length
+        const averageRating = totalRatings > 0 ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
         
         return {
           ...song,
-          vote_count: netScore,
-          upvote_count: upvotes,
-          downvote_count: downvotes,
-          user_voted: userVote?.vote_type || null, // 'upvote', 'downvote', or null
+          average_rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+          total_ratings: totalRatings,
+          user_rating: userVote ? parseInt(userVote.vote_type) || null : null,
         }
       }) as SongSuggestion[]
     },
@@ -123,21 +121,22 @@ export function useLeaderboard(bandId: string, timeFrame: 'all' | 'month' | 'wee
 
       if (error) throw error
 
-      // Process and filter songs with votes
+      // Process and filter songs with ratings
       const processedSongs = data.map((song: any) => {
         const userVote = song.votes?.find((vote: any) => vote.voter_id === user?.id)
-        const upvotes = song.votes?.filter((vote: any) => vote.vote_type === 'upvote').length || 0
-        const downvotes = song.votes?.filter((vote: any) => vote.vote_type === 'downvote').length || 0
-        const netScore = upvotes - downvotes
+        const ratings = song.votes?.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating)) || []
+        const totalRatings = ratings.length
+        const averageRating = totalRatings > 0 ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
         
         return {
           ...song,
           id: song.id,
           song_suggestion_id: song.id, // For compatibility
-          vote_count: netScore,
-          upvote_count: upvotes,
-          downvote_count: downvotes,
-          user_voted: userVote?.vote_type || null,
+          average_rating: Math.round(averageRating * 10) / 10,
+          total_ratings: totalRatings,
+          user_rating: userVote ? parseInt(userVote.vote_type) || null : null,
+          // Calculate weighted score for better ranking
+          weighted_score: averageRating * totalRatings,
           recent_votes: song.votes?.filter((vote: any) => {
             const voteDate = new Date(vote.created_at || song.created_at)
             const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -146,18 +145,16 @@ export function useLeaderboard(bandId: string, timeFrame: 'all' | 'month' | 'wee
         }
       })
       
-      // Filter only songs with votes and sort by vote count
+      // Filter only songs with ratings and sort by weighted score
       return processedSongs
-        .filter((song: any) => song.vote_count !== 0 || song.upvote_count > 0 || song.downvote_count > 0)
+        .filter((song: any) => song.total_ratings > 0)
         .sort((a: any, b: any) => {
-          // First sort by net vote count
-          if (b.vote_count !== a.vote_count) {
-            return b.vote_count - a.vote_count
+          // First sort by average rating
+          if (Math.abs(b.average_rating - a.average_rating) > 0.1) {
+            return b.average_rating - a.average_rating
           }
-          // Then by total votes
-          const totalA = a.upvote_count + a.downvote_count
-          const totalB = b.upvote_count + b.downvote_count
-          return totalB - totalA
+          // Then by total ratings (more ratings = higher confidence)
+          return b.total_ratings - a.total_ratings
         })
         .slice(0, 50)
     },
@@ -228,18 +225,18 @@ export function useSuggestSong() {
   })
 }
 
-export function useVoteSong() {
+export function useRateSong() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({
       songId,
       bandId,
-      voteType
+      rating
     }: {
       songId: string
       bandId: string
-      voteType: 'upvote' | 'downvote' | null // null means remove vote
+      rating: number | null // 1-5 stars, null means remove rating
     }) => {
       // Get current session
       const { data: { session } } = await supabase.auth.getSession()
@@ -247,15 +244,20 @@ export function useVoteSong() {
         throw new Error('You must be logged in to vote')
       }
 
-      if (voteType) {
-        // Add or update vote using upsert
+      if (rating) {
+        // Validate rating is between 1-5
+        if (rating < 1 || rating > 5) {
+          throw new Error('Rating must be between 1 and 5 stars')
+        }
+        
+        // Add or update rating using upsert
         const { error } = await supabase
           .from('song_votes')
           .upsert({
             band_id: bandId,
             song_suggestion_id: songId,
             voter_id: session.user.id,
-            vote_type: voteType,
+            vote_type: rating.toString(),
             updated_at: new Date().toISOString()
           }, {
             onConflict: 'song_suggestion_id,voter_id'
@@ -263,7 +265,7 @@ export function useVoteSong() {
 
         if (error) throw error
       } else {
-        // Remove vote
+        // Remove rating
         const { error } = await supabase
           .from('song_votes')
           .delete()
@@ -284,11 +286,50 @@ export function useVoteSong() {
       queryClient.removeQueries({ queryKey: ['vote-rate-limit'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to vote')
+      toast.error(error.message || 'Failed to rate song')
     },
   })
 }
 
+// Backward compatibility
+export const useVoteSong = useRateSong
+
+export function useUpdateSongSuggester() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      songId,
+      newSuggesterId
+    }: {
+      songId: string
+      newSuggesterId: string
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('You must be logged in')
+      }
+
+      const { data, error } = await supabase.rpc('update_song_suggester', {
+        p_song_id: songId,
+        p_new_suggester_id: newSuggesterId,
+        p_admin_user_id: session.user.id
+      })
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, { songId }) => {
+      // Get the song's band_id and invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['song-suggestions'] })
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
+      toast.success('Song suggester updated successfully!')
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update song suggester')
+    },
+  })
+}
 
 export function useVoteStats(bandId: string) {
   return useQuery({

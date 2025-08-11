@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSongSuggestions, useVoteSong, useRemoveSuggestion } from '@/hooks/useSongs'
+import { useSongSuggestions, useRateSong, useRemoveSuggestion } from '@/hooks/useSongs'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+import { StarRating } from '@/components/StarRating'
 import { 
   ArrowLeft, 
   Music, 
@@ -31,7 +32,7 @@ export function Suggestions() {
   const { data: band } = useBand(bandId!)
   const { data: suggestions, isLoading, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
-  const voteSong = useVoteSong()
+  const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
 
   const formatDuration = (durationMs: number) => {
@@ -40,22 +41,20 @@ export function Suggestions() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
+  const handleRate = async (songId: string, rating: number | null) => {
     try {
       setVotingOnSong(songId)
-      // If clicking the same vote type, remove the vote; otherwise set the new vote type
-      const voteType = currentVote === newVoteType ? null : newVoteType
 
-      await voteSong.mutateAsync({
+      await rateSong.mutateAsync({
         songId,
         bandId: bandId!,
-        voteType
+        rating
       })
       
-      // Refetch to get updated vote counts
+      // Refetch to get updated ratings
       await refetch()
     } catch (error) {
-      console.error('Vote error:', error)
+      console.error('Rating error:', error)
     } finally {
       setVotingOnSong(null)
     }
@@ -255,67 +254,24 @@ export function Suggestions() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center ml-4 space-x-2">
-                      {/* Vote buttons */}
+                    <div className="flex items-center ml-4 space-x-4">
+                      {/* Star Rating */}
                       <div className="flex flex-col items-center space-y-2">
-                        <div className="flex items-center space-x-1">
-                          {/* Upvote button */}
-                          <button
-                            onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                            disabled={votingOnSong === song.id}
-                            className={`p-2 rounded-full transition-all ${
-                              song.user_voted === 'upvote'
-                                ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                            title={
-                              song.user_voted === 'upvote'
-                                ? "Remove your upvote"
-                                : "Upvote this song"
-                            }
-                          >
-                            <ThumbsUp className={`w-4 h-4 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                          </button>
-                          <span className="text-xs font-medium text-green-600">
-                            {song.upvote_count || 0}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center space-x-1">
-                          {/* Downvote button */}
-                          <button
-                            onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                            disabled={votingOnSong === song.id}
-                            className={`p-2 rounded-full transition-all ${
-                              song.user_voted === 'downvote'
-                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
-                            title={
-                              song.user_voted === 'downvote'
-                                ? "Remove your downvote"
-                                : "Downvote this song"
-                            }
-                          >
-                            <ThumbsDown className={`w-4 h-4 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
-                          </button>
-                          <span className="text-xs font-medium text-red-600">
-                            {song.downvote_count || 0}
-                          </span>
-                        </div>
+                        <StarRating
+                          rating={song.user_rating}
+                          onRate={(rating) => handleRate(song.id, rating)}
+                          readonly={votingOnSong === song.id}
+                          size="md"
+                        />
                         
-                        {/* Net score */}
+                        {/* Rating Info */}
                         <div className="text-center">
-                          <span className={`text-sm font-bold ${
-                            (song.vote_count || 0) > 0 
-                              ? 'text-green-600' 
-                              : (song.vote_count || 0) < 0 
-                              ? 'text-red-600' 
-                              : 'text-gray-600'
-                          }`}>
-                            {(song.vote_count || 0) > 0 ? '+' : ''}{song.vote_count || 0}
-                          </span>
-                          <div className="text-xs text-gray-500">net</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
+                          </div>
                         </div>
                       </div>
 
