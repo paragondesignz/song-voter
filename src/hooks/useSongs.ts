@@ -98,20 +98,70 @@ export function useSongSuggestions(bandId: string, options?: {
 }
 
 export function useLeaderboard(bandId: string, timeFrame: 'all' | 'month' | 'week' = 'all') {
+  const { user } = useAuth()
+  
   return useQuery({
-    queryKey: ['leaderboard', bandId, timeFrame],
+    queryKey: ['leaderboard', bandId, timeFrame, user?.id],
     queryFn: async () => {
+      // Use the same query as song suggestions but with vote filtering
       const { data, error } = await supabase
-        .from('song_leaderboard')
-        .select('*')
+        .from('song_suggestions')
+        .select(`
+          *,
+          suggested_by_user:profiles!song_suggestions_suggested_by_fkey (
+            display_name,
+            avatar_url
+          ),
+          votes:song_votes (
+            id,
+            voter_id,
+            vote_type
+          )
+        `)
         .eq('band_id', bandId)
-        .order('vote_count', { ascending: false })
-        .limit(50)
+        .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data
+
+      // Process and filter songs with votes
+      const processedSongs = data.map((song: any) => {
+        const userVote = song.votes?.find((vote: any) => vote.voter_id === user?.id)
+        const upvotes = song.votes?.filter((vote: any) => vote.vote_type === 'upvote').length || 0
+        const downvotes = song.votes?.filter((vote: any) => vote.vote_type === 'downvote').length || 0
+        const netScore = upvotes - downvotes
+        
+        return {
+          ...song,
+          id: song.id,
+          song_suggestion_id: song.id, // For compatibility
+          vote_count: netScore,
+          upvote_count: upvotes,
+          downvote_count: downvotes,
+          user_voted: userVote?.vote_type || null,
+          recent_votes: song.votes?.filter((vote: any) => {
+            const voteDate = new Date(vote.created_at || song.created_at)
+            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+            return voteDate > weekAgo
+          }).length || 0
+        }
+      })
+      
+      // Filter only songs with votes and sort by vote count
+      return processedSongs
+        .filter((song: any) => song.vote_count !== 0 || song.upvote_count > 0 || song.downvote_count > 0)
+        .sort((a: any, b: any) => {
+          // First sort by net vote count
+          if (b.vote_count !== a.vote_count) {
+            return b.vote_count - a.vote_count
+          }
+          // Then by total votes
+          const totalA = a.upvote_count + a.downvote_count
+          const totalB = b.upvote_count + b.downvote_count
+          return totalB - totalA
+        })
+        .slice(0, 50)
     },
-    enabled: !!bandId,
+    enabled: !!bandId && !!user,
     staleTime: 1000 * 60 * 2, // 2 minutes
   })
 }

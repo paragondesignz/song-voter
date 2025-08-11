@@ -205,9 +205,9 @@ export function Suggestions() {
                         )}
                         
                         <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                          <div className="flex items-center">
+                          <div className="flex items-center font-medium text-gray-600">
                             <User className="w-3 h-3 mr-1" />
-                            {song.suggested_by_user?.display_name}
+                            Added by: {song.suggested_by_user?.display_name}
                           </div>
                           <span>•</span>
                           <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>

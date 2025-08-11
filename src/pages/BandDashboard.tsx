@@ -171,7 +171,7 @@ export function BandDashboard() {
                           <h3 className="font-medium text-gray-900">{song.title}</h3>
                           <p className="text-sm text-gray-600">{song.artist}</p>
                           <p className="text-xs text-gray-500">
-                            Suggested by {song.suggested_by_user?.display_name} • {' '}
+                            <span className="font-medium text-gray-600">Added by: {song.suggested_by_user?.display_name}</span> • {' '}
                             {formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}
                           </p>
                         </div>
@@ -290,6 +290,11 @@ export function BandDashboard() {
                         <div>
                           <h3 className="font-medium text-gray-900">{song.title}</h3>
                           <p className="text-sm text-gray-600">{song.artist}</p>
+                          {song.suggested_by_user && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Added by: {song.suggested_by_user.display_name}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">

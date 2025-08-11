@@ -182,6 +182,11 @@ export function Leaderboard() {
                             {song.title}
                           </h3>
                           <p className="text-gray-600 truncate">{song.artist}</p>
+                          {song.suggested_by_user && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Added by: {song.suggested_by_user.display_name}
+                            </p>
+                          )}
                           
                           <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
                             <div className="flex items-center">
