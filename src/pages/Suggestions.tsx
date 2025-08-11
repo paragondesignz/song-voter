@@ -324,7 +324,7 @@ export function Suggestions() {
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => startEditingSuggester(song.id, song.suggested_by)}
-                            className="p-3 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600"
+                            className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
                             title="Change who suggested this song (Admin only)"
                           >
                             <Edit className="w-5 h-5" />
@@ -332,7 +332,7 @@ export function Suggestions() {
                           <button
                             onClick={() => handleRemoveSuggestion(song.id)}
                             disabled={removeSuggestion.isPending}
-                            className="p-3 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600"
+                            className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
                             title="Remove suggestion (Admin only)"
                           >
                             <Trash2 className="w-5 h-5" />
