@@ -2,46 +2,15 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
 import { useSongSuggestions, useLeaderboard, useRateSong, useCleanupRehearsalSongs } from '@/hooks/useSongs'
-import { useBandRehearsals, useRehearsalSetlist } from '@/hooks/useRehearsals'
+import { useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { useAuth } from '@/context/AuthContext'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
-import { 
-  Music, 
-  Search, 
-  Trophy, 
-  Calendar
-} from 'lucide-react'
+import { Music, Search, Trophy } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-// Component to show selected songs for a rehearsal
-function RehearsalSelectedSongs({ rehearsalId, maxSongs = 3 }: { rehearsalId: string; maxSongs?: number }) {
-  const { data: setlist } = useRehearsalSetlist(rehearsalId)
-  
-  if (!setlist || setlist.length === 0) return null
-  
-  return (
-    <div className="mt-2 space-y-1">
-      <p className="text-xs font-medium text-green-600">Final selections:</p>
-      <div className="space-y-1">
-        {setlist.slice(0, maxSongs).map((item, index) => (
-          <div key={item.id} className="flex items-center text-xs text-gray-600">
-            <span className="w-4 text-center font-medium">{index + 1}.</span>
-            <span className="truncate ml-1">
-              {item.song_suggestion?.title} - {item.song_suggestion?.artist}
-            </span>
-          </div>
-        ))}
-        {setlist.length > maxSongs && (
-          <div className="text-xs text-gray-500">
-            +{setlist.length - maxSongs} more song{setlist.length - maxSongs !== 1 ? 's' : ''}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
+// Removed unused RehearsalSelectedSongs helper (sidebar handles previews)
 
 export function BandDashboard() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -52,12 +21,11 @@ export function BandDashboard() {
   const { data: members } = useBandMembers(bandId!)
   const { data: recentSuggestions, refetch: refetchSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard(bandId!)
-  const { data: rehearsals } = useBandRehearsals(bandId!)
   const rateSong = useRateSong()
   const cleanupRehearsalSongs = useCleanupRehearsalSongs()
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
-  const userRole = members?.find(m => m.user_id === user?.id)?.role
+  // userRole handled within sidebar where needed
 
   // Cleanup rehearsal songs on page load (silent, once per session)
   useEffect(() => {

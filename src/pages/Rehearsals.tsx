@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
+import { Header } from '@/components/Header'
+import { BandSidebar } from '@/components/BandSidebar'
 import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { 
   ArrowLeft, 
@@ -108,36 +110,11 @@ export function Rehearsals() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate(`/band/${bandId}`)}
-                className="mr-4 text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <Calendar className="h-6 w-6 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">Rehearsals</h1>
-                <p className="text-xs text-gray-500">{band?.name}</p>
-              </div>
-            </div>
-            {userRole === 'admin' && (
-              <button 
-                onClick={() => setShowCreateForm(true)}
-                className="btn-primary text-sm"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Schedule Rehearsal
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header title="Rehearsals" subtitle={band?.name} />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
         {/* Create Rehearsal Form */}
         {showCreateForm && (
           <div className="card mb-8">
@@ -363,6 +340,12 @@ export function Rehearsals() {
             )}
           </div>
         )}
+          </div>
+          {/* Sidebar */}
+          <div>
+            <BandSidebar bandId={bandId!} />
+          </div>
+        </div>
       </main>
     </div>
   )
