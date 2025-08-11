@@ -56,7 +56,8 @@ export function useSongSuggestions(bandId: string, options?: {
           ),
           votes:song_votes (
             id,
-            voter_id
+            voter_id,
+            vote_type
           )
         `)
         .eq('band_id', bandId)
@@ -223,9 +224,14 @@ export function useVoteSong() {
       }
     },
     onSuccess: (_, { bandId }) => {
+      // Invalidate and refetch immediately for better UX
       queryClient.invalidateQueries({ queryKey: ['song-suggestions', bandId] })
+      queryClient.refetchQueries({ queryKey: ['song-suggestions', bandId] })
       queryClient.invalidateQueries({ queryKey: ['leaderboard', bandId] })
       queryClient.invalidateQueries({ queryKey: ['vote-stats', bandId] })
+      queryClient.invalidateQueries({ queryKey: ['user-vote-stats', bandId] })
+      // Clear any stale rate limit queries that might still be cached
+      queryClient.removeQueries({ queryKey: ['vote-rate-limit'] })
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to vote')

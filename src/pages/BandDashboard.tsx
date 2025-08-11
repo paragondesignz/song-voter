@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
 import { useSongSuggestions, useLeaderboard, useVoteSong } from '@/hooks/useSongs'
@@ -23,21 +24,36 @@ export function BandDashboard() {
   
   const { data: band } = useBand(bandId!)
   const { data: members } = useBandMembers(bandId!)
-  const { data: recentSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
-  const { data: leaderboard } = useLeaderboard(bandId!)
+  const { data: recentSuggestions, refetch: refetchSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
+  const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard(bandId!)
   const voteSong = useVoteSong()
+  const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
   const userRole = members?.find(m => m.user_id === user?.id)?.role
 
-  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
-    // If clicking the same vote type, remove the vote; otherwise set the new vote type
-    const voteType = currentVote === newVoteType ? null : newVoteType
+  const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote', isFromLeaderboard: boolean = false) => {
+    try {
+      setVotingOnSong(songId)
+      // If clicking the same vote type, remove the vote; otherwise set the new vote type
+      const voteType = currentVote === newVoteType ? null : newVoteType
 
-    await voteSong.mutateAsync({
-      songId,
-      bandId: bandId!,
-      voteType
-    })
+      await voteSong.mutateAsync({
+        songId,
+        bandId: bandId!,
+        voteType
+      })
+      
+      // Refetch to get updated vote counts
+      if (isFromLeaderboard) {
+        await refetchLeaderboard()
+      } else {
+        await refetchSuggestions()
+      }
+    } catch (error) {
+      console.error('Vote error:', error)
+    } finally {
+      setVotingOnSong(null)
+    }
   }
 
   if (!band) {
@@ -158,20 +174,20 @@ export function BandDashboard() {
                           <div className="flex items-center space-x-1">
                             {/* Upvote button */}
                             <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                              disabled={voteSong.isPending}
-                              className={`p-1 rounded-full transition-colors ${
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote', false)}
+                              disabled={votingOnSong === song.id}
+                              className={`p-1 rounded-full transition-all ${
                                 song.user_voted === 'upvote'
                                   ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
                               title={
                                 song.user_voted === 'upvote'
                                   ? "Remove your upvote"
                                   : "Upvote this song"
                               }
                             >
-                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''}`} />
+                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
                             </button>
                             <span className="text-xs font-medium text-green-600">
                               {song.upvote_count || 0}
@@ -181,20 +197,20 @@ export function BandDashboard() {
                           <div className="flex items-center space-x-1">
                             {/* Downvote button */}
                             <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                              disabled={voteSong.isPending}
-                              className={`p-1 rounded-full transition-colors ${
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote', false)}
+                              disabled={votingOnSong === song.id}
+                              className={`p-1 rounded-full transition-all ${
                                 song.user_voted === 'downvote'
                                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
                               title={
                                 song.user_voted === 'downvote'
                                   ? "Remove your downvote"
                                   : "Downvote this song"
                               }
                             >
-                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''}`} />
+                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
                             </button>
                             <span className="text-xs font-medium text-red-600">
                               {song.downvote_count || 0}
@@ -274,20 +290,20 @@ export function BandDashboard() {
                           <div className="flex items-center space-x-1">
                             {/* Upvote button */}
                             <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                              disabled={voteSong.isPending}
-                              className={`p-1 rounded-full transition-colors ${
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'upvote', false)}
+                              disabled={votingOnSong === song.id}
+                              className={`p-1 rounded-full transition-all ${
                                 song.user_voted === 'upvote'
                                   ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
                               title={
                                 song.user_voted === 'upvote'
                                   ? "Remove your upvote"
                                   : "Upvote this song"
                               }
                             >
-                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''}`} />
+                              <ThumbsUp className={`w-3 h-3 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
                             </button>
                             <span className="text-xs font-medium text-green-600">
                               {song.upvote_count || 0}
@@ -297,20 +313,20 @@ export function BandDashboard() {
                           <div className="flex items-center space-x-1">
                             {/* Downvote button */}
                             <button
-                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                              disabled={voteSong.isPending}
-                              className={`p-1 rounded-full transition-colors ${
+                              onClick={() => handleVote(song.id, song.user_voted || null, 'downvote', false)}
+                              disabled={votingOnSong === song.id}
+                              className={`p-1 rounded-full transition-all ${
                                 song.user_voted === 'downvote'
                                   ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
                               title={
                                 song.user_voted === 'downvote'
                                   ? "Remove your downvote"
                                   : "Downvote this song"
                               }
                             >
-                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''}`} />
+                              <ThumbsDown className={`w-3 h-3 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
                             </button>
                             <span className="text-xs font-medium text-red-600">
                               {song.downvote_count || 0}

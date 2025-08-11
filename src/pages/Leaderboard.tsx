@@ -23,18 +23,29 @@ export function Leaderboard() {
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('all')
   
   const { data: band } = useBand(bandId!)
-  const { data: leaderboard, isLoading } = useLeaderboard(bandId!, timeFrame)
+  const { data: leaderboard, isLoading, refetch } = useLeaderboard(bandId!, timeFrame)
   const voteSong = useVoteSong()
+  const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
   const handleVote = async (songId: string, currentVote: 'upvote' | 'downvote' | null, newVoteType: 'upvote' | 'downvote') => {
-    // If clicking the same vote type, remove the vote; otherwise set the new vote type
-    const voteType = currentVote === newVoteType ? null : newVoteType
+    try {
+      setVotingOnSong(songId)
+      // If clicking the same vote type, remove the vote; otherwise set the new vote type
+      const voteType = currentVote === newVoteType ? null : newVoteType
 
-    await voteSong.mutateAsync({
-      songId,
-      bandId: bandId!,
-      voteType
-    })
+      await voteSong.mutateAsync({
+        songId,
+        bandId: bandId!,
+        voteType
+      })
+      
+      // Refetch to get updated vote counts
+      await refetch()
+    } catch (error) {
+      console.error('Vote error:', error)
+    } finally {
+      setVotingOnSong(null)
+    }
   }
 
   const getRankIcon = (position: number) => {
@@ -215,19 +226,19 @@ export function Leaderboard() {
                           {/* Upvote button */}
                           <button
                             onClick={() => handleVote(song.id, song.user_voted || null, 'upvote')}
-                            disabled={voteSong.isPending}
-                            className={`p-2 rounded-full transition-colors ${
+                            disabled={votingOnSong === song.id}
+                            className={`p-2 rounded-full transition-all ${
                               song.user_voted === 'upvote'
                                 ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
                             title={
                               song.user_voted === 'upvote'
                                 ? "Remove your upvote"
                                 : "Upvote this song"
                             }
                           >
-                            <ThumbsUp className={`w-4 h-4 ${song.user_voted === 'upvote' ? 'fill-current' : ''}`} />
+                            <ThumbsUp className={`w-4 h-4 ${song.user_voted === 'upvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
                           </button>
                           <span className="text-sm font-medium text-green-600">
                             {song.upvote_count || 0}
@@ -238,19 +249,19 @@ export function Leaderboard() {
                           {/* Downvote button */}
                           <button
                             onClick={() => handleVote(song.id, song.user_voted || null, 'downvote')}
-                            disabled={voteSong.isPending}
-                            className={`p-2 rounded-full transition-colors ${
+                            disabled={votingOnSong === song.id}
+                            className={`p-2 rounded-full transition-all ${
                               song.user_voted === 'downvote'
                                 ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            } ${votingOnSong === song.id ? 'opacity-50 cursor-wait' : ''}`}
                             title={
                               song.user_voted === 'downvote'
                                 ? "Remove your downvote"
                                 : "Downvote this song"
                             }
                           >
-                            <ThumbsDown className={`w-4 h-4 ${song.user_voted === 'downvote' ? 'fill-current' : ''}`} />
+                            <ThumbsDown className={`w-4 h-4 ${song.user_voted === 'downvote' ? 'fill-current' : ''} ${votingOnSong === song.id ? 'animate-pulse' : ''}`} />
                           </button>
                           <span className="text-sm font-medium text-red-600">
                             {song.downvote_count || 0}
