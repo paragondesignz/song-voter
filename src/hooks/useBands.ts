@@ -49,7 +49,7 @@ export function useUserBands() {
 
       if (error) throw error
 
-      return data.map((item: any) => ({
+      return data.map((item: { bands: any; role: string }) => ({
         ...item.bands,
         role: item.role,
       })) as Band[]
@@ -85,14 +85,16 @@ export function useBand(bandId: string) {
 }
 
 export function useBandMembers(bandId: string) {
-  return useQuery({
+  return useQuery<BandMember[]>({
     queryKey: ['band-members', bandId],
-    queryFn: async () => {
+    queryFn: async (): Promise<BandMember[]> => {
+      
+      // Query band members with profiles join
       const { data, error } = await supabase
         .from('band_members')
         .select(`
           *,
-          user:user_id (
+          profiles(
             display_name,
             email,
             avatar_url
@@ -101,10 +103,53 @@ export function useBandMembers(bandId: string) {
         .eq('band_id', bandId)
         .order('joined_at', { ascending: true })
 
-      if (error) throw error
-      return data as BandMember[]
+      if (error) {
+        // eslint-disable-next-line no-console
+        console.error('Band members query error:', error)
+        // Fallback: get band members and profiles separately
+        const { data: members } = await supabase
+          .from('band_members')
+          .select('*')
+          .eq('band_id', bandId)
+          .order('joined_at', { ascending: true })
+          
+        if (members && members.length > 0) {
+          const memberIds = members.map(m => m.user_id)
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, display_name, email, avatar_url')
+            .in('id', memberIds)
+            
+          const combinedData = members.map(member => ({
+            ...member,
+            user: profiles?.find(p => p.id === member.user_id) || {
+              display_name: 'Unknown User',
+              email: 'unknown@example.com',
+              avatar_url: null
+            }
+          }))
+          
+          return combinedData as BandMember[]
+        }
+        
+        throw error
+      }
+      
+      // Transform the data to match expected structure
+      const transformedData = data?.map((item: any) => ({
+        ...item,
+        user: item.profiles ?? {
+          display_name: 'Unknown User',
+          email: 'unknown@example.com',
+          avatar_url: null,
+        }
+      })) || []
+      
+      return transformedData as BandMember[]
     },
     enabled: !!bandId,
+    staleTime: 0, // Always refetch to see fresh data
+    gcTime: 0, // Don't cache to ensure we see updates
   })
 }
 
@@ -146,8 +191,8 @@ export function useCreateBand() {
       queryClient.invalidateQueries({ queryKey: ['bands'] })
       toast.success('Band created successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create band')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create band')
     },
   })
 }
@@ -205,8 +250,8 @@ export function useJoinBand() {
       queryClient.invalidateQueries({ queryKey: ['bands'] })
       toast.success(`Successfully joined ${band.name}!`)
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to join band')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to join band')
     },
   })
 }
@@ -228,8 +273,8 @@ export function useRemoveBandMember() {
       queryClient.invalidateQueries({ queryKey: ['band-members', bandId] })
       toast.success('Member removed successfully')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to remove member')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove member')
     },
   })
 }
@@ -257,8 +302,8 @@ export function useLeaveBand() {
       queryClient.invalidateQueries({ queryKey: ['bands'] })
       toast.success('Successfully left the band')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to leave band')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to leave band')
     },
   })
 }
@@ -312,8 +357,34 @@ export function useUpdateMemberRole() {
       queryClient.invalidateQueries({ queryKey: ['user-band-role', bandId] })
       toast.success('Member role updated successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update member role')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update member role')
+    },
+  })
+}
+
+export function useUpdateBandName() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ bandId, name }: { bandId: string; name: string }) => {
+      const { data, error } = await supabase
+        .from('bands')
+        .update({ name })
+        .eq('id', bandId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (band) => {
+      queryClient.invalidateQueries({ queryKey: ['bands'] })
+      queryClient.invalidateQueries({ queryKey: ['band', band.id] })
+      toast.success('Band name updated successfully!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update band name')
     },
   })
 }
