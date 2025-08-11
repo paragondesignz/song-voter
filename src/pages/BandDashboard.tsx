@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useBand } from '@/hooks/useBands'
-import { useSongSuggestions, useRateSong, useCleanupRehearsalSongs, useRemoveSuggestion, useUpdateSongSuggester } from '@/hooks/useSongs'
-import { useUserBandRole, useBandMembers } from '@/hooks/useBands'
+import { useBand, useUserBandRole } from '@/hooks/useBands'
+import { useSongSuggestions, useRateSong, useCleanupRehearsalSongs, useRemoveSuggestion } from '@/hooks/useSongs'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
@@ -18,17 +17,14 @@ export function BandDashboard() {
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [searchQuery, setSearchQuery] = useState('')
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
-  const [editingSuggester, setEditingSuggester] = useState<string | null>(null)
   const [selectedNewSuggester, setSelectedNewSuggester] = useState<string>('')
   const [currentPage, setCurrentPage] = useState(1)
   
   const { data: band } = useBand(bandId!)
-  const { data: suggestions, isLoading, refetch } = useSongSuggestions(bandId!, { sortBy })
+  const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
-  const { data: bandMembers } = useBandMembers(bandId!)
   const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
-  const updateSongSuggester = useUpdateSongSuggester()
   const cleanupRehearsalSongs = useCleanupRehearsalSongs()
 
   const ITEMS_PER_PAGE = 10
@@ -82,21 +78,7 @@ export function BandDashboard() {
     }
   }
 
-  const handleUpdateSuggester = async (songId: string) => {
-    if (!selectedNewSuggester) return
-    
-    await updateSongSuggester.mutateAsync({
-      songId,
-      newSuggesterId: selectedNewSuggester
-    })
-    
-    setEditingSuggester(null)
-    setSelectedNewSuggester('')
-    await refetch()
-  }
-
   const startEditingSuggester = (songId: string, currentSuggesterId: string) => {
-    setEditingSuggester(songId)
     setSelectedNewSuggester(currentSuggesterId)
   }
 
