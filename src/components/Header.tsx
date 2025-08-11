@@ -48,7 +48,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-gray-700/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Title */}
@@ -61,8 +61,8 @@ export function Header({ title, subtitle }: HeaderProps) {
             </div>
             {(title || subtitle) && (
               <div>
-                {title && <h1 className="text-lg font-semibold text-gray-900">{title}</h1>}
-                {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+                {title && <h1 className="text-lg font-semibold">{title}</h1>}
+                {subtitle && <p className="text-xs text-secondary">{subtitle}</p>}
               </div>
             )}
           </div>
@@ -84,17 +84,17 @@ export function Header({ title, subtitle }: HeaderProps) {
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center space-x-2 text-secondary hover:text-white transition-colors"
               >
-                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center overflow-hidden ring-1 ring-gray-700/50">
                   {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
                     <img
                       src={profile?.avatar_url || (user?.user_metadata?.avatar_url as string)}
                       alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover"
+                      className="w-8 h-8 object-cover"
                     />
                   ) : (
-                    <User className="w-4 h-4 text-gray-500" />
+                    <User className="w-4 h-4 text-secondary" />
                   )}
                 </div>
                 <span className="text-sm font-medium hidden sm:block">
@@ -105,22 +105,22 @@ export function Header({ title, subtitle }: HeaderProps) {
 
               {/* Dropdown Menu */}
               {showDropdown && (
-                <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-48">
-                  <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+                <div className="absolute right-0 top-10 bg-[var(--color-surface)] rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] border border-gray-700/40 py-2 z-50 min-w-48">
+                  <div className="px-4 py-2 text-xs text-secondary border-b border-gray-700/40">
                     {user?.email}
                   </div>
                   
                   <button
                     onClick={handleProfile}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-white/5 flex items-center"
                   >
-                    <User className="w-4 h-4 mr-2 text-gray-400" />
+                    <User className="w-4 h-4 mr-2 text-secondary" />
                     Profile Settings
                   </button>
                   
                   <button
                     onClick={handleSignOut}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center text-red-600"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-white/5 flex items-center text-red-400"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
