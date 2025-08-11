@@ -104,15 +104,6 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
           {/* Right side navigation */}
           <div className="flex items-center space-x-3">
             {actions}
-            {/* Leaderboard Button */}
-            {userBand && (
-              <button
-                onClick={handleLeaderboard}
-                className={getButtonClasses(isActiveRoute('/leaderboard'))}
-              >
-                Leaderboard
-              </button>
-            )}
             {/* All Suggestions Button */}
             {userBand && (
               <button

@@ -233,115 +233,176 @@ export function BandDashboard() {
 
             {/* Songs list */}
             {sortedSuggestions.length > 0 ? (
-              <div className="space-y-4">
-                {sortedSuggestions.map((song) => (
-                  <div key={song.id} className="card hover:shadow-lg transition-shadow">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center flex-1">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <h3 className="font-semibold text-gray-900 truncate">{song.title}</h3>
+              <div className="space-y-3">
+                {sortedSuggestions.map((song, index) => {
+                  const position = index + 1
+                  return (
+                    <div
+                      key={song.id}
+                      className={`card border-2 transition-all hover:shadow-lg ${
+                        position === 1
+                          ? 'border-yellow-400/40'
+                          : position === 2
+                          ? 'border-gray-400/30'
+                          : position === 3
+                          ? 'border-amber-400/30'
+                          : 'border-[var(--color-border)]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center flex-1">
+                          <div className="mr-6">
+                            {position === 1 ? (
+                              <div className="w-8 h-8 bg-yellow-100 text-yellow-800 rounded-full flex items-center justify-center font-bold text-sm">
+                                🥇
+                              </div>
+                            ) : position === 2 ? (
+                              <div className="w-8 h-8 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center font-bold text-sm">
+                                🥈
+                              </div>
+                            ) : position === 3 ? (
+                              <div className="w-8 h-8 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center font-bold text-sm">
+                                🥉
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-sm">
+                                {position}
+                              </div>
+                            )}
                           </div>
-                          <p className="text-gray-600 truncate">{song.artist}</p>
-                          {song.album && (
-                            <p className="text-sm text-gray-500 truncate">{song.album}</p>
-                          )}
                           
-                          <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                            <div className="flex items-center font-medium text-gray-600">
-                              <User className="w-3 h-3 mr-1" />
-                              Added by: {song.suggested_by_user?.display_name}
-                            </div>
-                            <span>•</span>
-                            <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
-                            
-                            {song.duration_ms && (
-                              <>
-                                <span>•</span>
-                                <div className="flex items-center">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {formatDuration(song.duration_ms)}
-                                </div>
-                              </>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold truncate">
+                              {song.title}
+                            </h3>
+                            <p className="text-secondary truncate">{song.artist}</p>
+                            {song.album && (
+                              <p className="text-sm text-secondary mt-1">
+                                Album: {song.album}
+                              </p>
+                            )}
+                            {song.suggested_by_user && (
+                              <p className="text-xs text-secondary mt-1">
+                                Added by: {song.suggested_by_user.display_name}
+                              </p>
                             )}
                             
+                            <div className="flex items-center mt-2 space-x-4 text-sm text-secondary">
+                              <div className="flex items-center">
+                                <span className="font-medium">
+                                  {song.average_rating ? song.average_rating.toFixed(1) : '—'} avg
+                                </span>
+                              </div>
+                              
+                              <div className="flex items-center">
+                                <span className="font-medium">{song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}</span>
+                              </div>
+                              
+                              <span>•</span>
+                              <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
+                              
+                              {song.duration_ms && (
+                                <>
+                                  <span>•</span>
+                                  <div className="flex items-center">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {formatDuration(song.duration_ms)}
+                                  </div>
+                                </>
+                              )}
+                              
+                              {song.spotify_track_id && (
+                                <>
+                                  <span>•</span>
+                                  <a
+                                    href={`https://open.spotify.com/track/${song.spotify_track_id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary-600 hover:text-primary-700 flex items-center"
+                                  >
+                                    <ExternalLink className="w-3 h-3 mr-1" />
+                                    Spotify
+                                  </a>
+                                </>
+                              )}
+                            </div>
+                            
+                            {position <= 3 && (
+                              <div className="mt-2">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  position === 1
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : position === 2
+                                    ? 'bg-gray-100 text-gray-800'
+                                    : 'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {position === 1 ? '🥇 Most Popular' : position === 2 ? '🥈 Runner Up' : '🥉 Third Place'}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {song.notes && (
+                              <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                                <strong>Note:</strong> {song.notes}
+                              </div>
+                            )}
+
+                            {/* Spotify Embed */}
                             {song.spotify_track_id && (
-                              <>
-                                <span>•</span>
-                                <a
-                                  href={`https://open.spotify.com/track/${song.spotify_track_id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary-600 hover:text-primary-700 flex items-center"
-                                >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  Spotify
-                                </a>
-                              </>
+                              <div className="mt-4">
+                                <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
+                              </div>
                             )}
                           </div>
-                          
-                          {song.notes && (
-                            <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
-                              <strong>Note:</strong> {song.notes}
-                            </div>
-                          )}
+                        </div>
 
-                          {/* Spotify Embed */}
-                          {song.spotify_track_id && (
-                            <div className="mt-4">
-                              <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
+                        {/* Action buttons */}
+                        <div className="flex items-center ml-4 space-x-4">
+                          {/* Star Rating */}
+                          <div className="flex flex-col items-center space-y-2">
+                            <StarRating
+                              rating={song.user_rating || null}
+                              onRate={(rating) => handleRate(song.id, rating)}
+                              readonly={votingOnSong === song.id}
+                              size="md"
+                            />
+                            
+                            {/* Rating Info */}
+                            <div className="text-center">
+                              <div className="text-sm font-medium text-gray-900">
+                                {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Admin controls */}
+                          {userRole === 'admin' && (
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => startEditingSuggester(song.id, song.suggested_by)}
+                                className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
+                                title="Change who suggested this song (Admin only)"
+                              >
+                                <Edit className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleRemoveSuggestion(song.id)}
+                                disabled={removeSuggestion.isPending}
+                                className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
+                                title="Remove suggestion (Admin only)"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
                             </div>
                           )}
                         </div>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex items-center ml-4 space-x-4">
-                        {/* Star Rating */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <StarRating
-                            rating={song.user_rating || null}
-                            onRate={(rating) => handleRate(song.id, rating)}
-                            readonly={votingOnSong === song.id}
-                            size="md"
-                          />
-                          
-                          {/* Rating Info */}
-                          <div className="text-center">
-                            <div className="text-sm font-medium text-gray-900">
-                              {song.average_rating ? song.average_rating.toFixed(1) : '—'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Admin controls */}
-                        {userRole === 'admin' && (
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => startEditingSuggester(song.id, song.suggested_by)}
-                              className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
-                              title="Change who suggested this song (Admin only)"
-                            >
-                              <Edit className="w-5 h-5" />
-                            </button>
-                            <button
-                              onClick={() => handleRemoveSuggestion(song.id)}
-                              disabled={removeSuggestion.isPending}
-                              className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
-                              title="Remove suggestion (Admin only)"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="card text-center py-12">
