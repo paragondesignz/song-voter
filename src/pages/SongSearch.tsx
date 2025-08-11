@@ -6,10 +6,8 @@ import { useSuggestSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
 import { Header } from '@/components/Header'
 import { 
-  Search, 
   Music, 
   Plus,
-  Clock,
   ExternalLink,
   Link
 } from 'lucide-react'
@@ -28,7 +26,7 @@ export function SongSearch() {
   const [spotifyUrl, setSpotifyUrl] = useState('')
   
   const { data: band } = useBand(bandId!)
-  const { track, isLoading, error, handleUrlSubmit, clearTrack } = useSpotifyEmbed()
+  const { track, isLoading, error, handleUrlSubmit } = useSpotifyEmbed()
   const suggestSong = useSuggestSong()
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ManualSongForm>()
