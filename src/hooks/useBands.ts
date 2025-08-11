@@ -35,32 +35,39 @@ export function useUserBands() {
       // eslint-disable-next-line no-console
       console.log('🔍 Fetching bands for user:', user?.id)
       
-      // Read bands directly; RLS restricts to bands the user belongs to
-      const { data: bands, error: bandsError } = await supabase
-        .from('bands')
-        .select('*')
-
-      // eslint-disable-next-line no-console
-      console.log('📊 Bands query result:', { bands, error: bandsError })
-
-      if (bandsError) throw bandsError
-
-      // Fetch this user's role per band, then merge client-side
-      const { data: roles } = await supabase
+      // First get user's band memberships
+      const { data: memberships, error: membershipsError } = await supabase
         .from('band_members')
-        .select('band_id, role')
+        .select(`
+          band_id,
+          role,
+          bands (
+            id,
+            name,
+            invite_code,
+            created_by,
+            created_at
+          )
+        `)
         .eq('user_id', user?.id)
 
-      const roleMap = new Map<string, string>()
-      roles?.forEach(r => roleMap.set(r.band_id, r.role))
+      // eslint-disable-next-line no-console
+      console.log('📊 Memberships query result:', { memberships, error: membershipsError })
 
-      return (bands || []).map((b: any) => ({
-        id: b.id,
-        name: b.name,
-        invite_code: b.invite_code,
-        created_by: b.created_by,
-        created_at: b.created_at,
-        role: (roleMap.get(b.id) as 'admin' | 'member') || 'member',
+      if (membershipsError) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching memberships:', membershipsError)
+        throw membershipsError
+      }
+
+      // Transform the data
+      return (memberships || []).map((m: any) => ({
+        id: m.bands.id,
+        name: m.bands.name,
+        invite_code: m.bands.invite_code,
+        created_by: m.bands.created_by,
+        created_at: m.bands.created_at,
+        role: m.role as 'admin' | 'member',
       })) as Band[]
     },
     enabled: !!user,
