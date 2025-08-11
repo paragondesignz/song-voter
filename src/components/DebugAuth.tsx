@@ -27,22 +27,38 @@ export function DebugAuth() {
         .select('*')
         .eq('id', user?.id || '')
         
-      // Test bands
+      // Test bands (all bands)
       const bandsResult = await supabase
         .from('bands')
         .select('*')
-        .limit(5)
         
-      // Test band members
+      // Test band members (simple)
       const membersResult = await supabase
         .from('band_members')
         .select('*')
         .eq('user_id', user?.id || '')
         
+      // Test band members with join (this is failing)
+      const membersJoinResult = await supabase
+        .from('band_members')
+        .select(`
+          band_id,
+          role,
+          bands (
+            id,
+            name,
+            invite_code,
+            created_by,
+            created_at
+          )
+        `)
+        .eq('user_id', user?.id || '')
+        
       setTestQuery({
         profiles: profilesResult,
         bands: bandsResult,
-        members: membersResult
+        members: membersResult,
+        membersJoin: membersJoinResult
       })
     }
     

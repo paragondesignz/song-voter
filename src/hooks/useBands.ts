@@ -35,24 +35,14 @@ export function useUserBands() {
       // eslint-disable-next-line no-console
       console.log('🔍 Fetching bands for user:', user?.id)
       
-      // First get user's band memberships
+      // Try simpler approach first - get memberships then fetch bands separately
       const { data: memberships, error: membershipsError } = await supabase
         .from('band_members')
-        .select(`
-          band_id,
-          role,
-          bands (
-            id,
-            name,
-            invite_code,
-            created_by,
-            created_at
-          )
-        `)
+        .select('band_id, role')
         .eq('user_id', user?.id)
 
       // eslint-disable-next-line no-console
-      console.log('📊 Memberships query result:', { memberships, error: membershipsError })
+      console.log('📊 Simple memberships result:', { memberships, error: membershipsError })
 
       if (membershipsError) {
         // eslint-disable-next-line no-console
@@ -60,14 +50,38 @@ export function useUserBands() {
         throw membershipsError
       }
 
-      // Transform the data
-      return (memberships || []).map((m: any) => ({
-        id: m.bands.id,
-        name: m.bands.name,
-        invite_code: m.bands.invite_code,
-        created_by: m.bands.created_by,
-        created_at: m.bands.created_at,
-        role: m.role as 'admin' | 'member',
+      if (!memberships || memberships.length === 0) {
+        // eslint-disable-next-line no-console
+        console.log('⚠️ No memberships found, returning empty array')
+        return []
+      }
+
+      // Get bands for those membership band_ids
+      const bandIds = memberships.map(m => m.band_id)
+      const { data: bands, error: bandsError } = await supabase
+        .from('bands')
+        .select('*')
+        .in('id', bandIds)
+
+      // eslint-disable-next-line no-console
+      console.log('📊 Bands query result:', { bands, error: bandsError })
+
+      if (bandsError) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching bands:', bandsError)
+        throw bandsError
+      }
+
+      // Merge the data
+      const roleMap = new Map(memberships.map(m => [m.band_id, m.role]))
+      
+      return (bands || []).map((band: any) => ({
+        id: band.id,
+        name: band.name,
+        invite_code: band.invite_code,
+        created_by: band.created_by,
+        created_at: band.created_at,
+        role: roleMap.get(band.id) as 'admin' | 'member',
       })) as Band[]
     },
     enabled: !!user,
