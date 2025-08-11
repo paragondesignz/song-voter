@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { useSpotifyEmbed } from '@/hooks/useSpotify'
+import { useSpotifyEmbed, type SpotifyTrack } from '@/hooks/useSpotify'
 import { useSuggestSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
 import { Header } from '@/components/Header'
@@ -25,9 +25,10 @@ export function SongSearch() {
   const navigate = useNavigate()
   const [showManualForm, setShowManualForm] = useState(false)
   const [spotifyUrl, setSpotifyUrl] = useState('')
+  const [editableTrack, setEditableTrack] = useState<SpotifyTrack | null>(null)
   
   const { data: band } = useBand(bandId!)
-  const { track, isLoading, error, handleUrlSubmit } = useSpotifyEmbed()
+  const { isLoading, error, handleUrlSubmit } = useSpotifyEmbed()
   const suggestSong = useSuggestSong()
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ManualSongForm>()
@@ -43,23 +44,24 @@ export function SongSearch() {
     
     const trackData = await handleUrlSubmit(spotifyUrl)
     if (trackData) {
-      // Track is now loaded and ready for suggestion
+      // Set the editable track for user modification
+      setEditableTrack(trackData)
     }
   }
 
   const handleSpotifySuggest = async () => {
-    if (!track) return
+    if (!editableTrack) return
     
     await suggestSong.mutateAsync({ 
       bandId: bandId!, 
       track: {
-        title: track.title,
-        artist: track.artist,
-        album: track.album,
-        spotify_track_id: track.spotify_track_id,
-        duration_ms: track.duration_ms,
-        album_art_url: track.album_art_url,
-        preview_url: track.preview_url
+        title: editableTrack.title,
+        artist: editableTrack.artist,
+        album: editableTrack.album,
+        spotify_track_id: editableTrack.spotify_track_id,
+        duration_ms: editableTrack.duration_ms,
+        album_art_url: editableTrack.album_art_url,
+        preview_url: editableTrack.preview_url
       }
     })
     navigate(`/band/${bandId}/suggestions`)
@@ -157,33 +159,66 @@ export function SongSearch() {
                 </div>
 
                 {/* Track Preview */}
-                {track && (
+                {editableTrack && (
                   <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{track.title}</h3>
-                        <p className="text-gray-600 mb-1">
-                          <span className="font-medium">Artist:</span> {track.artist}
-                        </p>
-                        {track.album && (
-                          <p className="text-gray-600 mb-1">
-                            <span className="font-medium">Album:</span> {track.album}
-                          </p>
-                        )}
-                        {track.duration_ms && (
-                          <p className="text-gray-600 mb-1">
-                            <span className="font-medium">Duration:</span> {formatDuration(track.duration_ms)}
-                          </p>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Song Title
+                          </label>
+                          <input
+                            type="text"
+                            value={editableTrack.title}
+                            onChange={(e) => setEditableTrack({ ...editableTrack, title: e.target.value })}
+                            className="input-field w-full"
+                            placeholder="Enter song title"
+                          />
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Artist
+                          </label>
+                          <input
+                            type="text"
+                            value={editableTrack.artist}
+                            onChange={(e) => setEditableTrack({ ...editableTrack, artist: e.target.value })}
+                            className="input-field w-full"
+                            placeholder="Enter artist name"
+                          />
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Album (optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={editableTrack.album}
+                            onChange={(e) => setEditableTrack({ ...editableTrack, album: e.target.value })}
+                            className="input-field w-full"
+                            placeholder="Enter album name"
+                          />
+                        </div>
+                        
+                        {editableTrack.duration_ms && (
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Duration
+                            </label>
+                            <p className="text-gray-600">{formatDuration(editableTrack.duration_ms)}</p>
+                          </div>
                         )}
                       </div>
                       <div className="ml-4">
                         <a
-                          href={track.external_url}
+                          href={editableTrack.external_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary-600 hover:text-primary-700 flex items-center text-sm"
                         >
-                          <ExternalLink className="w-4 h-4 mr-1" />
+                          <ExternalLink className="w-4 w-4 mr-1" />
                           Open in Spotify
                         </a>
                       </div>
@@ -192,7 +227,7 @@ export function SongSearch() {
                     {/* Spotify Embed */}
                     <div className="mt-4">
                       <SpotifyEmbed 
-                        trackId={track.spotify_track_id} 
+                        trackId={editableTrack.spotify_track_id} 
                         compact={false}
                         height={80}
                       />
@@ -201,10 +236,9 @@ export function SongSearch() {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={handleSpotifySuggest}
-                        disabled={suggestSong.isPending}
-                        className="btn-primary flex items-center"
+                        disabled={!editableTrack.title.trim() || !editableTrack.artist.trim()}
+                        className="btn-primary px-4 py-2"
                       >
-                        <Plus className="w-4 h-4 mr-2" />
                         Suggest Song
                       </button>
                     </div>
