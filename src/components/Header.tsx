@@ -42,6 +42,12 @@ export function Header({ title, subtitle }: HeaderProps) {
     }
   }
 
+  const handleAllSuggestions = () => {
+    if (userBand) {
+      navigate(`/band/${userBand.id}/suggestions`)
+    }
+  }
+
   const handleProfile = () => {
     setShowDropdown(false)
     navigate('/profile')
@@ -69,11 +75,20 @@ export function Header({ title, subtitle }: HeaderProps) {
 
           {/* Right side navigation */}
           <div className="flex items-center space-x-3">
+            {/* All Suggestions Button */}
+            {userBand && (
+              <button
+                onClick={handleAllSuggestions}
+                className="btn-secondary text-sm"
+              >
+                All Suggestions
+              </button>
+            )}
             {/* Suggest Song Button */}
             {userBand && (
               <button
                 onClick={handleSuggestSong}
-                className="btn-primary text-sm"
+                className="btn-primary text-sm flex items-center"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Suggest Song

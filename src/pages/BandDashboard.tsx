@@ -108,7 +108,6 @@ export function BandDashboard() {
     <div className="min-h-screen bg-gray-50">
       <Header 
         title={band.name}
-        subtitle={`Code: ${band.invite_code} • ${members?.length || 0} members`}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -288,6 +287,9 @@ export function BandDashboard() {
           <div className="space-y-6">
             {/* Band members */}
             <div className="card">
+              <div className="mb-2 text-sm text-gray-500">
+                Code: <span className="font-mono font-semibold">{band.invite_code}</span> • {members?.length || 0} members
+              </div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
                 {userRole === 'admin' && (
