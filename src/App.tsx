@@ -15,6 +15,8 @@ import { SongSearch } from '@/pages/SongSearch'
 import { Suggestions } from '@/pages/Suggestions'
 import { Leaderboard } from '@/pages/Leaderboard'
 import { Rehearsals } from '@/pages/Rehearsals'
+import { RehearsalDetail } from '@/pages/RehearsalDetail'
+import { Profile } from '@/pages/Profile'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +50,8 @@ function App() {
               <Route path="/band/:bandId/suggestions" element={<Suggestions />} />
               <Route path="/band/:bandId/leaderboard" element={<Leaderboard />} />
               <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
+              <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
 
             {/* Default redirect */}

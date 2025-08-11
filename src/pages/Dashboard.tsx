@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useUserBands } from '@/hooks/useBands'
-import { Music, Users, Plus, LogOut } from 'lucide-react'
+import { Music, Users, Plus, LogOut, User } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
 export function Dashboard() {
@@ -52,8 +52,16 @@ export function Dashboard() {
                 Welcome, {user?.user_metadata?.display_name || user?.email}
               </span>
               <button
+                onClick={() => navigate('/profile')}
+                className="text-gray-500 hover:text-gray-700"
+                title="Profile Settings"
+              >
+                <User className="h-5 w-5" />
+              </button>
+              <button
                 onClick={handleSignOut}
                 className="text-gray-500 hover:text-gray-700"
+                title="Sign Out"
               >
                 <LogOut className="h-5 w-5" />
               </button>

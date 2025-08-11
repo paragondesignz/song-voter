@@ -216,3 +216,31 @@ export function useVoteSong() {
     },
   })
 }
+
+export function useRemoveSuggestion() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ 
+      suggestionId 
+    }: { 
+      suggestionId: string
+      bandId: string 
+    }) => {
+      const { error } = await supabase
+        .from('song_suggestions')
+        .delete()
+        .eq('id', suggestionId)
+
+      if (error) throw error
+    },
+    onSuccess: (_, { bandId }) => {
+      queryClient.invalidateQueries({ queryKey: ['song-suggestions', bandId] })
+      queryClient.invalidateQueries({ queryKey: ['leaderboard', bandId] })
+      toast.success('Song suggestion removed successfully!')
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to remove suggestion')
+    },
+  })
+}

@@ -262,3 +262,23 @@ export function useLeaveBand() {
     },
   })
 }
+
+export function useUserBandRole(bandId: string) {
+  const { user } = useAuth()
+
+  return useQuery({
+    queryKey: ['user-band-role', bandId, user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('band_members')
+        .select('role')
+        .eq('band_id', bandId)
+        .eq('user_id', user?.id)
+        .single()
+
+      if (error) throw error
+      return data.role as 'admin' | 'member'
+    },
+    enabled: !!bandId && !!user,
+  })
+}

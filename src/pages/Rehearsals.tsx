@@ -1,16 +1,81 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useBand } from '@/hooks/useBands'
+import { useBand, useUserBandRole } from '@/hooks/useBands'
+import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal } from '@/hooks/useRehearsals'
 import { 
   ArrowLeft, 
   Calendar,
-  Plus
+  Plus,
+  MapPin,
+  Clock,
+  Music,
+  Trash2,
+  Edit,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react'
+import { format } from 'date-fns'
 
 export function Rehearsals() {
   const { bandId } = useParams<{ bandId: string }>()
   const navigate = useNavigate()
+  const [showCreateForm, setShowCreateForm] = useState(false)
   
   const { data: band } = useBand(bandId!)
+  const { data: userRole } = useUserBandRole(bandId!)
+  const { data: rehearsals, isLoading } = useBandRehearsals(bandId!)
+  const createRehearsal = useCreateRehearsal()
+  const deleteRehearsal = useDeleteRehearsal()
+
+  const handleCreateRehearsal = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    
+    await createRehearsal.mutateAsync({
+      band_id: bandId!,
+      name: formData.get('name') as string,
+      rehearsal_date: formData.get('rehearsal_date') as string,
+      start_time: formData.get('start_time') as string || undefined,
+      location: formData.get('location') as string || undefined,
+      songs_to_learn: parseInt(formData.get('songs_to_learn') as string),
+      selection_deadline: formData.get('selection_deadline') as string || undefined,
+      description: formData.get('description') as string || undefined,
+    })
+    
+    setShowCreateForm(false)
+  }
+
+  const handleDeleteRehearsal = async (rehearsalId: string) => {
+    if (window.confirm('Are you sure you want to delete this rehearsal? This action cannot be undone.')) {
+      await deleteRehearsal.mutateAsync(rehearsalId)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'planning': return 'text-yellow-600 bg-yellow-50'
+      case 'songs_selected': return 'text-blue-600 bg-blue-50'
+      case 'completed': return 'text-green-600 bg-green-50'
+      default: return 'text-gray-600 bg-gray-50'
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'planning': return <AlertCircle className="h-4 w-4" />
+      case 'songs_selected': return <Music className="h-4 w-4" />
+      case 'completed': return <CheckCircle className="h-4 w-4" />
+      default: return <Calendar className="h-4 w-4" />
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,32 +95,238 @@ export function Rehearsals() {
                 <p className="text-xs text-gray-500">{band?.name}</p>
               </div>
             </div>
-            <button className="btn-primary text-sm">
-              <Plus className="h-4 w-4 mr-1" />
-              Schedule Rehearsal
-            </button>
+            {userRole === 'admin' && (
+              <button 
+                onClick={() => setShowCreateForm(true)}
+                className="btn-primary text-sm"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Schedule Rehearsal
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="card text-center py-12">
-          <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-medium text-gray-900 mb-2">Rehearsal Planning</h3>
-          <p className="text-gray-600 mb-6">
-            This feature is coming soon! You'll be able to schedule rehearsals and automatically select songs from your leaderboard.
-          </p>
-          <div className="text-sm text-gray-500">
-            <p>Planned features:</p>
-            <ul className="mt-2 space-y-1">
-              <li>• Schedule rehearsal sessions</li>
-              <li>• Auto-select top songs from leaderboard</li>
-              <li>• Set song limits and deadlines</li>
-              <li>• Notify band members</li>
-              <li>• Track rehearsal progress</li>
-            </ul>
+        {/* Create Rehearsal Form */}
+        {showCreateForm && (
+          <div className="card mb-8">
+            <h2 className="text-xl font-semibold mb-4">Schedule New Rehearsal</h2>
+            <form onSubmit={handleCreateRehearsal} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rehearsal Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    className="input-field"
+                    placeholder="Weekly Practice Session"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    name="rehearsal_date"
+                    required
+                    className="input-field"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Start Time (Optional)
+                  </label>
+                  <input
+                    type="time"
+                    name="start_time"
+                    className="input-field"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Songs to Learn
+                  </label>
+                  <select
+                    name="songs_to_learn"
+                    required
+                    className="input-field"
+                    defaultValue="5"
+                  >
+                    {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                      <option key={num} value={num}>{num} song{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  className="input-field"
+                  placeholder="Studio A, John's Garage, etc."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Selection Deadline (Optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  name="selection_deadline"
+                  className="input-field"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description (Optional)
+                </label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  className="input-field"
+                  placeholder="Additional notes for this rehearsal..."
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateForm(false)}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createRehearsal.isPending}
+                  className="btn-primary"
+                >
+                  {createRehearsal.isPending ? 'Creating...' : 'Schedule Rehearsal'}
+                </button>
+              </div>
+            </form>
           </div>
-        </div>
+        )}
+
+        {/* Rehearsals List */}
+        {rehearsals && rehearsals.length > 0 ? (
+          <div className="space-y-4">
+            {rehearsals.map((rehearsal) => (
+              <div key={rehearsal.id} className="card hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {rehearsal.name}
+                      </h3>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${getStatusColor(rehearsal.status)}`}>
+                        {getStatusIcon(rehearsal.status)}
+                        <span className="ml-1 capitalize">{rehearsal.status.replace('_', ' ')}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {format(new Date(rehearsal.rehearsal_date), 'EEEE, MMMM d, yyyy')}
+                        {rehearsal.start_time && (
+                          <span className="ml-2 flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {rehearsal.start_time}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {rehearsal.location && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <MapPin className="h-4 w-4 mr-2" />
+                          {rehearsal.location}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Music className="h-4 w-4 mr-2" />
+                        {rehearsal.songs_to_learn} song{rehearsal.songs_to_learn > 1 ? 's' : ''} to learn
+                      </div>
+                      
+                      {rehearsal.selection_deadline && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          Selection deadline: {format(new Date(rehearsal.selection_deadline), 'MMM d, yyyy h:mm a')}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {rehearsal.description && (
+                      <p className="mt-3 text-sm text-gray-600">{rehearsal.description}</p>
+                    )}
+                    
+                    <div className="mt-4 flex space-x-3">
+                      <button
+                        onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}`)}
+                        className="btn-primary text-sm"
+                      >
+                        View Details
+                      </button>
+                      {userRole === 'admin' && (
+                        <>
+                          <button
+                            onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}/edit`)}
+                            className="btn-secondary text-sm"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRehearsal(rehearsal.id)}
+                            disabled={deleteRehearsal.isPending}
+                            className="btn-secondary text-sm text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="card text-center py-12">
+            <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-gray-900 mb-2">No Rehearsals Scheduled</h3>
+            <p className="text-gray-600 mb-6">
+              {userRole === 'admin' 
+                ? "Schedule your first rehearsal to get started with organized practice sessions!"
+                : "Your band admin hasn't scheduled any rehearsals yet."
+              }
+            </p>
+            {userRole === 'admin' && (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="btn-primary"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Schedule First Rehearsal
+              </button>
+            )}
+          </div>
+        )}
       </main>
     </div>
   )

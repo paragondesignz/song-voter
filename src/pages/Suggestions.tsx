@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useSongSuggestions, useVoteSong } from '@/hooks/useSongs'
-import { useBand } from '@/hooks/useBands'
+import { useSongSuggestions, useVoteSong, useRemoveSuggestion } from '@/hooks/useSongs'
+import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { useAuth } from '@/context/AuthContext'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { 
@@ -13,7 +13,8 @@ import {
   Search,
   Plus,
   User,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -28,7 +29,9 @@ export function Suggestions() {
   
   const { data: band } = useBand(bandId!)
   const { data: suggestions, isLoading } = useSongSuggestions(bandId!, { sortBy })
+  const { data: userRole } = useUserBandRole(bandId!)
   const voteSong = useVoteSong()
+  const removeSuggestion = useRemoveSuggestion()
 
   const formatDuration = (durationMs: number) => {
     const minutes = Math.floor(durationMs / 60000)
@@ -42,6 +45,15 @@ export function Suggestions() {
       bandId: bandId!,
       isVoting: !isCurrentlyVoted
     })
+  }
+
+  const handleRemoveSuggestion = async (suggestionId: string) => {
+    if (window.confirm('Are you sure you want to remove this suggestion? This action cannot be undone.')) {
+      await removeSuggestion.mutateAsync({
+        suggestionId,
+        bandId: bandId!
+      })
+    }
   }
 
   const filteredSuggestions = suggestions?.filter(song =>
@@ -216,27 +228,42 @@ export function Suggestions() {
                       </div>
                     </div>
 
-                    {/* Vote button */}
-                    <div className="flex flex-col items-center ml-4">
-                      <button
-                        onClick={() => handleVote(song.id, song.user_voted || false)}
-                        disabled={song.suggested_by === user?.id || voteSong.isPending}
-                        className={`p-3 rounded-full transition-colors ${
-                          song.user_voted
-                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        } ${
-                          song.suggested_by === user?.id
-                            ? 'opacity-50 cursor-not-allowed'
-                            : ''
-                        }`}
-                        title={song.suggested_by === user?.id ? "Can't vote on your own suggestion" : "Vote for this song"}
-                      >
-                        <Heart className={`w-5 h-5 ${song.user_voted ? 'fill-current' : ''}`} />
-                      </button>
-                      <span className="text-sm font-semibold text-gray-900 mt-1">
-                        {song.vote_count || 0}
-                      </span>
+                    {/* Action buttons */}
+                    <div className="flex items-center ml-4 space-x-2">
+                      {/* Vote button */}
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() => handleVote(song.id, song.user_voted || false)}
+                          disabled={song.suggested_by === user?.id || voteSong.isPending}
+                          className={`p-3 rounded-full transition-colors ${
+                            song.user_voted
+                              ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          } ${
+                            song.suggested_by === user?.id
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
+                          }`}
+                          title={song.suggested_by === user?.id ? "Can't vote on your own suggestion" : "Vote for this song"}
+                        >
+                          <Heart className={`w-5 h-5 ${song.user_voted ? 'fill-current' : ''}`} />
+                        </button>
+                        <span className="text-sm font-semibold text-gray-900 mt-1">
+                          {song.vote_count || 0}
+                        </span>
+                      </div>
+
+                      {/* Admin remove button */}
+                      {userRole === 'admin' && (
+                        <button
+                          onClick={() => handleRemoveSuggestion(song.id)}
+                          disabled={removeSuggestion.isPending}
+                          className="p-3 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600"
+                          title="Remove suggestion (Admin only)"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
