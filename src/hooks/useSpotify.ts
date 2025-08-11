@@ -36,49 +36,34 @@ export function useSpotifyEmbed() {
     return `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`
   }
 
-  // Fetch track metadata from Spotify API via our edge function
-  const fetchTrackMetadata = async (trackId: string): Promise<SpotifyTrack> => {
+  // Extract basic info from Spotify URL (no API calls)
+  const extractTrackInfo = async (spotifyUrl: string): Promise<SpotifyTrack> => {
     setIsLoading(true)
     setError(null)
     
     try {
-      // Use our get-track-metadata edge function to get track details
-      const response = await fetch('/functions/v1/get-track-metadata', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ trackId })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch track metadata from Spotify')
+      const trackId = extractSpotifyTrackId(spotifyUrl)
+      if (!trackId) {
+        throw new Error('Invalid Spotify URL')
       }
 
-      const data = await response.json()
-      
-      if (!data.track) {
-        throw new Error('Track not found on Spotify')
-      }
-
-      const spotifyTrack = data.track
-      
+      // Create a basic track object with the info we can extract
       const track: SpotifyTrack = {
         spotify_track_id: trackId,
-        title: spotifyTrack.title,
-        artist: spotifyTrack.artist,
-        album: spotifyTrack.album,
-        duration_ms: spotifyTrack.duration_ms,
-        album_art_url: spotifyTrack.album_art_url,
-        preview_url: spotifyTrack.preview_url,
-        external_url: spotifyTrack.external_url,
-        popularity: spotifyTrack.popularity
+        title: 'Track from Spotify', // Generic title since we don't have API access
+        artist: 'Artist from Spotify', // Generic artist
+        album: 'Album from Spotify', // Generic album
+        duration_ms: null,
+        album_art_url: null,
+        preview_url: null,
+        external_url: `https://open.spotify.com/track/${trackId}`,
+        popularity: 0
       }
       
       setTrack(track)
       return track
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch track metadata'
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process Spotify URL'
       setError(errorMessage)
       throw err
     } finally {
@@ -88,18 +73,12 @@ export function useSpotifyEmbed() {
 
   const handleUrlSubmit = async (spotifyUrl: string) => {
     setUrl(spotifyUrl)
-    const trackId = extractSpotifyTrackId(spotifyUrl)
     
-    if (!trackId) {
-      setError('Invalid Spotify URL. Please paste a valid Spotify track URL.')
-      return null
-    }
-
     try {
-      const trackData = await fetchTrackMetadata(trackId)
+      const trackData = await extractTrackInfo(spotifyUrl)
       return trackData
     } catch (err) {
-      // Error already set in fetchTrackMetadata
+      // Error already set in extractTrackInfo
       return null
     }
   }
