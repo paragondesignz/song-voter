@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/context/AuthContext'
+import { SpotifyPlayerProvider } from '@/context/SpotifyPlayerContext'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Login } from '@/pages/Login'
 import { Register } from '@/pages/Register'
@@ -91,9 +92,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
+        <SpotifyPlayerProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </SpotifyPlayerProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

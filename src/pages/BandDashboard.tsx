@@ -5,8 +5,9 @@ import { useSongSuggestions, useRateSong, useCleanupRehearsalSongs, useRemoveSug
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
+import { useSpotifyPlayer } from '@/context/SpotifyPlayerContext'
 
-import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight, Bot } from 'lucide-react'
+import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight, Bot, Play, Pause, Volume2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes'
@@ -18,6 +19,7 @@ export function BandDashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [localVolumes, setLocalVolumes] = useState<{ [key: string]: number }>({})
   
   const { data: band } = useBand(bandId!)
   const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
@@ -25,6 +27,7 @@ export function BandDashboard() {
   const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
   const cleanupRehearsalSongs = useCleanupRehearsalSongs()
+  const spotifyPlayer = useSpotifyPlayer()
 
   const ITEMS_PER_PAGE = 10
 
@@ -307,35 +310,52 @@ export function BandDashboard() {
                             {song.spotify_track_id && (
                               <div className="mt-2 flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                                 <button 
-                                  className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors"
+                                  className={`p-2 rounded-full transition-colors ${
+                                    spotifyPlayer.currentTrack === song.spotify_track_id && spotifyPlayer.isPlaying
+                                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                                      : 'bg-green-500 hover:bg-green-600 text-white'
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    // Add Spotify play functionality here if needed
+                                    if (song.preview_url && song.spotify_track_id) {
+                                      spotifyPlayer.togglePlayPause(song.spotify_track_id, song.preview_url)
+                                    } else if (song.spotify_track_id) {
+                                      // If no preview, open in Spotify
+                                      window.open(`https://open.spotify.com/track/${song.spotify_track_id}`, '_blank')
+                                    }
                                   }}
+                                  title={song.preview_url ? 'Play preview' : 'Open in Spotify'}
                                 >
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z"/>
-                                  </svg>
+                                  {spotifyPlayer.currentTrack === song.spotify_track_id && spotifyPlayer.isPlaying ? (
+                                    <Pause className="w-4 h-4" />
+                                  ) : (
+                                    <Play className="w-4 h-4" />
+                                  )}
                                 </button>
-                                <button 
-                                  className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    // Add Spotify pause functionality here if needed
-                                  }}
-                                >
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                                  </svg>
-                                </button>
-                                <div className="flex items-center space-x-1">
-                                  <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                                  </svg>
-                                  <div className="w-12 h-1 bg-gray-200 rounded-full">
-                                    <div className="w-8 h-1 bg-gray-400 rounded-full"></div>
+                                
+                                {/* Volume control - only show if this track is playing */}
+                                {spotifyPlayer.currentTrack === song.spotify_track_id && (
+                                  <div className="flex items-center space-x-1">
+                                    <Volume2 className="w-3 h-3 text-gray-400" />
+                                    <input
+                                      type="range"
+                                      min="0"
+                                      max="100"
+                                      value={(localVolumes[song.spotify_track_id || ''] ?? spotifyPlayer.volume) * 100}
+                                      onChange={(e) => {
+                                        e.stopPropagation()
+                                        const newVolume = parseInt(e.target.value) / 100
+                                        if (song.spotify_track_id) {
+                                          setLocalVolumes(prev => ({ ...prev, [song.spotify_track_id as string]: newVolume }))
+                                        }
+                                        spotifyPlayer.setVolume(newVolume)
+                                      }}
+                                      className="w-16 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-gray-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
                                   </div>
-                                </div>
+                                )}
+                                
                                 <a
                                   href={`https://open.spotify.com/track/${song.spotify_track_id}`}
                                   target="_blank"
@@ -345,6 +365,10 @@ export function BandDashboard() {
                                 >
                                   Spotify
                                 </a>
+                                
+                                {!song.preview_url && (
+                                  <span className="text-xs text-gray-500">(No preview)</span>
+                                )}
                               </div>
                             )}
                           </div>
