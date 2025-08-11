@@ -27,6 +27,7 @@ export function VerifyEmail() {
           })
 
           if (error) {
+            // eslint-disable-next-line no-console
             console.error('Error setting session:', error)
             setErrorMessage(error.message)
             setVerificationState('error')
@@ -41,9 +42,10 @@ export function VerifyEmail() {
           setErrorMessage('Invalid verification link')
           setVerificationState('error')
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
+        // eslint-disable-next-line no-console
         console.error('Verification error:', error)
-        setErrorMessage(error.message || 'An unexpected error occurred')
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred')
         setVerificationState('error')
       }
     }
@@ -84,7 +86,7 @@ export function VerifyEmail() {
             </p>
             <div className="bg-green-50 rounded-lg p-4 mb-4">
               <p className="text-green-800 text-sm">
-                🎵 Welcome to Band Song Voter! You can now create or join bands and start suggesting songs.
+                🎵 Welcome to Rehearsalist! You can now create or join bands and start suggesting songs.
               </p>
             </div>
             <button

@@ -1,20 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
-import { useSongSuggestions, useLeaderboard, useRateSong } from '@/hooks/useSongs'
+import { useSongSuggestions, useLeaderboard, useRateSong, useCleanupRehearsalSongs } from '@/hooks/useSongs'
 import { useBandRehearsals, useRehearsalSetlist } from '@/hooks/useRehearsals'
 import { useAuth } from '@/context/AuthContext'
 import { StarRating } from '@/components/StarRating'
+import { Header } from '@/components/Header'
 import { 
   Music, 
-  Users, 
   Search, 
   Trophy, 
-  Calendar,
-  ArrowLeft,
-  Plus,
-  Crown,
-  User
+  Calendar
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -57,9 +53,24 @@ export function BandDashboard() {
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard(bandId!)
   const { data: rehearsals } = useBandRehearsals(bandId!)
   const rateSong = useRateSong()
+  const cleanupRehearsalSongs = useCleanupRehearsalSongs()
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
   const userRole = members?.find(m => m.user_id === user?.id)?.role
+
+  // Cleanup rehearsal songs on page load (silent, once per session)
+  useEffect(() => {
+    const hasRunCleanup = sessionStorage.getItem('rehearsal-cleanup-run')
+    if (!hasRunCleanup && bandId) {
+      cleanupRehearsalSongs.mutateAsync()
+        .then(() => {
+          sessionStorage.setItem('rehearsal-cleanup-run', 'true')
+        })
+        .catch(() => {
+          // Silent failure - don't annoy users with errors
+        })
+    }
+  }, [bandId, cleanupRehearsalSongs])
 
   const handleRate = async (songId: string, rating: number | null, isFromLeaderboard: boolean = false) => {
     try {
@@ -78,6 +89,7 @@ export function BandDashboard() {
         await refetchSuggestions()
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Rating error:', error)
     } finally {
       setVotingOnSong(null)
@@ -94,43 +106,10 @@ export function BandDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="mr-4 text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <Music className="h-6 w-6 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">{band.name}</h1>
-                <p className="text-xs text-gray-500">
-                  Code: {band.invite_code} • {members?.length || 0} members
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => navigate(`/band/${bandId}/profile`)}
-                className="btn-secondary text-sm"
-              >
-                <User className="h-4 w-4 mr-1" />
-                My Profile
-              </button>
-              <button
-                onClick={() => navigate(`/band/${bandId}/search`)}
-                className="btn-primary text-sm"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Suggest Song
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header 
+        title={band.name}
+        subtitle={`Code: ${band.invite_code} • ${members?.length || 0} members`}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -324,34 +303,23 @@ export function BandDashboard() {
                 {members?.map((member) => (
                   <div key={member.id} className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="relative">
-                        {member.user?.avatar_url ? (
-                          <img
-                            src={member.user.avatar_url}
-                            alt={member.user.display_name}
-                            className="w-8 h-8 rounded-full mr-3"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
-                            <Users className="w-4 h-4 text-gray-500" />
-                          </div>
-                        )}
-                        {member.role === 'admin' && (
-                          <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full p-1">
-                            <Crown className="w-2 h-2" />
-                          </div>
-                        )}
+                      <div className="w-8 h-8 bg-gray-100 rounded-full mr-3 flex items-center justify-center">
+                        <span className="text-xs font-medium text-gray-600">
+                          {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
+                        </span>
                       </div>
                       <div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-2">
                           <p className="text-sm font-medium text-gray-900">
                             {member.user?.display_name}
                           </p>
                           {member.role === 'admin' && (
-                            <Crown className="w-3 h-3 text-yellow-500" />
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                              Admin
+                            </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">{member.role}</p>
+                        <p className="text-xs text-gray-500">{member.user?.email}</p>
                       </div>
                     </div>
                     {member.user_id === user?.id && (

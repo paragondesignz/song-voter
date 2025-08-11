@@ -57,8 +57,8 @@ export function MemberProfile() {
       
       // Refresh handled by auth state change
       toast.success('Profile updated successfully!')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile')
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile')
     } finally {
       setIsUpdating(false)
     }
@@ -89,8 +89,8 @@ export function MemberProfile() {
       // setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update password')
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update password')
     } finally {
       setIsUpdating(false)
     }
@@ -127,8 +127,8 @@ export function MemberProfile() {
       
       setAvatarUrl(publicUrl)
       toast.success('Avatar uploaded successfully!')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload avatar')
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to upload avatar')
     } finally {
       setIsUploadingAvatar(false)
     }

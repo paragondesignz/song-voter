@@ -26,8 +26,8 @@ export function Register() {
       await signUp(data.email, data.password, data.displayName)
       toast.success('Registration successful! Please check your email to verify your account before signing in.')
       navigate('/login')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign up')
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to sign up')
     } finally {
       setLoading(false)
     }

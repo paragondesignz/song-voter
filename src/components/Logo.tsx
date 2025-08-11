@@ -1,16 +1,18 @@
+import { Music } from 'lucide-react'
+
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   showText?: boolean
   className?: string
-  textOnly?: boolean // Show only the logo image from the PNG, no additional text
+  textOnly?: boolean // Show only text, no icon
 }
 
 export function Logo({ size = 'md', showText = true, className = '', textOnly = false }: LogoProps) {
-  const sizeClasses = {
-    xs: 'h-5',
-    sm: 'h-6',
-    md: 'h-8',
-    lg: 'h-12'
+  const iconSizeClasses = {
+    xs: 'h-4 w-4',
+    sm: 'h-5 w-5',
+    md: 'h-6 w-6',
+    lg: 'h-8 w-8'
   }
 
   const textSizeClasses = {
@@ -22,22 +24,20 @@ export function Logo({ size = 'md', showText = true, className = '', textOnly = 
 
   if (textOnly) {
     return (
-      <span className={`${textSizeClasses[size]} font-semibold text-gray-900 ${className}`}>
-        Song Voter
+      <span className={`${textSizeClasses[size]} font-semibold text-gray-900 font-sans ${className}`}>
+        Rehearsalist
       </span>
     )
   }
 
   return (
     <div className={`flex items-center ${className}`}>
-      <img 
-        src="/hands-off-song-voter.png" 
-        alt="Song Voter Logo" 
-        className={`${sizeClasses[size]} w-auto ${showText ? 'mr-3' : ''}`}
+      <Music 
+        className={`${iconSizeClasses[size]} text-primary-600 ${showText ? 'mr-2' : ''}`}
       />
       {showText && (
-        <span className={`${textSizeClasses[size]} font-semibold text-gray-900`}>
-          Song Voter
+        <span className={`${textSizeClasses[size]} font-semibold text-gray-900 font-sans`}>
+          Rehearsalist
         </span>
       )}
     </div>

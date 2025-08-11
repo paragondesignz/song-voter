@@ -65,6 +65,7 @@ serve(async (req) => {
 
     if (!spotifyResponse.ok) {
       const errorData = await spotifyResponse.text()
+      // eslint-disable-next-line no-console
       console.error('Spotify API error:', errorData)
       throw new Error('Spotify API request failed')
     }
@@ -89,6 +90,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error in spotify-search function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),

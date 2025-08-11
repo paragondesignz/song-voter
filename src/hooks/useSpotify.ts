@@ -18,7 +18,7 @@ export function useSpotifySearch() {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
 
-  const debounce = (fn: Function, delay: number) => {
+  const debounce = (fn: (...args: any[]) => void, delay: number) => {
     let timeoutId: NodeJS.Timeout
     return (...args: any[]) => {
       clearTimeout(timeoutId)

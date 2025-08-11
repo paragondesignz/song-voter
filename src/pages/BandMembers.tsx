@@ -3,16 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdateMemberRole } from '@/hooks/useBands'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { Header } from '@/components/Header'
 import { 
-  ArrowLeft, 
   Users,
   UserPlus,
-  Crown,
   MoreVertical,
-  Trash2,
   Shield,
-  UserCheck,
-  Calendar,
   Search,
   Lock,
   Mail,
@@ -65,7 +61,7 @@ export function BandMembers() {
     setIsUpdatingPassword(true)
     try {
       // Try to update with both columns first
-      let updateData: any = { shared_password: bandPassword }
+      const updateData: any = { shared_password: bandPassword }
       
       // Try to check if password_updated_at column exists by attempting to update it
       try {
@@ -97,9 +93,10 @@ export function BandMembers() {
       setShowPasswordForm(false)
       setBandPassword('')
       setConfirmPassword('')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Band password update error:', error)
-      toast.error(error.message || 'Failed to set band password')
+      toast.error(error instanceof Error ? error.message : 'Failed to set band password')
     } finally {
       setIsUpdatingPassword(false)
     }
@@ -135,19 +132,34 @@ export function BandMembers() {
         p_created_by: user?.id
       })
       
+      
       if (error) throw error
       
+      // Force a hard refresh of the members list
       await refetchMembers()
+      
+      // Also invalidate related queries to ensure consistency
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Small delay to ensure DB consistency
+      await refetchMembers() // Second refetch to catch any delayed updates
+      
       toast.success(`Member ${memberName} added successfully!`)
       setShowAddMemberForm(false)
       setMemberEmail('')
       setMemberName('')
       setMemberRole('member')
-    } catch (error: any) {
-      if (error.message?.includes('already exists')) {
-        toast.error('A user with this email already exists')
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
+      console.error('Create member error:', error)
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          toast.error('A user with this email already exists')
+        } else if (error.message.includes('gen_salt')) {
+          toast.error('Database configuration issue. Please contact support.')
+        } else {
+          toast.error(error.message)
+        }
       } else {
-        toast.error(error.message || 'Failed to create member')
+        toast.error('Failed to create member')
       }
     } finally {
       setIsCreatingMember(false)
@@ -187,23 +199,10 @@ export function BandMembers() {
   if (!isCurrentUserAdmin) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center h-16">
-              <button
-                onClick={() => navigate(`/band/${bandId}`)}
-                className="mr-4 text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <Users className="h-6 w-6 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">Band Members</h1>
-                <p className="text-xs text-gray-500">{band?.name}</p>
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header 
+          title="Band Members"
+          subtitle={band?.name}
+        />
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="card text-center py-12">
             <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -225,42 +224,33 @@ export function BandMembers() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate(`/band/${bandId}`)}
-                className="mr-4 text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <Users className="h-6 w-6 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">Manage Members</h1>
-                <p className="text-xs text-gray-500">{band?.name} • {members?.length || 0}/10 members</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setShowPasswordForm(true)}
-                className="btn-secondary text-sm"
-              >
-                <Lock className="h-4 w-4 mr-1" />
-                Set Band Password
-              </button>
-              <button
-                onClick={() => setShowAddMemberForm(true)}
-                className="btn-primary text-sm"
-                disabled={members && members.length >= 10}
-              >
-                <UserPlus className="h-4 w-4 mr-1" />
-                Add Member
-              </button>
-            </div>
+      <Header 
+        title="Manage Members"
+        subtitle={`${band?.name} • ${members?.length || 0}/10 members`}
+      />
+      
+      {/* Management Actions */}
+      <div className="bg-white border-b">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-end space-x-3">
+            <button
+              onClick={() => setShowPasswordForm(true)}
+              className="btn-secondary text-sm"
+            >
+              <Lock className="h-4 w-4 mr-1" />
+              Set Band Password
+            </button>
+            <button
+              onClick={() => setShowAddMemberForm(true)}
+              className="btn-primary text-sm"
+              disabled={members && members.length >= 10}
+            >
+              <UserPlus className="h-4 w-4 mr-1" />
+              Add Member
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Set Band Password Form */}
@@ -441,23 +431,10 @@ export function BandMembers() {
             {filteredMembers.map((member) => (
               <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    {member.user?.avatar_url ? (
-                      <img
-                        src={member.user.avatar_url}
-                        alt={member.user.display_name}
-                        className="w-12 h-12 rounded-full"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                        <Users className="w-6 h-6 text-gray-500" />
-                      </div>
-                    )}
-                    {member.role === 'admin' && (
-                      <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full p-1">
-                        <Crown className="w-3 h-3" />
-                      </div>
-                    )}
+                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-600">
+                      {member.user?.display_name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
                   </div>
                   
                   <div>
@@ -470,17 +447,15 @@ export function BandMembers() {
                           You
                         </span>
                       )}
+                      {member.role === 'admin' && (
+                        <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">
+                          Admin
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-gray-600">{member.user?.email}</p>
                     <div className="flex items-center space-x-4 mt-1 text-xs text-gray-500">
-                      <div className="flex items-center">
-                        <UserCheck className="w-3 h-3 mr-1" />
-                        {member.role === 'admin' ? 'Admin' : 'Member'}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        Joined {formatDistanceToNow(new Date(member.joined_at), { addSuffix: true })}
-                      </div>
+                      <span>Joined {formatDistanceToNow(new Date(member.joined_at), { addSuffix: true })}</span>
                     </div>
                   </div>
                 </div>
@@ -505,18 +480,16 @@ export function BandMembers() {
                             <button
                               onClick={() => handleUpdateRole(member.user_id, 'admin', member.user?.display_name || 'User')}
                               disabled={updateMemberRole.isPending}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                             >
-                              <Crown className="w-4 h-4 mr-2 text-yellow-500" />
                               Promote to Admin
                             </button>
                           ) : (
                             <button
                               onClick={() => handleUpdateRole(member.user_id, 'member', member.user?.display_name || 'User')}
                               disabled={updateMemberRole.isPending}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
                             >
-                              <UserCheck className="w-4 h-4 mr-2 text-blue-500" />
                               Demote to Member
                             </button>
                           )}
@@ -524,9 +497,8 @@ export function BandMembers() {
                           <button
                             onClick={() => handleRemoveMember(member.user_id, member.user?.display_name || 'User')}
                             disabled={removeMember.isPending}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center"
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600"
                           >
-                            <Trash2 className="w-4 h-4 mr-2" />
                             Remove from Band
                           </button>
                         </div>
@@ -566,7 +538,7 @@ export function BandMembers() {
           <div className="card">
             <div className="flex items-center">
               <div className="p-3 bg-yellow-100 rounded-lg">
-                <Crown className="h-6 w-6 text-yellow-600" />
+                <Shield className="h-6 w-6 text-yellow-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Admins</p>

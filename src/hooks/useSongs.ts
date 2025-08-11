@@ -60,6 +60,7 @@ export function useSongSuggestions(bandId: string, options?: {
           )
         `)
         .eq('band_id', bandId)
+        .neq('status', 'practiced') // Exclude songs that have been practiced
 
       // Apply sorting
       switch (options?.sortBy) {
@@ -219,8 +220,8 @@ export function useSuggestSong() {
       queryClient.invalidateQueries({ queryKey: ['song-suggestions', bandId] })
       toast.success('Song suggested successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to suggest song')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to suggest song')
     },
   })
 }
@@ -285,14 +286,38 @@ export function useRateSong() {
       // Clear any stale rate limit queries that might still be cached
       queryClient.removeQueries({ queryKey: ['vote-rate-limit'] })
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to rate song')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to rate song')
     },
   })
 }
 
 // Backward compatibility
 export const useVoteSong = useRateSong
+
+export function useCleanupRehearsalSongs() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('cleanup_rehearsal_songs')
+      if (error) throw error
+      return data
+    },
+    onSuccess: (updatedCount) => {
+      // Invalidate all song-related queries to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['song-suggestions'] })
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
+      
+      if (updatedCount > 0) {
+        toast.success(`${updatedCount} song${updatedCount !== 1 ? 's' : ''} moved to practiced status`)
+      }
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to cleanup rehearsal songs')
+    },
+  })
+}
 
 export function useUpdateSongSuggester() {
   const queryClient = useQueryClient()
@@ -325,8 +350,8 @@ export function useUpdateSongSuggester() {
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
       toast.success('Song suggester updated successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update song suggester')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update song suggester')
     },
   })
 }
@@ -473,8 +498,8 @@ export function useRemoveSuggestion() {
       queryClient.invalidateQueries({ queryKey: ['leaderboard', bandId] })
       toast.success('Song suggestion removed successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to remove suggestion')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove suggestion')
     },
   })
 }

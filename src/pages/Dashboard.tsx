@@ -12,8 +12,13 @@ export function Dashboard() {
   const { data: bands, isLoading } = useUserBands()
 
   useEffect(() => {
-    if (!isLoading && bands && bands.length === 0) {
-      navigate('/band-setup')
+    if (!isLoading) {
+      if (bands && bands.length === 0) {
+        navigate('/band-setup')
+      } else if (bands && bands.length === 1) {
+        // Auto-redirect to the single band
+        navigate(`/band/${bands[0].id}`)
+      }
     }
   }, [bands, isLoading, navigate])
 

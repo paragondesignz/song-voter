@@ -1,4 +1,4 @@
-# Song Voter - Band Practice Management App
+# Rehearsalist - Band Practice Management App
 
 ## Tech Stack
 - **Framework**: React 18 + Vite + TypeScript

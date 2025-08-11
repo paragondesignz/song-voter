@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useProfile, useUpdateProfile, useUpdatePassword, useDeleteAccount, useUploadAvatar } from '@/hooks/useProfile'
+import { useUserBands, useUpdateBandName } from '@/hooks/useBands'
 import { 
   ArrowLeft, 
   User,
@@ -12,7 +13,8 @@ import {
   Save,
   Eye,
   EyeOff,
-  AlertTriangle
+  AlertTriangle,
+  Music
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
@@ -24,6 +26,10 @@ interface PasswordFormData {
   current_password: string
   new_password: string
   confirm_password: string
+}
+
+interface BandFormData {
+  band_name: string
 }
 
 export function Profile() {
@@ -38,10 +44,14 @@ export function Profile() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   
   const { data: profile, isLoading } = useProfile()
+  const { data: bands } = useUserBands()
   const updateProfile = useUpdateProfile()
   const updatePassword = useUpdatePassword()
   const deleteAccount = useDeleteAccount()
   const uploadAvatar = useUploadAvatar()
+  const updateBandName = useUpdateBandName()
+  
+  const userBand = bands?.[0] // Since users only have one band
   
   const {
     register: registerProfile,
@@ -63,6 +73,19 @@ export function Profile() {
     watch,
     reset: resetPasswordForm
   } = useForm<PasswordFormData>()
+  
+  const {
+    register: registerBand,
+    handleSubmit: handleBandSubmit,
+    formState: { errors: bandErrors, isDirty: isBandDirty }
+  } = useForm<BandFormData>({
+    defaultValues: {
+      band_name: userBand?.name || ''
+    },
+    values: {
+      band_name: userBand?.name || ''
+    }
+  })
 
   const watchNewPassword = watch('new_password')
 
@@ -74,6 +97,15 @@ export function Profile() {
     await updatePassword.mutateAsync(data.new_password)
     resetPasswordForm()
     setShowPasswordForm(false)
+  }
+  
+  const handleBandUpdate = async (data: BandFormData) => {
+    if (userBand) {
+      await updateBandName.mutateAsync({
+        bandId: userBand.id,
+        name: data.band_name
+      })
+    }
   }
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +148,7 @@ export function Profile() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => userBand ? navigate(`/band/${userBand.id}`) : navigate('/dashboard')}
               className="mr-4 text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -246,6 +278,71 @@ export function Profile() {
               )}
             </form>
           </div>
+
+          {/* Band Settings */}
+          {userBand && (
+            <div className="card">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <Music className="w-5 h-5 text-primary-600 mr-2" />
+                  <h2 className="text-xl font-semibold">Band Settings</h2>
+                </div>
+              </div>
+
+              <form onSubmit={handleBandSubmit(handleBandUpdate)} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Band Name
+                  </label>
+                  <input
+                    {...registerBand('band_name', {
+                      required: 'Band name is required',
+                      minLength: {
+                        value: 2,
+                        message: 'Band name must be at least 2 characters'
+                      }
+                    })}
+                    className="input-field"
+                    placeholder="Your band name"
+                  />
+                  {bandErrors.band_name && (
+                    <p className="mt-1 text-sm text-red-600">{bandErrors.band_name.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Invite Code
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={userBand.invite_code || ''}
+                      disabled
+                      className="input-field bg-gray-50 text-gray-500 cursor-not-allowed pr-10"
+                    />
+                    <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Share this code with others to invite them to your band.
+                  </p>
+                </div>
+
+                {isBandDirty && (
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={updateBandName.isPending}
+                      className="btn-primary"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {updateBandName.isPending ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                )}
+              </form>
+            </div>
+          )}
 
           {/* Password Section */}
           <div className="card">

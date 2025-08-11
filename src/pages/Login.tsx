@@ -22,8 +22,8 @@ export function Login() {
       await signIn(data.email, data.password)
       toast.success('Welcome back!')
       navigate('/dashboard')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in')
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to sign in')
     } finally {
       setLoading(false)
     }

@@ -1,25 +1,26 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
-import { useVoteStats, useUserVoteStats, useVoteHistory } from '@/hooks/useSongs'
+import { useVoteStats, useUserVoteStats, useVoteHistory, useLeaderboard } from '@/hooks/useSongs'
+import { Header } from '@/components/Header'
 import { 
-  ArrowLeft, 
   BarChart3,
   TrendingUp,
   Star,
   Heart,
-  Music
+  Music,
+  Trophy
 } from 'lucide-react'
 import { StarRating } from '@/components/StarRating'
 import { formatDistanceToNow } from 'date-fns'
 
 export function VotingAnalytics() {
   const { bandId } = useParams<{ bandId: string }>()
-  const navigate = useNavigate()
   
   const { data: band } = useBand(bandId!)
   const { data: ratingStats, isLoading: statsLoading } = useVoteStats(bandId!)
   const { data: userRatingStats } = useUserVoteStats(bandId!)
   const { data: ratingHistory } = useVoteHistory(bandId!, 20)
+  const { data: topSongs } = useLeaderboard(bandId!)
 
   if (statsLoading) {
     return (
@@ -31,23 +32,10 @@ export function VotingAnalytics() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <button
-              onClick={() => navigate(`/band/${bandId}`)}
-              className="mr-4 text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <BarChart3 className="h-6 w-6 text-primary-600 mr-3" />
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">Voting Analytics</h1>
-              <p className="text-xs text-gray-500">{band?.name}</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header 
+        title="Voting Analytics"
+        subtitle={band?.name}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -103,6 +91,73 @@ export function VotingAnalytics() {
                 </div>
               </div>
             </div>
+
+            {/* Highest Rated Songs */}
+            {topSongs && topSongs.length > 0 && (
+              <div className="card">
+                <h2 className="text-xl font-semibold mb-6 flex items-center">
+                  <Trophy className="h-6 w-6 text-yellow-500 mr-2" />
+                  Highest Rated Songs
+                </h2>
+                <div className="space-y-4">
+                  {topSongs.slice(0, 5).map((song, index) => (
+                    <div key={song.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                          {index + 1}
+                        </div>
+                        {song.album_art_url ? (
+                          <img
+                            src={song.album_art_url}
+                            alt="Album art"
+                            className="w-12 h-12 rounded-md shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                            <Music className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-lg">{song.title}</h3>
+                          <p className="text-gray-600">{song.artist}</p>
+                          {song.suggested_by_user && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Suggested by {song.suggested_by_user.display_name}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className="flex items-center space-x-1 mb-1">
+                            <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                            <span className="text-xl font-bold text-gray-900">
+                              {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {song.vote_count || 0} rating{(song.vote_count || 0) !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <StarRating
+                          rating={song.user_rating || null}
+                          onRate={() => {}} // Read-only in analytics
+                          readonly={true}
+                          size="sm"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {topSongs.length > 5 && (
+                  <div className="text-center mt-4">
+                    <p className="text-sm text-gray-500">
+                      Showing top 5 of {topSongs.length} rated songs
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Your Rating Activity */}
             {userRatingStats && (

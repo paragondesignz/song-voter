@@ -154,8 +154,8 @@ export function useCreateRehearsal() {
       queryClient.invalidateQueries({ queryKey: ['rehearsals', data.band_id] })
       toast.success('Rehearsal scheduled successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to schedule rehearsal')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to schedule rehearsal')
     },
   })
 }
@@ -186,8 +186,8 @@ export function useUpdateRehearsal() {
       queryClient.invalidateQueries({ queryKey: ['rehearsals', data.band_id] })
       toast.success('Rehearsal updated successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update rehearsal')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update rehearsal')
     },
   })
 }
@@ -209,8 +209,8 @@ export function useDeleteRehearsal() {
       queryClient.invalidateQueries({ queryKey: ['rehearsals'] })
       toast.success('Rehearsal deleted successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete rehearsal')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete rehearsal')
     },
   })
 }
@@ -285,8 +285,8 @@ export function useAutoSelectSongs() {
       queryClient.invalidateQueries({ queryKey: ['rehearsals', bandId] })
       toast.success('Songs selected automatically!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to select songs')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to select songs')
     },
   })
 }
@@ -316,8 +316,8 @@ export function useUpdateSetlistItem() {
       queryClient.invalidateQueries({ queryKey: ['rehearsal-setlist', data.rehearsal_id] })
       toast.success('Setlist updated!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update setlist')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update setlist')
     },
   })
 }
@@ -341,8 +341,8 @@ export function useRemoveFromSetlist() {
       queryClient.invalidateQueries({ queryKey: ['rehearsal-setlist', data.rehearsal_id] })
       toast.success('Song removed from setlist!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to remove song from setlist')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove song from setlist')
     },
   })
 }

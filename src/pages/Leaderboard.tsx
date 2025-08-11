@@ -39,6 +39,7 @@ export function Leaderboard() {
       // Refetch to get updated ratings
       await refetch()
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Rating error:', error)
     } finally {
       setRatingOnSong(null)

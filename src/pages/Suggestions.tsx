@@ -4,14 +4,12 @@ import { useSongSuggestions, useRateSong, useRemoveSuggestion, useUpdateSongSugg
 import { useBand, useUserBandRole, useBandMembers } from '@/hooks/useBands'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
+import { Header } from '@/components/Header'
 import { 
-  ArrowLeft, 
   Music, 
- 
   Clock, 
   Filter,
   Search,
-  Plus,
   User,
   ExternalLink,
   Trash2,
@@ -58,6 +56,7 @@ export function Suggestions() {
       // Refetch to get updated ratings
       await refetch()
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Rating error:', error)
     } finally {
       setVotingOnSong(null)
@@ -121,44 +120,25 @@ export function Suggestions() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate(`/band/${bandId}`)}
-                className="mr-4 text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <Music className="h-6 w-6 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">Song Suggestions</h1>
-                <p className="text-xs text-gray-500">{band?.name}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">              
-              {/* Analytics Button */}
-              <button
-                onClick={() => navigate(`/band/${bandId}/voting-analytics`)}
-                className="btn-secondary text-sm"
-              >
-                <BarChart3 className="h-4 w-4 mr-1" />
-                Analytics
-              </button>
-              
-              {/* Suggest Song Button */}
-              <button
-                onClick={() => navigate(`/band/${bandId}/search`)}
-                className="btn-primary text-sm"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Suggest Song
-              </button>
-            </div>
+      <Header 
+        title="Song Suggestions"
+        subtitle={band?.name}
+      />
+      
+      {/* Analytics Button */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-end">
+            <button
+              onClick={() => navigate(`/band/${bandId}/voting-analytics`)}
+              className="btn-secondary text-sm"
+            >
+              <BarChart3 className="h-4 w-4 mr-1" />
+              Analytics
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">

@@ -67,8 +67,8 @@ export function useUpdateProfile() {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('Profile updated successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update profile')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile')
     },
   })
 }
@@ -85,8 +85,8 @@ export function useUpdatePassword() {
     onSuccess: () => {
       toast.success('Password updated successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update password')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update password')
     },
   })
 }
@@ -108,8 +108,8 @@ export function useDeleteAccount() {
       toast.success('Account deleted successfully')
       // User will be automatically signed out
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete account')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete account')
     },
   })
 }
@@ -156,8 +156,8 @@ export function useUploadAvatar() {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('Avatar updated successfully!')
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to upload avatar')
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to upload avatar')
     },
   })
 }
