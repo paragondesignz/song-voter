@@ -17,6 +17,7 @@ import { Suggestions } from '@/pages/Suggestions'
 import { Leaderboard } from '@/pages/Leaderboard'
 import { Rehearsals } from '@/pages/Rehearsals'
 import { RehearsalDetail } from '@/pages/RehearsalDetail'
+import { RehearsalEdit } from '@/pages/RehearsalEdit'
 import { Profile } from '@/pages/Profile'
 import { VotingAnalytics } from '@/pages/VotingAnalytics'
 import { BandMembers } from '@/pages/BandMembers'
@@ -62,6 +63,7 @@ function AppContent() {
           <Route path="/band/:bandId/leaderboard" element={<Leaderboard />} />
           <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
           <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
+          <Route path="/band/:bandId/rehearsal/:rehearsalId/edit" element={<RehearsalEdit />} />
           <Route path="/band/:bandId/voting-analytics" element={<VotingAnalytics />} />
           <Route path="/band/:bandId/members" element={<BandMembers />} />
           <Route path="/band/:bandId/profile" element={<MemberProfile />} />

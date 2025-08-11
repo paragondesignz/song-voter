@@ -45,22 +45,12 @@ export function useSongSuggestions(bandId: string, options?: {
   return useQuery({
     queryKey: ['song-suggestions', bandId, options?.sortBy, user?.id],
     queryFn: async () => {
+      // Base suggestions query without embedded joins to avoid schema introspection under RLS
       let query = supabase
         .from('song_suggestions')
-        .select(`
-          *,
-          suggested_by_user:profiles!song_suggestions_suggested_by_fkey (
-            display_name,
-            avatar_url
-          ),
-          votes:song_votes (
-            id,
-            voter_id,
-            vote_type
-          )
-        `)
+        .select('*')
         .eq('band_id', bandId)
-        .neq('status', 'practiced') // Exclude songs that have been practiced
+        .neq('status', 'practiced')
 
       // Apply sorting
       switch (options?.sortBy) {
@@ -78,15 +68,50 @@ export function useSongSuggestions(bandId: string, options?: {
 
       if (error) throw error
 
-      return data.map((song: any) => {
-        const userVote = song.votes?.find((vote: any) => vote.voter_id === user?.id)
-        const ratings = song.votes?.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating)) || []
+      const suggestions = data as any[]
+
+      // Fetch votes for these suggestions to compute ratings
+      const songIds = suggestions.map(s => s.id)
+      let votes: any[] = []
+      if (songIds.length > 0) {
+        const { data: votesData } = await supabase
+          .from('song_votes')
+          .select('song_suggestion_id, voter_id, vote_type, created_at')
+          .eq('band_id', bandId)
+          .in('song_suggestion_id', songIds)
+        votes = votesData || []
+      }
+
+      // Fetch suggester profiles (best-effort; tolerate RLS)
+      const suggesterIds = Array.from(new Set(suggestions.map(s => s.suggested_by)))
+      let profileMap: Record<string, { display_name: string; avatar_url?: string }> = {}
+      if (suggesterIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', suggesterIds)
+        for (const p of profilesData || []) {
+          profileMap[p.id] = { display_name: p.display_name, avatar_url: p.avatar_url }
+        }
+      }
+
+      const groupedVotes = votes.reduce((acc, v) => {
+        const arr = acc[v.song_suggestion_id] || (acc[v.song_suggestion_id] = [])
+        arr.push(v)
+        return acc
+      }, {} as Record<string, any[]>)
+
+      return suggestions.map((song: any) => {
+        const songVotes = groupedVotes[song.id] || []
+        const userVote = songVotes.find((vote: any) => vote.voter_id === user?.id)
+        const ratings = songVotes.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating))
         const totalRatings = ratings.length
         const averageRating = totalRatings > 0 ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
-        
+
         return {
           ...song,
-          average_rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+          suggested_by_user: profileMap[song.suggested_by],
+          average_rating: Math.round(averageRating * 10) / 10,
           total_ratings: totalRatings,
           user_rating: userVote ? parseInt(userVote.vote_type) || null : null,
         }
@@ -102,47 +127,51 @@ export function useLeaderboard(bandId: string, timeFrame: 'all' | 'month' | 'wee
   return useQuery({
     queryKey: ['leaderboard', bandId, timeFrame, user?.id],
     queryFn: async () => {
-      // Use the same query as song suggestions but with vote filtering
-      const { data, error } = await supabase
+      // Fetch suggestions without embedded joins
+      const { data: suggestions, error } = await supabase
         .from('song_suggestions')
-        .select(`
-          *,
-          suggested_by_user:profiles!song_suggestions_suggested_by_fkey (
-            display_name,
-            avatar_url
-          ),
-          votes:song_votes (
-            id,
-            voter_id,
-            vote_type
-          )
-        `)
+        .select('*')
         .eq('band_id', bandId)
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
+      const songIds = (suggestions || []).map(s => s.id)
+      let votes: any[] = []
+      if (songIds.length > 0) {
+        const { data: votesData } = await supabase
+          .from('song_votes')
+          .select('song_suggestion_id, voter_id, vote_type, created_at')
+          .eq('band_id', bandId)
+          .in('song_suggestion_id', songIds)
+        votes = votesData || []
+      }
+
+      const groupedVotes = votes.reduce((acc, v) => {
+        const arr = acc[v.song_suggestion_id] || (acc[v.song_suggestion_id] = [])
+        arr.push(v)
+        return acc
+      }, {} as Record<string, any[]>)
+
       // Process and filter songs with ratings
-      const processedSongs = data.map((song: any) => {
-        const userVote = song.votes?.find((vote: any) => vote.voter_id === user?.id)
-        const ratings = song.votes?.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating)) || []
+      const processedSongs = (suggestions || []).map((song: any) => {
+        const songVotes = groupedVotes[song.id] || []
+        const userVote = songVotes.find((vote: any) => vote.voter_id === user?.id)
+        const ratings = songVotes.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating))
         const totalRatings = ratings.length
         const averageRating = totalRatings > 0 ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
-        
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        const recentVotes = songVotes.filter((vote: any) => new Date(vote.created_at) > weekAgo).length
+
         return {
           ...song,
           id: song.id,
-          song_suggestion_id: song.id, // For compatibility
+          song_suggestion_id: song.id,
           average_rating: Math.round(averageRating * 10) / 10,
           total_ratings: totalRatings,
           user_rating: userVote ? parseInt(userVote.vote_type) || null : null,
-          // Calculate weighted score for better ranking
           weighted_score: averageRating * totalRatings,
-          recent_votes: song.votes?.filter((vote: any) => {
-            const voteDate = new Date(vote.created_at || song.created_at)
-            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-            return voteDate > weekAgo
-          }).length || 0
+          recent_votes: recentVotes,
         }
       })
       
@@ -453,24 +482,33 @@ export function useVoteHistory(bandId: string, limit = 50) {
     queryFn: async () => {
       if (!user) return []
 
-      const { data, error } = await supabase
+      // Fetch votes without embedded joins
+      const { data: votes, error } = await supabase
         .from('song_votes')
-        .select(`
-          *,
-          song_suggestion:song_suggestion_id (
-            title,
-            artist,
-            album,
-            album_art_url
-          )
-        `)
+        .select('*')
         .eq('band_id', bandId)
         .eq('voter_id', user.id)
         .order('created_at', { ascending: false })
         .limit(limit)
 
       if (error) throw error
-      return data
+
+      const songIds = (votes || []).map(v => v.song_suggestion_id)
+      let songMap: Record<string, any> = {}
+      if (songIds.length > 0) {
+        const { data: songs } = await supabase
+          .from('song_suggestions')
+          .select('id, title, artist, album, album_art_url')
+          .in('id', songIds)
+        for (const s of songs || []) {
+          songMap[s.id] = s
+        }
+      }
+
+      return (votes || []).map(v => ({
+        ...v,
+        song_suggestion: songMap[v.song_suggestion_id],
+      }))
     },
     enabled: !!bandId && !!user,
   })

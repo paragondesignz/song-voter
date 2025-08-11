@@ -77,22 +77,27 @@ export function useBand(bandId: string) {
   return useQuery({
     queryKey: ['band', bandId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch band without embedded relationships to avoid schema introspection issues
+      const { data: band, error: bandError } = await supabase
         .from('bands')
-        .select(`
-          *,
-          band_members (
-            count
-          )
-        `)
+        .select('*')
         .eq('id', bandId)
         .single()
 
-      if (error) throw error
+      if (bandError) throw bandError
+
+      // Fetch member count separately (head request for performance)
+      const { count, error: countError } = await supabase
+        .from('band_members')
+        .select('id', { count: 'exact', head: true })
+        .eq('band_id', bandId)
+
+      // Don't hard-fail if count query has issues; default to 0
+      const member_count = typeof count === 'number' ? count : 0
 
       return {
-        ...data,
-        member_count: data.band_members[0].count,
+        ...band,
+        member_count,
       } as Band
     },
     enabled: !!bandId,
@@ -103,64 +108,36 @@ export function useBandMembers(bandId: string) {
   return useQuery<BandMember[]>({
     queryKey: ['band-members', bandId],
     queryFn: async (): Promise<BandMember[]> => {
-      
-      // Query band members with profiles join
-      const { data, error } = await supabase
+      // Always perform separate queries to avoid schema introspection issues under RLS
+      const { data: members, error: membersError } = await supabase
         .from('band_members')
-        .select(`
-          *,
-          profiles(
-            display_name,
-            email,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('band_id', bandId)
         .order('joined_at', { ascending: true })
 
-      if (error) {
-        // eslint-disable-next-line no-console
-        console.error('Band members query error:', error)
-        // Fallback: get band members and profiles separately
-        const { data: members } = await supabase
-          .from('band_members')
-          .select('*')
-          .eq('band_id', bandId)
-          .order('joined_at', { ascending: true })
-          
-        if (members && members.length > 0) {
-          const memberIds = members.map(m => m.user_id)
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, display_name, email, avatar_url')
-            .in('id', memberIds)
-            
-          const combinedData = members.map(member => ({
-            ...member,
-            user: profiles?.find(p => p.id === member.user_id) || {
-              display_name: 'Unknown User',
-              email: 'unknown@example.com',
-              avatar_url: null
-            }
-          }))
-          
-          return combinedData as BandMember[]
-        }
-        
-        throw error
+      if (membersError) throw membersError
+
+      const memberIds = (members || []).map(m => m.user_id)
+      let profiles: Array<{ id: string; display_name: string; email: string; avatar_url: string | null }> = []
+      if (memberIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, display_name, email, avatar_url')
+          .in('id', memberIds)
+        profiles = profilesData || []
       }
-      
-      // Transform the data to match expected structure
-      const transformedData = data?.map((item: any) => ({
-        ...item,
-        user: item.profiles ?? {
+
+      const profileMap = new Map(profiles.map(p => [p.id, p]))
+      const combinedData = (members || []).map(member => ({
+        ...member,
+        user: profileMap.get(member.user_id) || {
           display_name: 'Unknown User',
           email: 'unknown@example.com',
-          avatar_url: null,
+          avatar_url: null
         }
-      })) || []
-      
-      return transformedData as BandMember[]
+      }))
+
+      return combinedData as BandMember[]
     },
     enabled: !!bandId,
     staleTime: 0, // Always refetch to see fresh data

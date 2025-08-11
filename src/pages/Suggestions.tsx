@@ -226,18 +226,6 @@ export function Suggestions() {
                 <div key={song.id} className="card hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center flex-1">
-                      {song.album_art_url ? (
-                        <img
-                          src={song.album_art_url}
-                          alt={song.album || 'Album art'}
-                          className="w-16 h-16 rounded-md mr-4 flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-300 rounded-md mr-4 flex-shrink-0 flex items-center justify-center">
-                          <Music className="w-8 h-8 text-gray-500" />
-                        </div>
-                      )}
-                      
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-semibold text-gray-900 truncate">{song.title}</h3>

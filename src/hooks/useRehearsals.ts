@@ -73,47 +73,44 @@ export function useRehearsalSetlist(rehearsalId: string) {
   return useQuery({
     queryKey: ['rehearsal-setlist', rehearsalId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch setlist items without embedded joins
+      const { data: setlist, error } = await supabase
         .from('rehearsal_setlists')
-        .select(`
-          *,
-          song_suggestion:song_suggestion_id (
-            title,
-            artist,
-            album,
-            album_art_url,
-            spotify_track_id,
-            id
-          )
-        `)
+        .select('*')
         .eq('rehearsal_id', rehearsalId)
         .order('position', { ascending: true })
 
       if (error) throw error
 
-      // Get vote counts for songs
-      if (data && data.length > 0) {
-        const songIds = data.map(item => item.song_suggestion_id)
-        const { data: voteCounts } = await supabase
-          .from('song_votes')
-          .select('song_suggestion_id')
-          .in('song_suggestion_id', songIds)
+      if (!setlist || setlist.length === 0) return setlist as unknown as RehearsalSetlistItem[]
 
-        const voteCountMap = voteCounts?.reduce((acc, vote) => {
-          acc[vote.song_suggestion_id] = (acc[vote.song_suggestion_id] || 0) + 1
-          return acc
-        }, {} as Record<string, number>) || {}
+      // Fetch song details separately
+      const songIds = setlist.map(item => item.song_suggestion_id)
+      const { data: songs } = await supabase
+        .from('song_suggestions')
+        .select('id, title, artist, album, album_art_url, spotify_track_id')
+        .in('id', songIds)
 
-        return data.map(item => ({
-          ...item,
-          song_suggestion: {
-            ...item.song_suggestion,
-            vote_count: voteCountMap[item.song_suggestion_id] || 0
-          }
-        })) as RehearsalSetlistItem[]
-      }
+      const songMap = new Map((songs || []).map(s => [s.id, s]))
 
-      return data as RehearsalSetlistItem[]
+      // Compute vote counts separately
+      const { data: voteCounts } = await supabase
+        .from('song_votes')
+        .select('song_suggestion_id')
+        .in('song_suggestion_id', songIds)
+
+      const voteCountMap = (voteCounts || []).reduce((acc, vote) => {
+        acc[vote.song_suggestion_id] = (acc[vote.song_suggestion_id] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+
+      return setlist.map(item => ({
+        ...item,
+        song_suggestion: {
+          ...(songMap.get(item.song_suggestion_id) as any),
+          vote_count: voteCountMap[item.song_suggestion_id] || 0,
+        }
+      })) as RehearsalSetlistItem[]
     },
     enabled: !!rehearsalId,
   })
@@ -234,12 +231,13 @@ export function useAutoSelectSongs() {
 
       if (rehearsalError) throw rehearsalError
 
-      // Get top voted songs
+      // Get top-rated songs (star rating system)
       const { data: topSongs, error: songsError } = await supabase
         .from('song_leaderboard')
         .select('*')
         .eq('band_id', bandId)
-        .order('vote_count', { ascending: false })
+        .order('average_rating', { ascending: false })
+        .order('total_ratings', { ascending: false })
         .limit(rehearsal.songs_to_learn)
 
       if (songsError) throw songsError
@@ -255,12 +253,12 @@ export function useAutoSelectSongs() {
         .eq('rehearsal_id', rehearsalId)
 
       // Add songs to setlist
-      const setlistItems = topSongs.map((song, index) => ({
+      const setlistItems = topSongs.map((song: any, index: number) => ({
         rehearsal_id: rehearsalId,
         song_suggestion_id: song.id,
         position: index + 1,
         selection_reason: 'Auto-selected from leaderboard',
-        vote_count_at_selection: song.vote_count
+        vote_count_at_selection: song.total_ratings
       }))
 
       const { error: insertError } = await supabase
