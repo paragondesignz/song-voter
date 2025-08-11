@@ -145,7 +145,6 @@ export function VotingAnalytics() {
                         )}
                         <div>
                           <h3 className="font-semibold text-gray-900 text-lg">{song.title}</h3>
-                          <p className="text-gray-600">{song.artist}</p>
                           {song.suggested_by_user && (
                             <p className="text-xs text-gray-500 mt-1">
                               Suggested by {song.suggested_by_user.display_name}

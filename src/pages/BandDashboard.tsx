@@ -82,9 +82,7 @@ export function BandDashboard() {
   }
 
   const filteredSuggestions = suggestions?.filter(song =>
-    song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    song.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    song.album?.toLowerCase().includes(searchQuery.toLowerCase())
+    song.title.toLowerCase().includes(searchQuery.toLowerCase())
   ) || []
 
   const sortedSuggestions = [...filteredSuggestions].sort((a, b) => {
@@ -195,7 +193,7 @@ export function BandDashboard() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="input-field pl-10"
-                    placeholder="Search songs, artists, albums..."
+                    placeholder="Search songs..."
                   />
                 </div>
                 
@@ -278,13 +276,11 @@ export function BandDashboard() {
                           </div>
                           
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-3 mb-1">
-                              <h3 className="text-base font-semibold truncate text-gray-900">
-                                {song.title}
-                              </h3>
-                              <span className="text-sm text-gray-500">•</span>
-                              <span className="text-sm text-gray-600 truncate">{song.artist}</span>
-                            </div>
+                                                      <div className="flex items-center space-x-3 mb-1">
+                            <h3 className="text-base font-semibold truncate text-gray-900">
+                              {song.title}
+                            </h3>
+                          </div>
                             
                             <div className="flex items-center space-x-3 text-xs text-gray-500 mb-2">
                               {song.suggested_by_user && (

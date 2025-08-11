@@ -91,9 +91,7 @@ export function Suggestions() {
   }
 
   const filteredSuggestions = suggestions?.filter(song =>
-    song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    song.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    song.album?.toLowerCase().includes(searchQuery.toLowerCase())
+    song.title.toLowerCase().includes(searchQuery.toLowerCase())
   ) || []
 
   const sortedSuggestions = [...filteredSuggestions].sort((a, b) => {
@@ -164,7 +162,7 @@ export function Suggestions() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="input-field pl-10"
-                    placeholder="Search songs, artists, albums..."
+                    placeholder="Search songs..."
                   />
                 </div>
                 
@@ -242,10 +240,6 @@ export function Suggestions() {
                           <div className="flex items-center justify-between mb-1">
                             <h3 className="font-semibold text-gray-900 truncate">{song.title}</h3>
                           </div>
-                          <p className="text-gray-600 truncate">{song.artist}</p>
-                          {song.album && (
-                            <p className="text-sm text-gray-500 truncate">{song.album}</p>
-                          )}
                           
                           <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
                             <div className="flex items-center font-medium text-gray-600">
