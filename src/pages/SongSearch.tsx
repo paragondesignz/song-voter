@@ -161,9 +161,10 @@ export function SongSearch() {
                 {/* Track Preview */}
                 {editableTrack && (
                   <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="mb-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Left Column - Track Info */}
+                      <div className="space-y-4">
+                        <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Song Title
                           </label>
@@ -179,7 +180,7 @@ export function SongSearch() {
                           )}
                         </div>
                         
-                        <div className="mb-4">
+                        <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Artist
                           </label>
@@ -195,7 +196,7 @@ export function SongSearch() {
                           )}
                         </div>
                         
-                        <div className="mb-4">
+                        <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Album (optional)
                           </label>
@@ -211,55 +212,51 @@ export function SongSearch() {
                           )}
                         </div>
                         
-                        {editableTrack.album_art_url && (
-                          <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Album Art
-                            </label>
-                            <img 
-                              src={editableTrack.album_art_url} 
-                              alt="Album art" 
-                              className="w-16 h-16 rounded-md object-cover"
-                            />
-                          </div>
-                        )}
-                        
                         {editableTrack.duration_ms && (
-                          <div className="mb-4">
+                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Duration
                             </label>
-                            <p className="text-gray-600">{formatDuration(editableTrack.duration_ms)}</p>
+                            <p className="text-gray-600 font-mono">{formatDuration(editableTrack.duration_ms)}</p>
                           </div>
                         )}
                       </div>
-                      <div className="ml-4">
-                        <a
-                          href={editableTrack.external_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:text-primary-700 flex items-center text-sm"
-                        >
-                          <ExternalLink className="w-4 w-4 mr-1" />
-                          Open in Spotify
-                        </a>
+                      
+                      {/* Right Column - Spotify Player & Actions */}
+                      <div className="space-y-4">
+                        {/* Spotify Player */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Preview
+                          </label>
+                          <SpotifyEmbed 
+                            trackId={editableTrack.spotify_track_id} 
+                            compact={false}
+                            height={80}
+                          />
+                        </div>
+                        
+                        {/* External Link */}
+                        <div>
+                          <a
+                            href={editableTrack.external_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-1" />
+                            Open in Spotify
+                          </a>
+                        </div>
                       </div>
                     </div>
-                    
-                    {/* Spotify Embed */}
-                    <div className="mt-4">
-                      <SpotifyEmbed 
-                        trackId={editableTrack.spotify_track_id} 
-                        compact={false}
-                        height={80}
-                      />
-                    </div>
 
-                    <div className="mt-4 flex justify-end">
+                    {/* Action Button */}
+                    <div className="mt-6 pt-4 border-t border-gray-200">
                       <button
                         onClick={handleSpotifySuggest}
                         disabled={!editableTrack.title.trim() || !editableTrack.artist.trim()}
-                        className="btn-primary px-4 py-2"
+                        className="btn-primary px-6 py-2"
                       >
                         Suggest Song
                       </button>

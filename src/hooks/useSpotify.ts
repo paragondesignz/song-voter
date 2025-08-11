@@ -57,33 +57,23 @@ export function useSpotifyEmbed() {
 
       const oembedData = await response.json()
       
-      // Parse title and artist from oEmbed data
+      // Parse title from oEmbed data
       let title = 'Track from Spotify'
       let artist = 'Artist from Spotify'
       let album = 'Album from Spotify'
       
       if (oembedData.title) {
-        // oEmbed title is usually "Song Name - Artist Name"
-        const titleParts = oembedData.title.split(' - ')
-        if (titleParts.length >= 2) {
-          title = titleParts[0].trim()
-          artist = titleParts[1].trim()
+        // oEmbed title is usually just the track name
+        title = oembedData.title.trim()
+        
+        // Try to extract artist from the title if it contains " - " or " by "
+        const artistMatch = title.match(/^(.+?)\s*[-–]\s*(.+)$/)
+        if (artistMatch) {
+          title = artistMatch[1].trim()
+          artist = artistMatch[2].trim()
         } else {
-          title = oembedData.title.trim()
-        }
-      }
-      
-      // Try to get album info from description if available
-      if (oembedData.description) {
-        // Description might contain album info
-        const descParts = oembedData.description.split(' by ')
-        if (descParts.length >= 2) {
-          const songInfo = descParts[0]
-          // Look for album info in parentheses or after dash
-          const albumMatch = songInfo.match(/.*?[-–]\s*(.+?)(?:\s*\(|$)/)
-          if (albumMatch) {
-            album = albumMatch[1].trim()
-          }
+          // If no separator, the title is just the track name
+          // We'll keep artist as "Artist from Spotify" for user to fill in
         }
       }
 
@@ -93,7 +83,7 @@ export function useSpotifyEmbed() {
         artist: artist,
         album: album,
         duration_ms: null, // oEmbed doesn't provide duration
-        album_art_url: oembedData.thumbnail_url || null,
+        album_art_url: null, // Not importing album art as requested
         preview_url: null, // oEmbed doesn't provide preview URLs
         external_url: `https://open.spotify.com/track/${trackId}`,
         popularity: 0
