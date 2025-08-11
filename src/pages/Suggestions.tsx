@@ -1,29 +1,20 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdateMemberRole } from '@/hooks/useBands'
-import { useAuth } from '@/context/AuthContext'
+import { useBand, useUserBandRole, useBandMembers } from '@/hooks/useBands'
 import { useSongSuggestions, useRateSong, useRemoveSuggestion, useUpdateSongSuggester } from '@/hooks/useSongs'
-import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/Header'
 import { StarRating } from '@/components/StarRating'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { BandSidebar } from '@/components/BandSidebar'
 import { 
-  Users,
-  UserPlus,
-  MoreVertical,
-  Shield,
-  Search,
-  Lock,
-  Mail,
-  User,
   Clock,
   ExternalLink,
-  Star,
   Filter,
   Edit,
   Trash2,
-  Music
+  Music,
+  Search,
+  User
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
