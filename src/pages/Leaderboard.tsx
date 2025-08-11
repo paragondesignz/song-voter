@@ -5,7 +5,6 @@ import { useBand } from '@/hooks/useBands'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { 
-  Music, 
   Trophy, 
   Heart,
   TrendingUp,
