@@ -11,9 +11,7 @@ import {
   ExternalLink, 
   Music, 
   User,
-  MessageSquare,
-  Edit,
-  Trash2
+  MessageSquare
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 

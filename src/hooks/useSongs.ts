@@ -17,6 +17,9 @@ export interface SongSuggestion {
   preview_url: string | null
   notes: string | null
   status: 'suggested' | 'in_rehearsal' | 'practiced'
+  bpm: number | null
+  musical_key: string | null
+  vocal_type: 'male' | 'female' | 'duet' | 'instrumental' | null
   created_at: string
   suggested_by_user?: {
     display_name: string
@@ -38,7 +41,7 @@ export interface SongVote {
 }
 
 export function useSongSuggestions(bandId: string, options?: {
-  sortBy?: 'newest' | 'votes' | 'alphabetical' | 'trending'
+  sortBy?: 'newest' | 'votes' | 'alphabetical' | 'your_votes'
 }) {
   const { user } = useAuth()
 

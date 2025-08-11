@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-type SortOption = 'newest' | 'votes' | 'alphabetical' | 'trending'
+type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes'
 
 export function Suggestions() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -97,11 +97,17 @@ export function Suggestions() {
   const sortedSuggestions = [...filteredSuggestions].sort((a, b) => {
     switch (sortBy) {
       case 'votes':
+        // Sort by average rating first, then by total ratings for tie-breaking
+        const avgRatingDiff = (b.average_rating || 0) - (a.average_rating || 0)
+        if (Math.abs(avgRatingDiff) > 0.1) return avgRatingDiff
         return (b.total_ratings || 0) - (a.total_ratings || 0)
       case 'alphabetical':
         return a.title.localeCompare(b.title)
-      case 'trending':
-        return (b.total_ratings || 0) - (a.total_ratings || 0)
+      case 'your_votes':
+        // Sort by user's rating (highest first), then by average rating
+        const userRatingDiff = (b.user_rating || 0) - (a.user_rating || 0)
+        if (userRatingDiff !== 0) return userRatingDiff
+        return (b.average_rating || 0) - (a.average_rating || 0)
       case 'newest':
       default:
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -143,7 +149,7 @@ export function Suggestions() {
                   <div className="mt-2 text-sm text-blue-700">
                     <p>• <strong>Rate songs:</strong> Click the star rating (⭐) to vote on songs you want to practice</p>
                     <p>• <strong>Search suggestions:</strong> Use the search bar to find specific songs quickly</p>
-                    <p>• <strong>Sort options:</strong> View songs by newest, most voted, alphabetical, or trending</p>
+                    <p>• <strong>Sort options:</strong> View songs by newest, most voted, alphabetical, or your most voted</p>
                     <p>• <strong>Edit suggester:</strong> Admins can change who suggested a song if needed</p>
                     <p>• <strong>Remove songs:</strong> Delete inappropriate or duplicate suggestions (admin only)</p>
                     <p>• <strong>View details:</strong> See song info, previews, and who suggested each track</p>
@@ -177,7 +183,7 @@ export function Suggestions() {
                       <option value="newest">Newest First</option>
                       <option value="votes">Most Voted</option>
                       <option value="alphabetical">Alphabetical</option>
-                      <option value="trending">Trending</option>
+                      <option value="your_votes">Your Most Voted</option>
                     </select>
                   </div>
                   <span className="text-sm text-gray-500">

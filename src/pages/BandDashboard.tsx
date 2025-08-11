@@ -9,7 +9,7 @@ import { Header } from '@/components/Header'
 import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight, Bot } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-type SortOption = 'newest' | 'votes' | 'alphabetical' | 'trending'
+type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes'
 
 export function BandDashboard() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -88,11 +88,17 @@ export function BandDashboard() {
   const sortedSuggestions = [...filteredSuggestions].sort((a, b) => {
     switch (sortBy) {
       case 'votes':
+        // Sort by average rating first, then by total ratings for tie-breaking
+        const avgRatingDiff = (b.average_rating || 0) - (a.average_rating || 0)
+        if (Math.abs(avgRatingDiff) > 0.1) return avgRatingDiff
         return (b.total_ratings || 0) - (a.total_ratings || 0)
       case 'alphabetical':
         return a.title.localeCompare(b.title)
-      case 'trending':
-        return (b.total_ratings || 0) - (a.total_ratings || 0)
+      case 'your_votes':
+        // Sort by user's rating (highest first), then by average rating
+        const userRatingDiff = (b.user_rating || 0) - (a.user_rating || 0)
+        if (userRatingDiff !== 0) return userRatingDiff
+        return (b.average_rating || 0) - (a.average_rating || 0)
       case 'newest':
       default:
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
