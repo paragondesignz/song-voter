@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '@/context/AuthContext'
-import { Music } from 'lucide-react'
+import { Logo } from '@/components/Logo'
 
 interface RegisterForm {
   email: string
@@ -37,7 +37,7 @@ export function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
-          <Music className="h-12 w-12 text-primary-600" />
+          <Logo size="lg" />
         </div>
         
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
