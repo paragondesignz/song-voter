@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLeaderboard, useRateSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
-import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { 
@@ -140,18 +139,8 @@ export function Leaderboard() {
                           {getRankIcon(position)}
                         </div>
                         
-                        {song.album_art_url ? (
-                          <img
-                            src={song.album_art_url}
-                            alt="Album art"
-                            className="w-16 h-16 rounded-md mr-4 flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gray-300 rounded-md mr-4 flex-shrink-0 flex items-center justify-center">
-                            <Music className="w-8 h-8 text-gray-500" />
-                          </div>
-                        )}
-                        
+                        {/* Thumbnail removed for compact layout */}
+
                         <div className="flex-1 min-w-0">
                           <h3 className="text-lg font-semibold truncate">
                             {song.title}
@@ -194,13 +183,6 @@ export function Leaderboard() {
                               }`}>
                                 {position === 1 ? '🥇 Most Popular' : position === 2 ? '🥈 Runner Up' : '🥉 Third Place'}
                               </span>
-                            </div>
-                          )}
-
-                          {/* Spotify Embed for top 3 songs */}
-                          {position <= 3 && song.spotify_track_id && (
-                            <div className="mt-4">
-                              <SpotifyEmbed trackId={song.spotify_track_id} compact={true} height={80} />
                             </div>
                           )}
                         </div>

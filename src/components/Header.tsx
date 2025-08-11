@@ -15,9 +15,10 @@ import { toast } from 'react-hot-toast'
 interface HeaderProps {
   title?: string
   subtitle?: string
+  actions?: React.ReactNode
 }
 
-export function Header({ title, subtitle }: HeaderProps) {
+export function Header({ title, subtitle, actions }: HeaderProps) {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { data: bands } = useUserBands()
@@ -53,6 +54,12 @@ export function Header({ title, subtitle }: HeaderProps) {
     navigate('/profile')
   }
 
+  const handleLeaderboard = () => {
+    if (userBand) {
+      navigate(`/band/${userBand.id}/leaderboard`)
+    }
+  }
+
   return (
     <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-[var(--color-border)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,6 +82,16 @@ export function Header({ title, subtitle }: HeaderProps) {
 
           {/* Right side navigation */}
           <div className="flex items-center space-x-3">
+            {actions}
+            {/* Leaderboard Button */}
+            {userBand && (
+              <button
+                onClick={handleLeaderboard}
+                className="btn-secondary text-sm"
+              >
+                Leaderboard
+              </button>
+            )}
             {/* All Suggestions Button */}
             {userBand && (
               <button

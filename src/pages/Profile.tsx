@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useProfile, useUpdateProfile, useUpdatePassword, useDeleteAccount, useUploadAvatar } from '@/hooks/useProfile'
 import { useUserBands, useUpdateBandName } from '@/hooks/useBands'
+import { Header } from '@/components/Header'
+import { BandSidebar } from '@/components/BandSidebar'
 import { 
-  ArrowLeft, 
   User,
   Mail,
   Camera,
@@ -144,26 +145,11 @@ export function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <button
-              onClick={() => userBand ? navigate(`/band/${userBand.id}`) : navigate('/dashboard')}
-              className="mr-4 text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <User className="h-6 w-6 text-primary-600 mr-3" />
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">Profile Settings</h1>
-              <p className="text-xs text-gray-500">Manage your account settings and preferences</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header title="Profile Settings" subtitle="Manage your account settings and preferences" />
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="space-y-8 lg:col-span-2">
           {/* Profile Information */}
           <div className="card">
             <div className="flex items-center justify-between mb-6">
@@ -493,6 +479,14 @@ export function Profile() {
               )}
             </div>
           </div>
+          </div>
+
+          {/* Right Sidebar */}
+          {userBand && (
+            <div>
+              <BandSidebar bandId={userBand.id} />
+            </div>
+          )}
         </div>
       </main>
     </div>

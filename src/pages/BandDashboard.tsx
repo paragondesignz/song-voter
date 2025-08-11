@@ -106,9 +106,7 @@ export function BandDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
-        title={band.name}
-      />
+      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -288,7 +286,7 @@ export function BandDashboard() {
             {/* Band members */}
             <div className="card">
               <div className="mb-2 text-sm text-gray-500">
-                Code: <span className="font-mono font-semibold">{band.invite_code}</span> • {members?.length || 0} members
+                <span className="text-gray-900 font-medium">{band.name}</span> • Code: <span className="font-mono font-semibold">{band.invite_code}</span> • {members?.length || 0} members
               </div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>

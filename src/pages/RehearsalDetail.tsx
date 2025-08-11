@@ -295,11 +295,11 @@ export function RehearsalDetail() {
                           </div>
                         </div>
                         
-                        {userRole === 'admin' && rehearsal.status === 'planning' && (
+                        {userRole === 'admin' && rehearsal.status !== 'completed' && (
                           <button
                             onClick={() => handleRemoveFromSetlist(item.id)}
                             disabled={removeFromSetlist.isPending}
-                            className="ml-4 p-2 rounded-full transition-colors bg-white text-gray-600 hover:bg-red-50 hover:text-red-600"
+                            className="ml-4 p-2 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
                             title="Remove from setlist"
                           >
                             <Trash2 className="w-4 h-4" />
