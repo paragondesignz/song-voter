@@ -22,7 +22,7 @@ export function BandDashboard() {
   const [selectedNewSuggester, setSelectedNewSuggester] = useState<string>('')
   
   const { data: band } = useBand(bandId!)
-  const { data: suggestions, isLoading, refetch } = useSongSuggestions(bandId!, { sortBy })
+  const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
   const { data: bandMembers } = useBandMembers(bandId!)
   const rateSong = useRateSong()

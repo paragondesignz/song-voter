@@ -14,7 +14,6 @@ import {
   User,
   ExternalLink,
   Trash2,
-  BarChart3,
   Edit
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
