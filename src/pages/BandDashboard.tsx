@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers } from '@/hooks/useBands'
 import { useSongSuggestions, useLeaderboard, useVoteSong } from '@/hooks/useSongs'
+import { useBandRehearsals } from '@/hooks/useRehearsals'
 import { useAuth } from '@/context/AuthContext'
 import { 
   Music, 
@@ -27,6 +28,7 @@ export function BandDashboard() {
   const { data: members } = useBandMembers(bandId!)
   const { data: recentSuggestions, refetch: refetchSuggestions } = useSongSuggestions(bandId!, { sortBy: 'newest' })
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard(bandId!)
+  const { data: rehearsals } = useBandRehearsals(bandId!)
   const voteSong = useVoteSong()
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
 
@@ -429,24 +431,93 @@ export function BandDashboard() {
               </div>
             </div>
 
-            {/* Rehearsals (placeholder) */}
-            {userRole === 'admin' && (
-              <div className="card">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Upcoming Rehearsals</h3>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/rehearsals`)}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                  >
-                    Manage
-                  </button>
+            {/* Upcoming Rehearsals */}
+            <div className="card">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Upcoming Rehearsals</h3>
+                <button
+                  onClick={() => navigate(`/band/${bandId}/rehearsals`)}
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                >
+                  {userRole === 'admin' ? 'Manage' : 'View All'}
+                </button>
+              </div>
+              
+              {rehearsals && rehearsals.length > 0 ? (
+                <div className="space-y-3">
+                  {rehearsals
+                    .filter(rehearsal => {
+                      const rehearsalDate = new Date(rehearsal.rehearsal_date)
+                      const today = new Date()
+                      today.setHours(0, 0, 0, 0)
+                      return rehearsalDate >= today
+                    })
+                    .slice(0, 3)
+                    .map((rehearsal) => (
+                      <div 
+                        key={rehearsal.id} 
+                        className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}`)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{rehearsal.name}</h4>
+                            <p className="text-sm text-gray-600">
+                              {new Date(rehearsal.rehearsal_date).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                              {rehearsal.start_time && (
+                                <span> at {rehearsal.start_time}</span>
+                              )}
+                            </p>
+                            {rehearsal.location && (
+                              <p className="text-xs text-gray-500 mt-1">{rehearsal.location}</p>
+                            )}
+                            <div className="flex items-center mt-2 space-x-4 text-xs">
+                              <span className={`px-2 py-1 rounded-full ${
+                                rehearsal.status === 'planning'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : rehearsal.status === 'songs_selected'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-green-100 text-green-800'
+                              }`}>
+                                {rehearsal.status === 'planning' 
+                                  ? 'Planning' 
+                                  : rehearsal.status === 'songs_selected'
+                                  ? 'Songs Selected'
+                                  : 'Completed'
+                                }
+                              </span>
+                              <span className="text-gray-500">
+                                {rehearsal.songs_to_learn} songs to learn
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <Calendar className="h-5 w-5 text-gray-400" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
+              ) : (
                 <div className="text-center py-8">
                   <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-sm">No upcoming rehearsals</p>
+                  <p className="text-gray-600 text-sm mb-4">No upcoming rehearsals scheduled</p>
+                  {userRole === 'admin' && (
+                    <button
+                      onClick={() => navigate(`/band/${bandId}/rehearsals`)}
+                      className="btn-primary text-sm"
+                    >
+                      Schedule Rehearsal
+                    </button>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </main>
