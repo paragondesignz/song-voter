@@ -35,6 +35,10 @@ function AppContent() {
   useEffect(() => {
     // Clear any stale rate limit queries on app start
     queryClient.removeQueries({ queryKey: ['vote-rate-limit'] })
+    // Ensure dark theme variables apply at root so body reads them
+    const root = document.documentElement
+    root.classList.remove('theme-dashboard')
+    root.classList.add('theme-darkboard')
   }, [])
 
   return (
@@ -76,9 +80,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <div className="theme-darkboard">
-            <AppContent />
-          </div>
+          <AppContent />
         </Router>
       </AuthProvider>
     </QueryClientProvider>
