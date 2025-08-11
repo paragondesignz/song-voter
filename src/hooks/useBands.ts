@@ -30,7 +30,7 @@ export function useUserBands() {
   const { user } = useAuth()
 
   return useQuery({
-    queryKey: ['bands', user?.id],
+    queryKey: ['bands', user?.id, Date.now()], // Force refresh
     queryFn: async () => {
       // eslint-disable-next-line no-console
       console.log('🔍 Fetching bands for user:', user?.id)
