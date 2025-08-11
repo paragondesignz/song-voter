@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from '@/context/AuthContext'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
@@ -29,38 +30,51 @@ const queryClient = new QueryClient({
   },
 })
 
+function AppContent() {
+  useEffect(() => {
+    // Clear any stale rate limit queries on app start
+    queryClient.removeQueries({ queryKey: ['vote-rate-limit'] })
+  }, [])
+
+  return (
+    <>
+      <Toaster position="top-center" />
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/band-setup" element={<BandSetup />} />
+          <Route path="/band/:bandId" element={<BandDashboard />} />
+          <Route path="/band/:bandId/search" element={<SongSearch />} />
+          <Route path="/band/:bandId/suggestions" element={<Suggestions />} />
+          <Route path="/band/:bandId/leaderboard" element={<Leaderboard />} />
+          <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
+          <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
+          <Route path="/band/:bandId/voting-analytics" element={<VotingAnalytics />} />
+          <Route path="/band/:bandId/members" element={<BandMembers />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+
+        {/* Default redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </>
+  )
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <Toaster position="top-center" />
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/band-setup" element={<BandSetup />} />
-              <Route path="/band/:bandId" element={<BandDashboard />} />
-              <Route path="/band/:bandId/search" element={<SongSearch />} />
-              <Route path="/band/:bandId/suggestions" element={<Suggestions />} />
-              <Route path="/band/:bandId/leaderboard" element={<Leaderboard />} />
-              <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
-              <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
-              <Route path="/band/:bandId/voting-analytics" element={<VotingAnalytics />} />
-              <Route path="/band/:bandId/members" element={<BandMembers />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
-
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+          <AppContent />
         </Router>
       </AuthProvider>
     </QueryClientProvider>
