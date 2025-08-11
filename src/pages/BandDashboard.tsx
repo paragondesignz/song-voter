@@ -6,7 +6,7 @@ import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
-import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Trophy, Filter, ExternalLink, Trash2, Edit, Clock, ChevronLeft, ChevronRight, Bot } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'trending'
@@ -135,7 +135,7 @@ export function BandDashboard() {
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Quick actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
                 onClick={() => navigate(`/band/${bandId}/search`)}
                 className="card hover:shadow-lg transition-shadow p-6 text-center"
@@ -143,6 +143,15 @@ export function BandDashboard() {
                 <Search className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                 <h3 className="font-medium text-gray-900">Search Songs</h3>
                 <p className="text-sm text-gray-500 mt-1">Find and suggest new songs</p>
+              </button>
+              
+              <button
+                onClick={() => navigate(`/band/${bandId}/ai-finder`)}
+                className="card hover:shadow-lg transition-shadow p-6 text-center"
+              >
+                <Bot className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                <h3 className="font-medium text-gray-900">AI Song Finder</h3>
+                <p className="text-sm text-gray-500 mt-1">Get AI-powered song assistance</p>
               </button>
               
               <button
