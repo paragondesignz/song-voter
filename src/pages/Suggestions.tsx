@@ -278,6 +278,7 @@ export function Suggestions() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-primary-600 hover:text-primary-700 flex items-center"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   <ExternalLink className="w-3 h-3 mr-1" />
                                   Spotify
@@ -294,7 +295,7 @@ export function Suggestions() {
 
                           {/* Spotify Controls - Compact */}
                           {song.spotify_track_id && (
-                            <div className="mt-4">
+                            <div className="mt-4" onClick={(e) => e.stopPropagation()}>
                               <SpotifyEmbed 
                                 trackId={song.spotify_track_id} 
                                 compact={true}
@@ -308,7 +309,7 @@ export function Suggestions() {
                       {/* Action buttons */}
                       <div className="flex items-center ml-4 space-x-4">
                         {/* Star Rating */}
-                        <div className="flex flex-col items-center space-y-2">
+                        <div className="flex flex-col items-center space-y-2" onClick={(e) => e.stopPropagation()}>
                           <StarRating
                             rating={song.user_rating || null}
                             onRate={(rating) => handleRate(song.id, rating)}
@@ -329,7 +330,7 @@ export function Suggestions() {
 
                         {/* Admin controls */}
                         {userRole === 'admin' && (
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => startEditingSuggester(song.id, song.suggested_by)}
                               className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"

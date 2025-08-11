@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { useSpotifyEmbed, type SpotifyTrack } from '@/hooks/useSpotify'
+import { useSpotifyEmbed } from '@/hooks/useSpotify'
 import { useSuggestSong } from '@/hooks/useSongs'
 import { useBand } from '@/hooks/useBands'
 import { useChatGPT, type SongSearchResult } from '@/hooks/useChatGPT'
 import { Header } from '@/components/Header'
 import { 
   Music, 
-  Plus,
-  ExternalLink,
   Link,
   Bot,
   Search,
@@ -17,7 +15,6 @@ import {
   Check,
   X
 } from 'lucide-react'
-import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 
 interface ManualSongForm {
   title: string
@@ -32,7 +29,15 @@ export function SongSearch() {
   const [showManualForm, setShowManualForm] = useState(false)
   const [showAISearch, setShowAISearch] = useState(false)
   const [spotifyUrl, setSpotifyUrl] = useState('')
-  const [editableTrack, setEditableTrack] = useState<SpotifyTrack | null>(null)
+  const [editableTrack, setEditableTrack] = useState<{
+    title: string
+    artist: string
+    album: string
+    spotify_track_id: string | null
+    duration_ms: number | null
+    album_art_url: string | null
+    preview_url: string | null
+  } | null>(null)
   const [aiSearchQuery, setAiSearchQuery] = useState('')
   const [aiSearchResults, setAiSearchResults] = useState<SongSearchResult[]>([])
   const [selectedResult, setSelectedResult] = useState<SongSearchResult | null>(null)
@@ -45,11 +50,7 @@ export function SongSearch() {
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ManualSongForm>()
 
-  const formatDuration = (durationMs: number) => {
-    const minutes = Math.floor(durationMs / 60000)
-    const seconds = Math.floor((durationMs % 60000) / 1000)
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
+
 
   const handleSpotifyUrlSubmit = async () => {
     if (!spotifyUrl.trim()) return
@@ -70,7 +71,7 @@ export function SongSearch() {
         title: editableTrack.title,
         artist: editableTrack.artist,
         album: editableTrack.album,
-        spotify_track_id: editableTrack.spotify_track_id,
+        spotify_track_id: editableTrack.spotify_track_id || undefined,
         duration_ms: editableTrack.duration_ms,
         album_art_url: editableTrack.album_art_url,
         preview_url: editableTrack.preview_url

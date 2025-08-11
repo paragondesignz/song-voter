@@ -289,40 +289,41 @@ export function BandDashboard() {
                             </h3>
                           </div>
                             
-                            <div className="flex items-center space-x-3 text-xs text-gray-500 mb-2">
-                              {song.suggested_by_user && (
-                                <>
-                                  <span>By: {song.suggested_by_user.display_name}</span>
-                                  <span>•</span>
-                                </>
-                              )}
-                              <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
-                              
-                              {song.duration_ms && (
-                                <>
-                                  <span>•</span>
-                                  <div className="flex items-center">
-                                    <Clock className="w-3 h-3 mr-1" />
-                                    {formatDuration(song.duration_ms)}
-                                  </div>
-                                </>
-                              )}
-                              
-                              {song.spotify_track_id && (
-                                <>
-                                  <span>•</span>
-                                  <a
-                                    href={`https://open.spotify.com/track/${song.spotify_track_id}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-primary-600 hover:text-primary-700 flex items-center"
-                                  >
-                                    <ExternalLink className="w-3 h-3 mr-1" />
-                                    Spotify
-                                  </a>
-                                </>
-                              )}
-                            </div>
+                                                      <div className="flex items-center space-x-3 text-xs text-gray-500 mb-2">
+                            {song.suggested_by_user && (
+                              <>
+                                <span>By: {song.suggested_by_user.display_name}</span>
+                                <span>•</span>
+                              </>
+                            )}
+                            <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
+                            
+                            {song.duration_ms && (
+                              <>
+                                <span>•</span>
+                                <div className="flex items-center">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {formatDuration(song.duration_ms)}
+                                </div>
+                              </>
+                            )}
+                            
+                            {song.spotify_track_id && (
+                              <>
+                                <span>•</span>
+                                <a
+                                  href={`https://open.spotify.com/track/${song.spotify_track_id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary-700 flex items-center"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="w-3 h-3 mr-1" />
+                                  Spotify
+                                </a>
+                              </>
+                            )}
+                          </div>
                             
                             {position <= 3 && (
                               <div className="mb-2">
@@ -370,6 +371,7 @@ export function BandDashboard() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs text-green-600 hover:text-green-700 font-medium"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   Spotify
                                 </a>
@@ -381,7 +383,7 @@ export function BandDashboard() {
                         {/* Action buttons - compact layout */}
                         <div className="flex items-center ml-3 space-x-3">
                           {/* Star Rating */}
-                          <div className="flex flex-col items-center space-y-1">
+                          <div className="flex flex-col items-center space-y-1" onClick={(e) => e.stopPropagation()}>
                             <StarRating
                               rating={song.user_rating || null}
                               onRate={(rating) => handleRate(song.id, rating)}
@@ -402,7 +404,7 @@ export function BandDashboard() {
 
                           {/* Admin controls */}
                           {userRole === 'admin' && (
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
                               <button
                                 onClick={() => startEditingSuggester()}
                                 className="p-2 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] border border-[var(--color-border)]"
