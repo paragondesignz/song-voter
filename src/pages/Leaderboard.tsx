@@ -63,18 +63,6 @@ export function Leaderboard() {
     }
   }
 
-  const getRankClass = (position: number) => {
-    switch (position) {
-      case 1:
-        return 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200'
-      case 2:
-        return 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200'
-      case 3:
-        return 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200'
-      default:
-        return 'bg-white'
-    }
-  }
 
   if (isLoading) {
     return (
@@ -85,8 +73,8 @@ export function Leaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen">
+      <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-[var(--color-border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -98,8 +86,8 @@ export function Leaderboard() {
               </button>
               <Trophy className="h-6 w-6 text-primary-600 mr-3" />
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">Leaderboard</h1>
-                <p className="text-xs text-gray-500">{band?.name}</p>
+                <h1 className="text-lg font-semibold">Leaderboard</h1>
+                <p className="text-xs text-secondary">{band?.name}</p>
               </div>
             </div>
           </div>
@@ -111,34 +99,34 @@ export function Leaderboard() {
           {/* Time frame selector */}
           <div className="card">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">Most Popular Songs</h2>
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+              <h2 className="text-xl font-semibold">Most Popular Songs</h2>
+              <div className="flex border border-[var(--color-border)] rounded-lg overflow-hidden">
                 <button
                   onClick={() => setTimeFrame('week')}
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     timeFrame === 'week'
                       ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      : 'bg-[var(--color-surface-2)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
                   This Week
                 </button>
                 <button
                   onClick={() => setTimeFrame('month')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors border-l border-gray-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors border-l border-[var(--color-border)] ${
                     timeFrame === 'month'
                       ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      : 'bg-[var(--color-surface-2)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
                   This Month
                 </button>
                 <button
                   onClick={() => setTimeFrame('all')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors border-l border-gray-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors border-l border-[var(--color-border)] ${
                     timeFrame === 'all'
                       ? 'bg-primary-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      : 'bg-[var(--color-surface-2)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
                   All Time
@@ -155,7 +143,15 @@ export function Leaderboard() {
                 return (
                   <div
                     key={song.id}
-                    className={`card border-2 ${getRankClass(position)} transition-all hover:shadow-lg`}
+                    className={`card border-2 transition-all hover:shadow-lg ${
+                      position === 1
+                        ? 'border-yellow-400/40'
+                        : position === 2
+                        ? 'border-gray-400/30'
+                        : position === 3
+                        ? 'border-amber-400/30'
+                        : 'border-[var(--color-border)]'
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center flex-1">
@@ -176,17 +172,17 @@ export function Leaderboard() {
                         )}
                         
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          <h3 className="text-lg font-semibold truncate">
                             {song.title}
                           </h3>
-                          <p className="text-gray-600 truncate">{song.artist}</p>
+                          <p className="text-secondary truncate">{song.artist}</p>
                           {song.suggested_by_user && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-secondary mt-1">
                               Added by: {song.suggested_by_user.display_name}
                             </p>
                           )}
                           
-                          <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
+                          <div className="flex items-center mt-2 space-x-4 text-sm text-secondary">
                             <div className="flex items-center">
                               <Heart className="w-4 h-4 mr-1 text-red-500" />
                               <span className="font-medium">
@@ -199,7 +195,7 @@ export function Leaderboard() {
                             </div>
                             
                             {song.recent_votes > 0 && (
-                              <div className="flex items-center text-green-600">
+                              <div className="flex items-center text-green-400">
                                 <TrendingUp className="w-4 h-4 mr-1" />
                                 <span className="font-medium">{song.recent_votes} recent</span>
                               </div>
@@ -239,11 +235,11 @@ export function Leaderboard() {
                         />
                         
                         {/* Rating Info */}
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-center">
+                            <div className="text-sm font-medium">
                             {song.average_rating ? song.average_rating.toFixed(1) : '—'}
                           </div>
-                          <div className="text-xs text-gray-500">
+                            <div className="text-xs text-secondary">
                             {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
                           </div>
                         </div>

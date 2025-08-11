@@ -9,6 +9,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  // Ensure Authorization/apikey headers are present even before a session exists
+  global: {
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+    },
+  },
   auth: {
     autoRefreshToken: true,
     persistSession: true,
