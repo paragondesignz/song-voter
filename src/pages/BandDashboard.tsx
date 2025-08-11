@@ -13,7 +13,8 @@ import {
   Plus,
   Crown,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  User
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -85,6 +86,13 @@ export function BandDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <button
+                onClick={() => navigate(`/band/${bandId}/profile`)}
+                className="btn-secondary text-sm"
+              >
+                <User className="h-4 w-4 mr-1" />
+                My Profile
+              </button>
               <button
                 onClick={() => navigate(`/band/${bandId}/search`)}
                 className="btn-primary text-sm"

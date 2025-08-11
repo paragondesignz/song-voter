@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdateMemberRole } from '@/hooks/useBands'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
 import { 
   ArrowLeft, 
   Users,
@@ -12,7 +13,10 @@ import {
   Shield,
   UserCheck,
   Calendar,
-  Search
+  Search,
+  Lock,
+  Mail,
+  User
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'react-hot-toast'
@@ -21,12 +25,22 @@ export function BandMembers() {
   const { bandId } = useParams<{ bandId: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [showInviteForm, setShowInviteForm] = useState(false)
+  const [showAddMemberForm, setShowAddMemberForm] = useState(false)
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [selectedMember, setSelectedMember] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isCreatingMember, setIsCreatingMember] = useState(false)
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+  
+  // Form states
+  const [memberEmail, setMemberEmail] = useState('')
+  const [memberName, setMemberName] = useState('')
+  const [memberRole, setMemberRole] = useState<'member' | 'admin'>('member')
+  const [bandPassword, setBandPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   
   const { data: band } = useBand(bandId!)
-  const { data: members, isLoading } = useBandMembers(bandId!)
+  const { data: members, isLoading, refetch: refetchMembers } = useBandMembers(bandId!)
   const { data: userRole } = useUserBandRole(bandId!)
   const removeMember = useRemoveBandMember()
   const updateMemberRole = useUpdateMemberRole()
@@ -37,6 +51,88 @@ export function BandMembers() {
     member.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || []
 
+  const handleSetBandPassword = async () => {
+    if (bandPassword !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+    
+    if (bandPassword.length < 6) {
+      toast.error('Password must be at least 6 characters')
+      return
+    }
+    
+    setIsUpdatingPassword(true)
+    try {
+      const { error } = await supabase
+        .from('bands')
+        .update({ 
+          shared_password: bandPassword,
+          password_updated_at: new Date().toISOString()
+        })
+        .eq('id', bandId)
+        
+      if (error) throw error
+      
+      toast.success('Band password set successfully!')
+      setShowPasswordForm(false)
+      setBandPassword('')
+      setConfirmPassword('')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to set band password')
+    } finally {
+      setIsUpdatingPassword(false)
+    }
+  }
+
+  const handleCreateMember = async () => {
+    if (!memberEmail || !memberName) {
+      toast.error('Please fill in all fields')
+      return
+    }
+    
+    // Check if band has a shared password set
+    const { data: bandData } = await supabase
+      .from('bands')
+      .select('shared_password')
+      .eq('id', bandId)
+      .single()
+      
+    if (!bandData?.shared_password) {
+      toast.error('Please set a band password first')
+      setShowAddMemberForm(false)
+      setShowPasswordForm(true)
+      return
+    }
+    
+    setIsCreatingMember(true)
+    try {
+      const { data, error } = await supabase.rpc('create_band_member_account', {
+        p_email: memberEmail,
+        p_band_id: bandId,
+        p_role: memberRole,
+        p_display_name: memberName,
+        p_created_by: user?.id
+      })
+      
+      if (error) throw error
+      
+      await refetchMembers()
+      toast.success(`Member ${memberName} added successfully!`)
+      setShowAddMemberForm(false)
+      setMemberEmail('')
+      setMemberName('')
+      setMemberRole('member')
+    } catch (error: any) {
+      if (error.message?.includes('already exists')) {
+        toast.error('A user with this email already exists')
+      } else {
+        toast.error(error.message || 'Failed to create member')
+      }
+    } finally {
+      setIsCreatingMember(false)
+    }
+  }
 
   const handleRemoveMember = async (userId: string, memberName: string) => {
     if (window.confirm(`Are you sure you want to remove ${memberName} from the band? This action cannot be undone.`)) {
@@ -125,58 +221,173 @@ export function BandMembers() {
                 <p className="text-xs text-gray-500">{band?.name} • {members?.length || 0}/10 members</p>
               </div>
             </div>
-            <button
-              onClick={() => setShowInviteForm(true)}
-              className="btn-primary text-sm"
-              disabled={members && members.length >= 10}
-            >
-              <UserPlus className="h-4 w-4 mr-1" />
-              Share Invite Code
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowPasswordForm(true)}
+                className="btn-secondary text-sm"
+              >
+                <Lock className="h-4 w-4 mr-1" />
+                Set Band Password
+              </button>
+              <button
+                onClick={() => setShowAddMemberForm(true)}
+                className="btn-primary text-sm"
+                disabled={members && members.length >= 10}
+              >
+                <UserPlus className="h-4 w-4 mr-1" />
+                Add Member
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Invite Instructions */}
-        {showInviteForm && (
+        {/* Set Band Password Form */}
+        {showPasswordForm && (
           <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Invite New Members</h2>
+            <h2 className="text-xl font-semibold mb-4">Set Band Password</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Set a shared password that all band members will use to log in. Members can change their personal password after logging in.
+            </p>
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="font-medium text-blue-900 mb-2">Share Invite Code</h3>
-                <p className="text-sm text-blue-800 mb-4">
-                  Share this invite code with new members. They can join the band by entering this code on their dashboard.
-                </p>
-                <div className="flex items-center space-x-3">
-                  <div className="flex-1 p-3 bg-white border border-blue-200 rounded-lg">
-                    <code className="text-lg font-mono font-bold text-blue-900">{band?.invite_code}</code>
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(band?.invite_code || '')
-                      toast.success('Invite code copied to clipboard!')
-                    }}
-                    className="btn-primary text-sm"
-                  >
-                    Copy Code
-                  </button>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Band Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="password"
+                    value={bandPassword}
+                    onChange={(e) => setBandPassword(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="Enter band password (min 6 characters)"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="Confirm band password"
+                  />
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  <strong>Note:</strong> New members must first create an account on the app, then use this invite code to join your band.
-                  All new members will join as regular members and can be promoted to admin later.
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowPasswordForm(false)
+                    setBandPassword('')
+                    setConfirmPassword('')
+                  }}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSetBandPassword}
+                  disabled={isUpdatingPassword}
+                  className="btn-primary"
+                >
+                  {isUpdatingPassword ? 'Setting...' : 'Set Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Member Form */}
+        {showAddMemberForm && (
+          <div className="card mb-8">
+            <h2 className="text-xl font-semibold mb-4">Add New Member</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Add a new member directly. They'll be able to log in using their email and the band's shared password.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={memberEmail}
+                    onChange={(e) => setMemberEmail(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="member@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Display Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={memberName}
+                    onChange={(e) => setMemberName(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="Member's name"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={memberRole}
+                  onChange={(e) => setMemberRole(e.target.value as 'member' | 'admin')}
+                  className="input-field"
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Login Instructions for New Member:</strong><br />
+                  Email: {memberEmail || '[member email]'}<br />
+                  Password: [Your band's shared password]<br />
+                  <br />
+                  Members can update their personal password after logging in.
                 </p>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end space-x-3">
                 <button
-                  onClick={() => setShowInviteForm(false)}
+                  onClick={() => {
+                    setShowAddMemberForm(false)
+                    setMemberEmail('')
+                    setMemberName('')
+                    setMemberRole('member')
+                  }}
                   className="btn-secondary"
                 >
-                  Close
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateMember}
+                  disabled={isCreatingMember}
+                  className="btn-primary"
+                >
+                  {isCreatingMember ? 'Creating...' : 'Add Member'}
                 </button>
               </div>
             </div>
