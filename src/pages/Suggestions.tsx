@@ -7,8 +7,7 @@ import { StarRating } from '@/components/StarRating'
 import { 
   ArrowLeft, 
   Music, 
-  ThumbsUp, 
-  ThumbsDown, 
+ 
   Clock, 
   Filter,
   Search,
@@ -101,11 +100,11 @@ export function Suggestions() {
   const sortedSuggestions = [...filteredSuggestions].sort((a, b) => {
     switch (sortBy) {
       case 'votes':
-        return (b.vote_count || 0) - (a.vote_count || 0)
+        return (b.total_ratings || 0) - (a.total_ratings || 0)
       case 'alphabetical':
         return a.title.localeCompare(b.title)
       case 'trending':
-        return (b.vote_count || 0) - (a.vote_count || 0)
+        return (b.total_ratings || 0) - (a.total_ratings || 0)
       case 'newest':
       default:
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -323,7 +322,7 @@ export function Suggestions() {
                       {/* Star Rating */}
                       <div className="flex flex-col items-center space-y-2">
                         <StarRating
-                          rating={song.user_rating}
+                          rating={song.user_rating || null}
                           onRate={(rating) => handleRate(song.id, rating)}
                           readonly={votingOnSong === song.id}
                           size="md"

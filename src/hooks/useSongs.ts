@@ -319,8 +319,8 @@ export function useUpdateSongSuggester() {
       if (error) throw error
       return data
     },
-    onSuccess: (_, { songId }) => {
-      // Get the song's band_id and invalidate queries
+    onSuccess: () => {
+      // Invalidate queries after updating song suggester
       queryClient.invalidateQueries({ queryKey: ['song-suggestions'] })
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
       toast.success('Song suggester updated successfully!')

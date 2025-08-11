@@ -16,13 +16,13 @@ import {
 
 export function MemberProfile() {
   const { bandId } = useParams<{ bandId: string }>()
-  const { user, refreshUser } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const { data: band } = useBand(bandId!)
   const { data: userRole } = useUserBandRole(bandId!)
   
   const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '')
-  const [currentPassword, setCurrentPassword] = useState('')
+  // const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || '')
@@ -55,7 +55,7 @@ export function MemberProfile() {
       
       if (metadataError) throw metadataError
       
-      await refreshUser()
+      // Refresh handled by auth state change
       toast.success('Profile updated successfully!')
     } catch (error: any) {
       toast.error(error.message || 'Failed to update profile')
@@ -86,7 +86,7 @@ export function MemberProfile() {
       if (error) throw error
       
       toast.success('Password updated successfully!')
-      setCurrentPassword('')
+      // setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (error: any) {

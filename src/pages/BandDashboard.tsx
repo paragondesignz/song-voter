@@ -14,8 +14,6 @@ import {
   ArrowLeft,
   Plus,
   Crown,
-  ThumbsUp,
-  ThumbsDown,
   User
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -209,7 +207,7 @@ export function BandDashboard() {
                         {/* Star Rating */}
                         <div className="flex flex-col items-center space-y-1">
                           <StarRating
-                            rating={song.user_rating}
+                            rating={song.user_rating || null}
                             onRate={(rating) => handleRate(song.id, rating, false)}
                             readonly={votingOnSong === song.id}
                             size="sm"
@@ -283,7 +281,7 @@ export function BandDashboard() {
                         {/* Star Rating */}
                         <div className="flex flex-col items-center space-y-1">
                           <StarRating
-                            rating={song.user_rating}
+                            rating={song.user_rating || null}
                             onRate={(rating) => handleRate(song.id, rating, false)}
                             readonly={votingOnSong === song.id}
                             size="sm"

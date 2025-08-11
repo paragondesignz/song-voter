@@ -107,7 +107,7 @@ export function BandMembers() {
     
     setIsCreatingMember(true)
     try {
-      const { data, error } = await supabase.rpc('create_band_member_account', {
+      const { error } = await supabase.rpc('create_band_member_account', {
         p_email: memberEmail,
         p_band_id: bandId,
         p_role: memberRole,
