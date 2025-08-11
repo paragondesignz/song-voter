@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
 import { Header } from '@/components/Header'
 import { BandSidebar } from '@/components/BandSidebar'
-import { Bot, Send, Loader2, Music, Mic, User, Disc3, Guitar } from 'lucide-react'
+import { Bot, Send, Loader2, Music, Mic, User } from 'lucide-react'
 
 interface ChatMessage {
   id: string
