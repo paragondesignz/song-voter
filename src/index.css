@@ -102,4 +102,10 @@
   .hover\:bg-gray-50:hover { background-color: var(--color-surface-2) !important; }
   .hover\:bg-gray-100:hover { background-color: var(--color-surface-2) !important; }
   .bg-gradient-to-br { background-image: none !important; background-color: var(--color-bg) !important; }
+
+  /* Increase text contrast on dark surfaces */
+  .text-gray-900, .text-gray-800, .text-black { color: var(--color-text) !important; }
+  .text-gray-700, .text-gray-600, .text-gray-500, .text-gray-400 { color: var(--color-text-secondary) !important; }
+  .placeholder-gray-400::placeholder, .placeholder-gray-500::placeholder { color: #A3A3A3 !important; opacity: 1; }
+  .text-primary-600 { color: var(--color-primary) !important; }
 }
