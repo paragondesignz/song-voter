@@ -1,146 +1,216 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
+import {
+  useBandPosts,
+  useCreatePost,
+  useUpdatePost,
+  useDeletePost,
+  useTogglePostLike,
+  useCreateComment,
+  usePostComments,
+  useDeleteComment,
+  BandPost,
+  CreatePostData
+} from '@/hooks/useBandPosts'
 import { Header } from '@/components/Header'
 import { BandSidebar } from '@/components/BandSidebar'
 import {
   MessageSquare,
-  Plus,
-  User,
-  MoreVertical,
-  Pin,
-  MessageCircle,
   Heart,
-  Send
+  Pin,
+  Megaphone,
+  Edit,
+  Trash2,
+  Plus,
+  Send,
+  Users,
+  X
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-// Placeholder interfaces - these would be replaced with real hooks
-interface BandPost {
-  id: string
-  band_id: string
-  author_id: string
-  author: {
-    display_name: string
-    avatar_url?: string
-  }
-  title: string
-  content: string
-  is_pinned: boolean
-  is_announcement: boolean
-  created_at: string
-  updated_at: string
-  likes_count: number
-  comments_count: number
-  user_has_liked: boolean
-}
+// Component for displaying post comments
+function PostComments({ postId, bandId, onCommentAdded }: { postId: string; bandId: string; onCommentAdded: () => void }) {
+  const [newComment, setNewComment] = useState('')
+  const { data: comments = [] } = usePostComments(postId)
+  const createComment = useCreateComment()
+  const deleteComment = useDeleteComment()
 
-// interface PostComment {
-//   id: string
-//   post_id: string
-//   author_id: string
-//   author: {
-//     display_name: string
-//     avatar_url?: string
-//   }
-//   content: string
-//   created_at: string
-// }
+  const handleComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newComment.trim()) return
+
+    await createComment.mutateAsync({ postId, bandId, content: newComment })
+    setNewComment('')
+    onCommentAdded()
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return
+    await deleteComment.mutateAsync({ commentId, postId, bandId })
+  }
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-200">
+      {/* Add Comment */}
+      <form onSubmit={handleComment} className="mb-4">
+        <div className="flex space-x-3">
+          <div className="flex-shrink-0">
+            <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <Users className="h-4 w-4 text-gray-600" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              rows={2}
+              className="input-field"
+            />
+            <div className="flex justify-end mt-2">
+              <button
+                type="submit"
+                disabled={!newComment.trim() || createComment.isPending}
+                className="btn-primary btn-sm"
+              >
+                <Send className="h-3 w-3 mr-1" />
+                {createComment.isPending ? 'Posting...' : 'Comment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {/* Comments List */}
+      <div className="space-y-3">
+        {comments.map((comment) => (
+          <div key={comment.id} className="flex space-x-3">
+            <div className="flex-shrink-0">
+              {comment.author_avatar_url ? (
+                <img
+                  src={comment.author_avatar_url}
+                  alt={comment.author_name}
+                  className="h-8 w-8 rounded-full"
+                />
+              ) : (
+                <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">
+                  <Users className="h-4 w-4 text-gray-600" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-1">
+                <h4 className="text-sm font-medium text-gray-900">{comment.author_name}</h4>
+                <div className="flex items-center space-x-2">
+                  <p className="text-xs text-gray-500">
+                    {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="p-1 text-gray-400 hover:text-red-600"
+                    title="Delete comment"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function BandPosts() {
   const { bandId } = useParams<{ bandId: string }>()
   const { data: band } = useBand(bandId!)
   const { data: userRole } = useUserBandRole(bandId!)
+  const { data: posts = [], isLoading: isLoadingPosts, refetch: refetchPosts } = useBandPosts(bandId!)
 
+  const [expandedPost, setExpandedPost] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [selectedPost, setSelectedPost] = useState<string | null>(null)
-  const [newPost, setNewPost] = useState({
-    title: '',
-    content: '',
-    is_announcement: false,
-    is_pinned: false
-  })
-  const [newComment, setNewComment] = useState('')
+  const [newPost, setNewPost] = useState({ title: '', content: '', is_pinned: false, is_announcement: false })
+  const [showComments, setShowComments] = useState<string | null>(null)
+  const [editingPost, setEditingPost] = useState<string | null>(null)
+  const [editData, setEditData] = useState({ title: '', content: '', is_pinned: false, is_announcement: false })
 
-  // Mock data - replace with real hooks
-  const posts: BandPost[] = [
-    {
-      id: '1',
-      band_id: bandId!,
-      author_id: 'user1',
-      author: {
-        display_name: 'John Doe',
-        avatar_url: undefined
-      },
-      title: 'Next rehearsal songs selected!',
-      content: 'Hey everyone! I\'ve selected the songs for our upcoming rehearsal on Friday. We\'ll be working on "Sweet Child O\' Mine", "Don\'t Stop Believin\'", and "Bohemian Rhapsody". Make sure to practice these before we meet!',
-      is_pinned: true,
-      is_announcement: true,
-      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      likes_count: 5,
-      comments_count: 3,
-      user_has_liked: false
-    },
-    {
-      id: '2',
-      band_id: bandId!,
-      author_id: 'user2',
-      author: {
-        display_name: 'Jane Smith',
-        avatar_url: undefined
-      },
-      title: 'Great show last night!',
-      content: 'What an amazing performance everyone! The crowd loved us. Special shoutout to our drummer for that epic solo in the middle of "Seven Nation Army". Can\'t wait for our next gig!',
-      is_pinned: false,
-      is_announcement: false,
-      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      likes_count: 12,
-      comments_count: 7,
-      user_has_liked: true
-    }
-  ]
+  // Mutations
+  const createPost = useCreatePost()
+  const updatePost = useUpdatePost()
+  const deletePost = useDeletePost()
+  const toggleLike = useTogglePostLike()
 
-  const isAdmin = userRole === 'admin'
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked
-      setNewPost(prev => ({ ...prev, [name]: checked }))
-    } else {
-      setNewPost(prev => ({ ...prev, [name]: value }))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement post creation
-    console.log('Creating post:', newPost)
-    setNewPost({ title: '', content: '', is_announcement: false, is_pinned: false })
+    if (!newPost.title.trim() || !newPost.content.trim() || !bandId) return
+
+    const postData: CreatePostData = {
+      title: newPost.title,
+      content: newPost.content,
+      is_pinned: newPost.is_pinned,
+      is_announcement: newPost.is_announcement
+    }
+
+    await createPost.mutateAsync({ bandId, postData })
+    setNewPost({ title: '', content: '', is_pinned: false, is_announcement: false })
     setShowCreateForm(false)
   }
 
-  const handleLike = async (postId: string) => {
-    // TODO: Implement like functionality
-    console.log('Toggling like for post:', postId)
+  const handleEditPost = (post: BandPost) => {
+    setEditingPost(post.id)
+    setEditData({
+      title: post.title,
+      content: post.content,
+      is_pinned: post.is_pinned,
+      is_announcement: post.is_announcement
+    })
   }
 
-  const handleComment = async (postId: string) => {
-    if (!newComment.trim()) return
-    // TODO: Implement comment creation
-    console.log('Adding comment to post:', postId, newComment)
-    setNewComment('')
+  const handleUpdatePost = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPost || !bandId) return
+
+    await updatePost.mutateAsync({
+      postId: editingPost,
+      bandId,
+      postData: editData
+    })
+    setEditingPost(null)
   }
 
-  if (!band) {
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) return
+    if (!bandId) return
+
+    await deletePost.mutateAsync({ postId, bandId })
+  }
+
+  const handleLike = async (post: BandPost) => {
+    if (!bandId) return
+    await toggleLike.mutateAsync({
+      postId: post.id,
+      bandId,
+      isLiked: post.user_has_liked
+    })
+  }
+
+  if (!band || isLoadingPosts) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     )
   }
+
+  // Sort posts: pinned first, then by creation date
+  const sortedPosts = [...posts].sort((a, b) => {
+    if (a.is_pinned && !b.is_pinned) return -1
+    if (!a.is_pinned && b.is_pinned) return 1
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,20 +244,27 @@ export function BandPosts() {
             {/* Create Post Form */}
             {showCreateForm && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Create New Post</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Create New Post</h2>
+                  <button
+                    onClick={() => setShowCreateForm(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <form onSubmit={handleCreatePost} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Title
                     </label>
                     <input
                       type="text"
-                      name="title"
                       value={newPost.title}
-                      onChange={handleInputChange}
+                      onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
                       className="input-field"
+                      placeholder="Post title"
                       required
-                      placeholder="What's this post about?"
                     />
                   </div>
 
@@ -196,38 +273,34 @@ export function BandPosts() {
                       Content
                     </label>
                     <textarea
-                      name="content"
                       value={newPost.content}
-                      onChange={handleInputChange}
+                      onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
                       rows={4}
                       className="input-field"
+                      placeholder="What's on your mind?"
                       required
-                      placeholder="Share your thoughts with the band..."
                     />
                   </div>
 
-                  {isAdmin && (
-                    <div className="space-y-3">
+                  {userRole === 'admin' && (
+                    <div className="flex flex-wrap gap-4">
                       <label className="flex items-center">
                         <input
                           type="checkbox"
-                          name="is_announcement"
+                          checked={newPost.is_pinned}
+                          onChange={(e) => setNewPost({ ...newPost, is_pinned: e.target.checked })}
+                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Pin this post</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
                           checked={newPost.is_announcement}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          onChange={(e) => setNewPost({ ...newPost, is_announcement: e.target.checked })}
+                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         <span className="ml-2 text-sm text-gray-700">Mark as announcement</span>
-                      </label>
-
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="is_pinned"
-                          checked={newPost.is_pinned}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Pin to top</span>
                       </label>
                     </div>
                   )}
@@ -242,10 +315,11 @@ export function BandPosts() {
                     </button>
                     <button
                       type="submit"
+                      disabled={createPost.isPending}
                       className="btn-primary"
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      Post
+                      {createPost.isPending ? 'Posting...' : 'Post'}
                     </button>
                   </div>
                 </form>
@@ -253,128 +327,205 @@ export function BandPosts() {
             )}
 
             {/* Posts List */}
-            {posts.length > 0 ? (
-              <div className="space-y-6">
-                {posts.map((post) => (
-                  <div key={post.id} className={`card ${post.is_pinned ? 'border-l-4 border-yellow-500 bg-yellow-50' : ''}`}>
-                    {/* Post Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          {post.author.avatar_url ? (
-                            <img src={post.author.avatar_url} alt="" className="h-10 w-10 rounded-full" />
-                          ) : (
-                            <User className="h-5 w-5 text-gray-600" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold text-gray-900">{post.author.display_name}</h3>
-                            {post.is_announcement && (
-                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                Announcement
-                              </span>
-                            )}
-                            {post.is_pinned && (
-                              <Pin className="h-4 w-4 text-yellow-600" />
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500">
-                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                          </p>
-                        </div>
+            <div className="space-y-6">
+              {sortedPosts.map((post) => (
+                <div
+                  key={post.id}
+                  className={`card ${post.is_pinned ? 'border-l-4 border-yellow-500 bg-yellow-50' : ''}`}
+                >
+                  {editingPost === post.id ? (
+                    /* Edit Post Form */
+                    <form onSubmit={handleUpdatePost} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Title
+                        </label>
+                        <input
+                          type="text"
+                          value={editData.title}
+                          onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                          className="input-field"
+                          required
+                        />
                       </div>
-                      {isAdmin && (
-                        <div className="relative">
-                          <button className="text-gray-400 hover:text-gray-600">
-                            <MoreVertical className="h-5 w-5" />
-                          </button>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Content
+                        </label>
+                        <textarea
+                          value={editData.content}
+                          onChange={(e) => setEditData({ ...editData, content: e.target.value })}
+                          rows={4}
+                          className="input-field"
+                          required
+                        />
+                      </div>
+
+                      {userRole === 'admin' && (
+                        <div className="flex flex-wrap gap-4">
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={editData.is_pinned}
+                              onChange={(e) => setEditData({ ...editData, is_pinned: e.target.checked })}
+                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">Pin this post</span>
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={editData.is_announcement}
+                              onChange={(e) => setEditData({ ...editData, is_announcement: e.target.checked })}
+                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">Mark as announcement</span>
+                          </label>
                         </div>
                       )}
-                    </div>
 
-                    {/* Post Content */}
-                    <div className="mb-4">
-                      <h2 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h2>
-                      <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
-                    </div>
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditingPost(null)}
+                          className="btn-secondary"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={updatePost.isPending}
+                          className="btn-primary"
+                        >
+                          {updatePost.isPending ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* Regular Post Display */
+                    <>
+                      {/* Post Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          {post.author_avatar_url ? (
+                            <img
+                              src={post.author_avatar_url}
+                              alt={post.author_name}
+                              className="h-10 w-10 rounded-full"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                              <Users className="h-5 w-5 text-gray-600" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-medium text-gray-900">{post.author_name}</h3>
+                              {post.is_pinned && (
+                                <Pin className="h-4 w-4 text-yellow-600" />
+                              )}
+                              {post.is_announcement && (
+                                <Megaphone className="h-4 w-4 text-blue-600" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
 
-                    {/* Post Actions */}
-                    <div className="border-t pt-4 space-y-3">
-                      <div className="flex items-center justify-between">
+                        {(userRole === 'admin' || post.author_id === post.author_id) && (
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleEditPost(post)}
+                              className="p-2 text-gray-400 hover:text-gray-600"
+                              title="Edit post"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="p-2 text-gray-400 hover:text-red-600"
+                              title="Delete post"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Post Content */}
+                      <div className="mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h2>
+                        <div className="text-gray-700">
+                          {expandedPost === post.id || post.content.length <= 200 ? (
+                            <p className="whitespace-pre-wrap">{post.content}</p>
+                          ) : (
+                            <>
+                              <p className="whitespace-pre-wrap">{post.content.substring(0, 200)}...</p>
+                              <button
+                                onClick={() => setExpandedPost(post.id)}
+                                className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1"
+                              >
+                                Read more
+                              </button>
+                            </>
+                          )}
+                          {expandedPost === post.id && post.content.length > 200 && (
+                            <button
+                              onClick={() => setExpandedPost(null)}
+                              className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-1 block"
+                            >
+                              Show less
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Post Actions */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div className="flex items-center space-x-4">
                           <button
-                            onClick={() => handleLike(post.id)}
-                            className={`flex items-center space-x-2 text-sm ${
-                              post.user_has_liked ? 'text-red-600' : 'text-gray-600 hover:text-red-600'
+                            onClick={() => handleLike(post)}
+                            disabled={toggleLike.isPending}
+                            className={`flex items-center space-x-2 px-3 py-1 rounded-full transition-colors disabled:opacity-50 ${
+                              post.user_has_liked
+                                ? 'bg-red-50 text-red-600'
+                                : 'text-gray-600 hover:bg-gray-50'
                             }`}
                           >
                             <Heart className={`h-4 w-4 ${post.user_has_liked ? 'fill-current' : ''}`} />
-                            <span>{post.likes_count}</span>
+                            <span className="text-sm font-medium">{post.likes_count}</span>
                           </button>
+
                           <button
-                            onClick={() => setSelectedPost(selectedPost === post.id ? null : post.id)}
-                            className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600"
+                            onClick={() => setShowComments(showComments === post.id ? null : post.id)}
+                            className="flex items-center space-x-2 px-3 py-1 rounded-full text-gray-600 hover:bg-gray-50 transition-colors"
                           >
-                            <MessageCircle className="h-4 w-4" />
-                            <span>{post.comments_count}</span>
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="text-sm font-medium">{post.comments_count}</span>
                           </button>
                         </div>
                       </div>
 
                       {/* Comments Section */}
-                      {selectedPost === post.id && (
-                        <div className="border-t pt-4 space-y-4">
-                          {/* Add Comment */}
-                          <div className="flex space-x-3">
-                            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                              <User className="h-4 w-4 text-gray-600" />
-                            </div>
-                            <div className="flex-1 space-y-2">
-                              <textarea
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Write a comment..."
-                                rows={2}
-                                className="input-field text-sm"
-                              />
-                              <button
-                                onClick={() => handleComment(post.id)}
-                                disabled={!newComment.trim()}
-                                className="btn-primary text-sm"
-                              >
-                                Comment
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Mock Comments */}
-                          <div className="space-y-3">
-                            <div className="flex space-x-3">
-                              <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                                <User className="h-4 w-4 text-gray-600" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="bg-gray-100 rounded-lg p-3">
-                                  <p className="font-semibold text-sm text-gray-900">Mike Johnson</p>
-                                  <p className="text-sm text-gray-700">Great song choices! Can't wait to jam on Friday.</p>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">2 days ago</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                      {showComments === post.id && (
+                        <PostComments postId={post.id} bandId={bandId!} onCommentAdded={() => refetchPosts()} />
                       )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="card text-center py-12">
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {posts.length === 0 && (
+              <div className="text-center py-12">
                 <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-gray-900 mb-2">No Posts Yet</h3>
+                <h3 className="text-xl font-medium text-gray-900 mb-2">No posts yet</h3>
                 <p className="text-gray-600 mb-6">
-                  Start the conversation! Share updates, announcements, or just say hello.
+                  Start the conversation! Share updates, announcements, or anything with your band.
                 </p>
                 <button
                   onClick={() => setShowCreateForm(true)}
