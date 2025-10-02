@@ -58,7 +58,7 @@ export function SongEdit() {
         },
       })
       toast.success('Song updated successfully')
-      navigate(`/band/${bandId}/dashboard`)
+      navigate(`/band/${bandId}`)
     } catch (error) {
       toast.error('Failed to update song')
     }
@@ -81,7 +81,7 @@ export function SongEdit() {
       if (error) throw error
 
       toast.success('Song deleted successfully')
-      navigate(`/band/${bandId}/dashboard`)
+      navigate(`/band/${bandId}`)
     } catch (error) {
       toast.error('Failed to delete song')
     } finally {
@@ -127,7 +127,7 @@ export function SongEdit() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
-              onClick={() => navigate(`/band/${bandId}/dashboard`)}
+              onClick={() => navigate(`/band/${bandId}`)}
               className="flex items-center text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
@@ -352,7 +352,7 @@ export function SongEdit() {
             <div className="flex justify-end space-x-4 pt-6">
               <button
                 type="button"
-                onClick={() => navigate(`/band/${bandId}/dashboard`)}
+                onClick={() => navigate(`/band/${bandId}`)}
                 className="px-6 py-2 border border-[var(--color-border)] text-[var(--color-text-secondary)] rounded-lg hover:bg-[var(--color-surface-2)]"
               >
                 Cancel
