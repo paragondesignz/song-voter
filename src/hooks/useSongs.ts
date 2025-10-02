@@ -423,6 +423,9 @@ export function useUpdateSong() {
         spotify_track_id?: string | null
         notes?: string | null
         status?: 'suggested' | 'in_rehearsal' | 'practiced'
+        bpm?: number | null
+        musical_key?: string | null
+        vocal_type?: 'male' | 'female' | 'duet' | 'instrumental' | null
       }
     }) => {
       const { data: { session } } = await supabase.auth.getSession()

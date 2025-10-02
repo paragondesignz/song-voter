@@ -20,7 +20,7 @@ interface SongEditForm {
   status?: 'suggested' | 'in_rehearsal' | 'practiced'
   bpm?: number
   musical_key?: string
-  vocal_type?: string
+  vocal_type?: 'male' | 'female' | 'duet' | 'instrumental' | ''
 }
 
 export function SongEdit() {
@@ -66,6 +66,7 @@ export function SongEdit() {
         updates: {
           ...data,
           duration_ms: data.duration_ms ? Number(data.duration_ms) : null,
+          vocal_type: data.vocal_type === '' ? null : data.vocal_type as 'male' | 'female' | 'duet' | 'instrumental' | null,
         },
       })
       toast.success('Song updated successfully')
