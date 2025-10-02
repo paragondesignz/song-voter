@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSongDetails, useUpdateSong, useRateSong } from '@/hooks/useSongs'
 import { ArrowLeft, Save, Trash2, Music, Clock, User, FileText, Star, ExternalLink } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -25,6 +26,7 @@ interface SongEditForm {
 export function SongEdit() {
   const { bandId, songId } = useParams<{ bandId: string; songId: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: song, isLoading } = useSongDetails(songId!)
   const updateSong = useUpdateSong()
   const rateSong = useRateSong()
@@ -81,6 +83,10 @@ export function SongEdit() {
         bandId: bandId!,
         rating
       })
+
+      // Invalidate song details to refetch with new rating
+      await queryClient.invalidateQueries({ queryKey: ['song-details', songId] })
+
       toast.success('Rating updated successfully')
     } catch (error) {
       toast.error('Failed to update rating')

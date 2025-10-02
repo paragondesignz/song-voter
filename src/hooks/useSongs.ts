@@ -350,8 +350,10 @@ export function useCleanupRehearsalSongs() {
 }
 
 export function useSongDetails(songId: string) {
+  const { user } = useAuth()
+
   return useQuery({
-    queryKey: ['song-details', songId],
+    queryKey: ['song-details', songId, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('song_suggestions')
@@ -360,6 +362,11 @@ export function useSongDetails(songId: string) {
           song_ratings (
             rating,
             user_id
+          ),
+          suggested_by_user:profiles!suggested_by (
+            user_id,
+            display_name,
+            avatar_url
           )
         `)
         .eq('id', songId)
@@ -367,19 +374,22 @@ export function useSongDetails(songId: string) {
 
       if (error) throw error
 
-      // Calculate average rating
+      // Calculate average rating and user's rating
       const ratings = data.song_ratings || []
       const averageRating = ratings.length > 0
         ? ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length
         : 0
 
+      const userRating = user ? ratings.find((r: any) => r.user_id === user.id) : null
+
       return {
         ...data,
         average_rating: averageRating,
         total_ratings: ratings.length,
+        user_rating: userRating ? userRating.rating : null,
       }
     },
-    enabled: !!songId,
+    enabled: !!songId && !!user,
   })
 }
 
