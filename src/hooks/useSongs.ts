@@ -355,37 +355,46 @@ export function useSongDetails(songId: string) {
   return useQuery({
     queryKey: ['song-details', songId, user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get song details without embedded joins to avoid RLS issues
+      const { data: song, error } = await supabase
         .from('song_suggestions')
-        .select(`
-          *,
-          song_ratings (
-            rating,
-            user_id
-          ),
-          suggested_by_user:profiles!suggested_by (
-            user_id,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('id', songId)
         .single()
 
       if (error) throw error
 
-      // Calculate average rating and user's rating
-      const ratings = data.song_ratings || []
-      const averageRating = ratings.length > 0
-        ? ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length
-        : 0
+      // Fetch ratings for this song
+      const { data: ratingsData } = await supabase
+        .from('song_ratings')
+        .select('user_id, rating')
+        .eq('song_suggestion_id', songId)
 
+      const ratings = ratingsData || []
+
+      // Fetch suggester profile
+      let suggested_by_user = null
+      if (song.suggested_by) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .eq('user_id', song.suggested_by)
+          .single()
+
+        suggested_by_user = profileData
+      }
+
+      // Calculate ratings
       const userRating = user ? ratings.find((r: any) => r.user_id === user.id) : null
+      const ratingValues = ratings.map((rating: any) => rating.rating).filter((rating: number) => !isNaN(rating))
+      const totalRatings = ratingValues.length
+      const averageRating = totalRatings > 0 ? ratingValues.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
 
       return {
-        ...data,
-        average_rating: averageRating,
-        total_ratings: ratings.length,
+        ...song,
+        suggested_by_user,
+        average_rating: Math.round(averageRating * 10) / 10,
+        total_ratings: totalRatings,
         user_rating: userRating ? userRating.rating : null,
       }
     },
