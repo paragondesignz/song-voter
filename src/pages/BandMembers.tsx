@@ -618,28 +618,40 @@ export function BandMembers() {
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href={`/band/${bandId}`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                  <button
+                    onClick={() => navigate(`/band/${bandId}`)}
+                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
+                  >
                     <Shield className="h-4 w-4 mr-2 text-gray-500" />
                     Band Dashboard
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href={`/band/${bandId}/settings`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/settings`)}
+                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
+                  >
                     <Settings className="h-4 w-4 mr-2 text-gray-500" />
                     Band Settings
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href={`/band/${bandId}/posts`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/posts`)}
+                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
+                  >
                     <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
                     Band Posts
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href={`/band/${bandId}/files`} className="flex items-center text-sm text-gray-700 hover:text-primary-600">
+                  <button
+                    onClick={() => navigate(`/band/${bandId}/files`)}
+                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
+                  >
                     <Folder className="h-4 w-4 mr-2 text-gray-500" />
                     Band Files
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>
