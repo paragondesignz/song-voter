@@ -73,16 +73,15 @@ export function useSongSuggestions(bandId: string, options?: {
 
       const suggestions = data as any[]
 
-      // Fetch votes for these suggestions to compute ratings
+      // Fetch ratings for these suggestions to compute ratings
       const songIds = suggestions.map(s => s.id)
-      let votes: any[] = []
+      let ratings: any[] = []
       if (songIds.length > 0) {
-        const { data: votesData } = await supabase
-          .from('song_votes')
-          .select('song_suggestion_id, voter_id, vote_type, created_at')
-          .eq('band_id', bandId)
+        const { data: ratingsData } = await supabase
+          .from('song_ratings')
+          .select('song_suggestion_id, user_id, rating, created_at')
           .in('song_suggestion_id', songIds)
-        votes = votesData || []
+        ratings = ratingsData || []
       }
 
       // Fetch suggester profiles (best-effort; tolerate RLS)
@@ -98,25 +97,25 @@ export function useSongSuggestions(bandId: string, options?: {
         }
       }
 
-      const groupedVotes = votes.reduce((acc, v) => {
-        const arr = acc[v.song_suggestion_id] || (acc[v.song_suggestion_id] = [])
-        arr.push(v)
+      const groupedRatings = ratings.reduce((acc, r) => {
+        const arr = acc[r.song_suggestion_id] || (acc[r.song_suggestion_id] = [])
+        arr.push(r)
         return acc
       }, {} as Record<string, any[]>)
 
       return suggestions.map((song: any) => {
-        const songVotes = groupedVotes[song.id] || []
-        const userVote = songVotes.find((vote: any) => vote.voter_id === user?.id)
-        const ratings = songVotes.map((vote: any) => parseInt(vote.vote_type)).filter((rating: number) => !isNaN(rating))
-        const totalRatings = ratings.length
-        const averageRating = totalRatings > 0 ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
+        const songRatings = groupedRatings[song.id] || []
+        const userRating = songRatings.find((rating: any) => rating.user_id === user?.id)
+        const ratingValues = songRatings.map((rating: any) => rating.rating).filter((rating: number) => !isNaN(rating))
+        const totalRatings = ratingValues.length
+        const averageRating = totalRatings > 0 ? ratingValues.reduce((sum: number, rating: number) => sum + rating, 0) / totalRatings : 0
 
         return {
           ...song,
           suggested_by_user: profileMap[song.suggested_by],
           average_rating: Math.round(averageRating * 10) / 10,
           total_ratings: totalRatings,
-          user_rating: userVote ? parseInt(userVote.vote_type) || null : null,
+          user_rating: userRating ? userRating.rating : null,
         }
       }) as SongSuggestion[]
     },
