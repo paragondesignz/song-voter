@@ -119,11 +119,19 @@ export function useSpotifyEmbed() {
     }
   }
 
-  const handleUrlSubmit = async (spotifyUrl: string) => {
-    setUrl(spotifyUrl)
-    
+  const handleUrlSubmit = async (spotifyInput: string) => {
+    // Check if it's already a full URL or just a track ID
+    let fullUrl = spotifyInput.trim()
+
+    // If it's just a track ID (22 alphanumeric characters), convert to full URL
+    if (/^[a-zA-Z0-9]{22}$/.test(fullUrl)) {
+      fullUrl = `https://open.spotify.com/track/${fullUrl}`
+    }
+
+    setUrl(fullUrl)
+
     try {
-      const trackData = await extractTrackInfo(spotifyUrl)
+      const trackData = await extractTrackInfo(fullUrl)
       return trackData
     } catch (err) {
       // Error already set in extractTrackInfo

@@ -213,18 +213,18 @@ export function SongSearch() {
 
               <div className="mb-6">
                 <label htmlFor="spotify-url" className="block text-sm font-medium text-gray-700 mb-2">
-                  Paste Spotify Track URL
+                  Paste Spotify Track URL or ID
                 </label>
                 <div className="flex space-x-2">
                   <div className="flex-1 relative">
                     <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
                       id="spotify-url"
-                      type="url"
+                      type="text"
                       value={spotifyUrl}
                       onChange={(e) => setSpotifyUrl(e.target.value)}
                       className="input-field pl-10"
-                      placeholder="https://open.spotify.com/track/..."
+                      placeholder="https://open.spotify.com/track/... or 3n3Ppam7vgaVa1iaRUc9Lp"
                     />
                   </div>
                   <button

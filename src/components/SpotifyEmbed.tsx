@@ -6,12 +6,12 @@ interface SpotifyEmbedProps {
   height?: number
 }
 
-export function SpotifyEmbed({ trackId, compact = false, height = 152 }: SpotifyEmbedProps) {
+export function SpotifyEmbed({ trackId, compact = false, height = 352 }: SpotifyEmbedProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
-  const embedHeight = compact ? 80 : height
-  const embedUrl = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`
+  const embedHeight = compact ? 152 : height
+  const embedUrl = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator`
 
   const handleLoad = () => {
     setIsLoading(false)
@@ -49,18 +49,18 @@ export function SpotifyEmbed({ trackId, compact = false, height = 152 }: Spotify
         </div>
       )}
       <iframe
+        data-testid="embed-iframe"
+        style={{ borderRadius: '12px' }}
         src={embedUrl}
         width="100%"
         height={embedHeight}
         frameBorder="0"
-        allowTransparency={true}
-        allow="encrypted-media; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        allowFullScreen
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
-        className="rounded-lg"
         onLoad={handleLoad}
         onError={handleError}
         title="Spotify player"
-        sandbox="allow-scripts allow-same-origin allow-presentation"
       />
     </div>
   )

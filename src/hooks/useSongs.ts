@@ -264,7 +264,7 @@ export function useRateSong() {
   return useMutation({
     mutationFn: async ({
       songId,
-      bandId,
+      bandId: _bandId,
       rating
     }: {
       songId: string
@@ -283,27 +283,26 @@ export function useRateSong() {
           throw new Error('Rating must be between 1 and 5 stars')
         }
         
-        // Add or update rating using upsert
+        // Add or update rating using upsert in the song_ratings table
         const { error } = await supabase
-          .from('song_votes')
+          .from('song_ratings')
           .upsert({
-            band_id: bandId,
             song_suggestion_id: songId,
-            voter_id: session.user.id,
-            vote_type: rating.toString(),
+            user_id: session.user.id,
+            rating: rating,
             updated_at: new Date().toISOString()
           }, {
-            onConflict: 'song_suggestion_id,voter_id'
+            onConflict: 'song_suggestion_id,user_id'
           })
 
         if (error) throw error
       } else {
-        // Remove rating
+        // Remove rating from song_ratings table
         const { error } = await supabase
-          .from('song_votes')
+          .from('song_ratings')
           .delete()
           .eq('song_suggestion_id', songId)
-          .eq('voter_id', session.user.id)
+          .eq('user_id', session.user.id)
 
         if (error) throw error
       }
@@ -347,6 +346,89 @@ export function useCleanupRehearsalSongs() {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'Failed to cleanup rehearsal songs')
+    },
+  })
+}
+
+export function useSongDetails(songId: string) {
+  return useQuery({
+    queryKey: ['song-details', songId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('song_suggestions')
+        .select(`
+          *,
+          song_ratings (
+            rating,
+            user_id
+          )
+        `)
+        .eq('id', songId)
+        .single()
+
+      if (error) throw error
+
+      // Calculate average rating
+      const ratings = data.song_ratings || []
+      const averageRating = ratings.length > 0
+        ? ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length
+        : 0
+
+      return {
+        ...data,
+        average_rating: averageRating,
+        total_ratings: ratings.length,
+      }
+    },
+    enabled: !!songId,
+  })
+}
+
+export function useUpdateSong() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      songId,
+      bandId: _bandId,
+      updates
+    }: {
+      songId: string
+      bandId: string
+      updates: {
+        title?: string
+        artist?: string
+        album?: string | null
+        duration_ms?: number | null
+        album_art_url?: string | null
+        preview_url?: string | null
+        spotify_track_id?: string | null
+        notes?: string | null
+        status?: 'suggested' | 'in_rehearsal' | 'practiced'
+      }
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('You must be logged in')
+      }
+
+      const { data, error } = await supabase
+        .from('song_suggestions')
+        .update(updates)
+        .eq('id', songId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, { bandId }) => {
+      queryClient.invalidateQueries({ queryKey: ['song-suggestions', bandId] })
+      queryClient.invalidateQueries({ queryKey: ['song-details'] })
+      toast.success('Song updated successfully')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update song')
     },
   })
 }

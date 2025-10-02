@@ -154,14 +154,14 @@ Present the information clearly and concisely. If some details are unavailable, 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--color-background)]">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">AI Musicologist Chat</h1>
-          {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
+          <h1 className="text-3xl font-bold text-[var(--color-text)]">AI Musicologist Chat</h1>
+          {band?.name && <p className="text-lg text-[var(--color-text-secondary)] mt-2">{band.name}</p>}
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -169,17 +169,17 @@ Present the information clearly and concisely. If some details are unavailable, 
           <div className="lg:col-span-2 space-y-6">
             {/* Chat Interface */}
             <div className="card h-[600px] flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-primary-600" />
+                  <div className="w-8 h-8 bg-primary-500/20 rounded-full flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-primary-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">AI Musicologist</h2>
-                    <p className="text-sm text-gray-500">Expert music knowledge at your fingertips</p>
+                    <h2 className="text-lg font-semibold text-[var(--color-text)]">AI Musicologist</h2>
+                    <p className="text-sm text-[var(--color-text-secondary)]">Expert music knowledge at your fingertips</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="flex items-center space-x-2 text-sm text-[var(--color-text-secondary)]">
                   <Music className="w-4 h-4" />
                   <span>Powered by GPT-4</span>
                 </div>
@@ -195,20 +195,20 @@ Present the information clearly and concisely. If some details are unavailable, 
                     <div
                       className={`max-w-[80%] rounded-lg p-3 ${
                         message.role === 'user'
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-[var(--color-surface-2)] text-[var(--color-text)]'
                       }`}
                     >
                       <div className="flex items-start space-x-2">
                         {message.role === 'assistant' && (
-                          <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <Bot className="w-4 h-4 text-primary-600" />
+                          <div className="w-6 h-6 bg-primary-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Bot className="w-4 h-4 text-primary-400" />
                           </div>
                         )}
                         <div className="flex-1">
                           <div className="whitespace-pre-wrap">{message.content}</div>
                           <div className={`text-xs mt-2 ${
-                            message.role === 'user' ? 'text-primary-100' : 'text-gray-500'
+                            message.role === 'user' ? 'text-primary-100' : 'text-[var(--color-text-tertiary)]'
                           }`}>
                             {formatTimestamp(message.timestamp)}
                           </div>
@@ -225,14 +225,14 @@ Present the information clearly and concisely. If some details are unavailable, 
                 
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="bg-[var(--color-surface-2)] rounded-lg p-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
-                          <Bot className="w-4 h-4 text-primary-600" />
+                        <div className="w-6 h-6 bg-primary-500/20 rounded-full flex items-center justify-center">
+                          <Bot className="w-4 h-4 text-primary-400" />
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
-                          <span className="text-sm text-gray-600">Thinking...</span>
+                          <Loader2 className="w-4 h-4 animate-spin text-primary-400" />
+                          <span className="text-sm text-[var(--color-text-secondary)]">Thinking...</span>
                         </div>
                       </div>
                     </div>
@@ -243,7 +243,7 @@ Present the information clearly and concisely. If some details are unavailable, 
               </div>
               
               {/* Input */}
-              <div className="border-t border-gray-200 p-4">
+              <div className="border-t border-[var(--color-border)] p-4">
                 <form onSubmit={handleSubmit} className="flex space-x-3">
                   <div className="flex-1 relative">
                     <input
@@ -252,15 +252,15 @@ Present the information clearly and concisely. If some details are unavailable, 
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder="Ask about any song, artist, or music topic..."
-                      className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 placeholder-gray-600"
+                      className="w-full pl-4 pr-10 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-[var(--color-text)] placeholder-[var(--color-text-tertiary)]"
                       disabled={isLoading}
                     />
-                    <Mic className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mic className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
                   </div>
                   <button
                     type="submit"
                     disabled={!inputValue.trim() || isLoading}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                   >
                     <Send className="w-4 h-4" />
                     <span>Send</span>
@@ -268,7 +268,7 @@ Present the information clearly and concisely. If some details are unavailable, 
                 </form>
                 
                 {error && (
-                  <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                  <div className="mt-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 p-2 rounded">
                     Error: {error}
                   </div>
                 )}

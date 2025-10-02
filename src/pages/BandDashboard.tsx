@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useUserBandRole } from '@/hooks/useBands'
-import { useSongSuggestions, useRateSong, useCleanupRehearsalSongs, useRemoveSuggestion } from '@/hooks/useSongs'
+import { useSongSuggestions, useRateSong, useRemoveSuggestion } from '@/hooks/useSongs'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 
-import { Search, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User } from 'lucide-react'
+import { Search, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User, Edit } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes'
@@ -24,23 +24,23 @@ export function BandDashboard() {
   const { data: userRole } = useUserBandRole(bandId!)
   const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
-  const cleanupRehearsalSongs = useCleanupRehearsalSongs()
 
   const ITEMS_PER_PAGE = 10
 
   // Cleanup rehearsal songs on page load (silent, once per session)
-  useEffect(() => {
-    const hasRunCleanup = sessionStorage.getItem('rehearsal-cleanup-run')
-    if (!hasRunCleanup && bandId) {
-      cleanupRehearsalSongs.mutateAsync()
-        .then(() => {
-          sessionStorage.setItem('rehearsal-cleanup-run', 'true')
-        })
-        .catch(() => {
-          // Silent failure - don't annoy users with errors
-        })
-    }
-  }, [bandId, cleanupRehearsalSongs])
+  // DISABLED - RPC function doesn't exist yet
+  // useEffect(() => {
+  //   const hasRunCleanup = sessionStorage.getItem('rehearsal-cleanup-run')
+  //   if (!hasRunCleanup && bandId) {
+  //     cleanupRehearsalSongs.mutateAsync()
+  //       .then(() => {
+  //         sessionStorage.setItem('rehearsal-cleanup-run', 'true')
+  //       })
+  //       .catch(() => {
+  //         // Silent failure - don't annoy users with errors
+  //       })
+  //   }
+  // }, [bandId, cleanupRehearsalSongs])
 
   const formatDuration = (durationMs: number) => {
     const minutes = Math.floor(durationMs / 60000)
@@ -284,6 +284,13 @@ export function BandDashboard() {
                           {/* Admin controls */}
                           {userRole === 'admin' && (
                             <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => navigate(`/band/${bandId}/song/${song.id}/edit`)}
+                                className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-primary-500/10 hover:text-primary-400 border border-[var(--color-border)]"
+                                title="Edit song details (Admin only)"
+                              >
+                                <Edit className="w-5 h-5" />
+                              </button>
                               <button
                                 onClick={() => handleRemoveSuggestion(song.id)}
                                 disabled={removeSuggestion.isPending}
