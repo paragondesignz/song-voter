@@ -6,7 +6,8 @@ import { BandSidebar } from '@/components/BandSidebar'
 import { DatePicker } from '@/components/DatePicker'
 import { TimePicker } from '@/components/TimePicker'
 import { DateTimePicker } from '@/components/DateTimePicker'
-import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist } from '@/hooks/useRehearsals'
+import { RecurringRehearsalForm, RecurringRehearsalData } from '@/components/RecurringRehearsalForm'
+import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist, useBandRehearsalSeries, useCreateRehearsalSeries, useDeleteRehearsalSeries, useGenerateRehearsalsFromSeries } from '@/hooks/useRehearsals'
 import {
   Calendar,
   Plus,
@@ -16,7 +17,8 @@ import {
   Trash2,
   Edit,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Repeat
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -53,6 +55,7 @@ export function Rehearsals() {
   const { bandId } = useParams<{ bandId: string }>()
   const navigate = useNavigate()
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showRecurringForm, setShowRecurringForm] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     rehearsal_date: '',
@@ -66,8 +69,12 @@ export function Rehearsals() {
   const { data: band } = useBand(bandId!)
   const { data: userRole } = useUserBandRole(bandId!)
   const { data: rehearsals, isLoading } = useBandRehearsals(bandId!)
+  const { data: rehearsalSeries } = useBandRehearsalSeries(bandId!)
   const createRehearsal = useCreateRehearsal()
   const deleteRehearsal = useDeleteRehearsal()
+  const createRehearsalSeries = useCreateRehearsalSeries()
+  const deleteRehearsalSeries = useDeleteRehearsalSeries()
+  const generateRehearsals = useGenerateRehearsalsFromSeries()
 
   const handleCreateRehearsal = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -98,6 +105,11 @@ export function Rehearsals() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleCreateRecurringSeries = async (data: RecurringRehearsalData) => {
+    await createRehearsalSeries.mutateAsync({ ...data, bandId: bandId! })
+    setShowRecurringForm(false)
   }
 
   const handleDeleteRehearsal = async (rehearsalId: string) => {
@@ -149,6 +161,17 @@ export function Rehearsals() {
 
 
             {/* Rehearsals list */}
+        {/* Create Recurring Series Form */}
+        {showRecurringForm && (
+          <div className="mb-8">
+            <RecurringRehearsalForm
+              onSubmit={handleCreateRecurringSeries}
+              isLoading={createRehearsalSeries.isPending}
+              onCancel={() => setShowRecurringForm(false)}
+            />
+          </div>
+        )}
+
         {/* Create Rehearsal Form */}
         {showCreateForm && (
           <div className="card mb-8">
@@ -262,6 +285,61 @@ export function Rehearsals() {
           </div>
         )}
 
+        {/* Recurring Series Section */}
+        {rehearsalSeries && rehearsalSeries.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Repeat className="h-5 w-5 mr-2 text-purple-600" />
+              Recurring Series
+            </h2>
+            <div className="space-y-4">
+              {rehearsalSeries.map((series) => (
+                <div key={series.id} className="card border-l-4 border-purple-500">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">{series.series_name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {series.recurrence_type.replace('_', ' ')} • {series.template_songs_to_learn} songs
+                        {series.template_start_time && ` • ${series.template_start_time}`}
+                        {series.template_location && ` • ${series.template_location}`}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Started {new Date(series.start_date).toLocaleDateString()}
+                        {series.end_type === 'end_date' && series.end_date &&
+                          ` • Ends ${new Date(series.end_date).toLocaleDateString()}`}
+                        {series.end_type === 'after_count' && series.occurrence_count &&
+                          ` • ${series.occurrence_count} total rehearsals`}
+                      </p>
+                    </div>
+                    {userRole === 'admin' && (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => generateRehearsals.mutateAsync({ seriesId: series.id })}
+                          disabled={generateRehearsals.isPending}
+                          className="btn-secondary text-xs"
+                        >
+                          Generate More
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Delete this recurring series and all associated rehearsals?')) {
+                              deleteRehearsalSeries.mutateAsync(series.id)
+                            }
+                          }}
+                          disabled={deleteRehearsalSeries.isPending}
+                          className="btn-secondary text-xs text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Rehearsals List */}
         {rehearsals && rehearsals.length > 0 ? (
           <div className="space-y-4">
@@ -365,13 +443,22 @@ export function Rehearsals() {
               }
             </p>
             {userRole === 'admin' && (
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="btn-primary"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Schedule First Rehearsal
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="btn-primary mr-3"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Schedule First Rehearsal
+                </button>
+                <button
+                  onClick={() => setShowRecurringForm(true)}
+                  className="btn-secondary"
+                >
+                  <Repeat className="h-4 w-4 mr-1" />
+                  Create Recurring Series
+                </button>
+              </div>
             )}
           </div>
         )}

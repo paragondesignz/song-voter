@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { RecurringRehearsalData } from '@/components/RecurringRehearsalForm'
 
 export interface Rehearsal {
   id: string
@@ -341,6 +342,222 @@ export function useRemoveFromSetlist() {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'Failed to remove song from setlist')
+    },
+  })
+}
+
+// Recurring Rehearsal Interfaces
+export interface RehearsalSeries {
+  id: string
+  band_id: string
+  created_by: string
+  series_name: string
+  template_name: string
+  template_start_time: string | null
+  template_location: string | null
+  template_songs_to_learn: number
+  template_selection_deadline_hours: number | null
+  template_description: string | null
+  recurrence_type: 'daily' | 'weekly' | 'bi_weekly' | 'monthly' | 'custom'
+  recurrence_interval: number
+  recurrence_days: string[]
+  start_date: string
+  end_type: 'never' | 'after_count' | 'end_date'
+  occurrence_count: number | null
+  end_date: string | null
+  exceptions: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+// Hook to get all rehearsal series for a band
+export function useBandRehearsalSeries(bandId: string) {
+  return useQuery({
+    queryKey: ['rehearsal-series', bandId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rehearsal_series')
+        .select('*')
+        .eq('band_id', bandId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data as RehearsalSeries[]
+    },
+    enabled: !!bandId,
+  })
+}
+
+// Hook to get a specific rehearsal series
+export function useRehearsalSeries(seriesId: string) {
+  return useQuery({
+    queryKey: ['rehearsal-series', seriesId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('rehearsal_series')
+        .select('*')
+        .eq('id', seriesId)
+        .single()
+
+      if (error) throw error
+      return data as RehearsalSeries
+    },
+    enabled: !!seriesId,
+  })
+}
+
+// Hook to create a recurring rehearsal series
+export function useCreateRehearsalSeries() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: RecurringRehearsalData & { bandId: string }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) throw new Error('Not authenticated')
+
+      // Create the series
+      const { data: series, error: seriesError } = await supabase
+        .from('rehearsal_series')
+        .insert({
+          band_id: data.bandId,
+          created_by: session.user.id,
+          series_name: data.seriesName,
+          template_name: data.templateName,
+          template_start_time: data.templateStartTime || null,
+          template_location: data.templateLocation || null,
+          template_songs_to_learn: data.templateSongsToLearn,
+          template_selection_deadline_hours: data.templateSelectionDeadlineHours,
+          template_description: data.templateDescription || null,
+          recurrence_type: data.recurrenceType,
+          recurrence_interval: data.recurrenceInterval,
+          recurrence_days: data.recurrenceDays,
+          start_date: data.startDate,
+          end_type: data.endType,
+          occurrence_count: data.occurrenceCount,
+          end_date: data.endDate || null,
+          exceptions: data.exceptions,
+        })
+        .select()
+        .single()
+
+      if (seriesError) throw seriesError
+
+      // Generate initial rehearsals
+      const { data: generatedCount, error: generateError } = await supabase
+        .rpc('generate_rehearsals_from_series', {
+          series_id_param: series.id,
+          months_ahead: 3
+        })
+
+      if (generateError) throw generateError
+
+      return { series, generatedCount }
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['rehearsal-series'] })
+      queryClient.invalidateQueries({ queryKey: ['rehearsals'] })
+      toast.success(`Recurring series created! Generated ${result.generatedCount} rehearsals.`)
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to create recurring series')
+    },
+  })
+}
+
+// Hook to update a rehearsal series
+export function useUpdateRehearsalSeries() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      seriesId,
+      updates
+    }: {
+      seriesId: string
+      updates: Partial<RehearsalSeries>
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('rehearsal_series')
+        .update(updates)
+        .eq('id', seriesId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rehearsal-series'] })
+      toast.success('Series updated successfully!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update series')
+    },
+  })
+}
+
+// Hook to delete a rehearsal series
+export function useDeleteRehearsalSeries() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (seriesId: string) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) throw new Error('Not authenticated')
+
+      // Delete the series (this will cascade to rehearsals)
+      const { error } = await supabase
+        .from('rehearsal_series')
+        .delete()
+        .eq('id', seriesId)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rehearsal-series'] })
+      queryClient.invalidateQueries({ queryKey: ['rehearsals'] })
+      toast.success('Recurring series deleted successfully!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete series')
+    },
+  })
+}
+
+// Hook to generate more rehearsals from a series
+export function useGenerateRehearsalsFromSeries() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      seriesId,
+      monthsAhead = 3
+    }: {
+      seriesId: string
+      monthsAhead?: number
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) throw new Error('Not authenticated')
+
+      const { data: generatedCount, error } = await supabase
+        .rpc('generate_rehearsals_from_series', {
+          series_id_param: seriesId,
+          months_ahead: monthsAhead
+        })
+
+      if (error) throw error
+      return generatedCount
+    },
+    onSuccess: (generatedCount) => {
+      queryClient.invalidateQueries({ queryKey: ['rehearsals'] })
+      toast.success(`Generated ${generatedCount} additional rehearsals!`)
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to generate rehearsals')
     },
   })
 }
