@@ -77,7 +77,7 @@ export function SongSearch() {
         preview_url: editableTrack.preview_url
       }
     })
-    navigate(`/band/${bandId}/suggestions`)
+    navigate(`/band/${bandId}`)
   }
 
   const handleManualSuggest = async (data: ManualSongForm) => {
@@ -95,7 +95,7 @@ export function SongSearch() {
     
     reset()
     setShowManualForm(false)
-    navigate(`/band/${bandId}/suggestions`)
+    navigate(`/band/${bandId}`)
   }
 
   const handleAISearch = async () => {
