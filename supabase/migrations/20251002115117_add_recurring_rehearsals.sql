@@ -99,7 +99,7 @@ CREATE OR REPLACE FUNCTION generate_rehearsals_from_series(
 ) RETURNS integer AS $$
 DECLARE
   series_record rehearsal_series%ROWTYPE;
-  current_date date;
+  start_generation_date date;
   end_generation_date date;
   rehearsal_date date;
   occurrence_count integer := 0;
@@ -115,8 +115,8 @@ BEGIN
   END IF;
 
   -- Set generation window
-  current_date := GREATEST(series_record.start_date, CURRENT_DATE);
-  end_generation_date := current_date + INTERVAL '1 month' * months_ahead;
+  start_generation_date := GREATEST(series_record.start_date, CURRENT_DATE);
+  end_generation_date := start_generation_date + INTERVAL '1 month' * months_ahead;
 
   -- Apply end date limits
   IF series_record.end_type = 'end_date' AND series_record.end_date IS NOT NULL THEN
@@ -129,7 +129,7 @@ BEGIN
   WHERE series_id = series_id_param;
 
   -- Generate rehearsals based on recurrence type
-  rehearsal_date := current_date;
+  rehearsal_date := start_generation_date;
 
   WHILE rehearsal_date <= end_generation_date LOOP
     -- Check if we've hit the occurrence limit
