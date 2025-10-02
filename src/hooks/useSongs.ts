@@ -377,8 +377,8 @@ export function useSongDetails(songId: string) {
       if (song.suggested_by) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('user_id, display_name, avatar_url')
-          .eq('user_id', song.suggested_by)
+          .select('id, display_name, avatar_url')
+          .eq('id', song.suggested_by)
           .single()
 
         suggested_by_user = profileData

@@ -56,6 +56,7 @@ export function SpotifyEmbed({ trackId, compact = false, height = 352 }: Spotify
         height={embedHeight}
         frameBorder="0"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         loading="lazy"
         onLoad={handleLoad}
         onError={handleError}
