@@ -72,7 +72,8 @@ export function SongEdit() {
       toast.success('Song updated successfully')
       navigate(`/band/${bandId}`)
     } catch (error) {
-      toast.error('Failed to update song')
+      console.error('Update song error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to update song')
     }
   }
 

@@ -440,7 +440,12 @@ export function useUpdateSong() {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase update error:', error)
+        console.error('Update payload:', updates)
+        console.error('Song ID:', songId)
+        throw error
+      }
       return data
     },
     onSuccess: (_, { bandId }) => {
