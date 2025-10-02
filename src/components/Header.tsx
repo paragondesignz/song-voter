@@ -56,9 +56,9 @@ export function Header({ actions }: HeaderProps) {
     }
   }
 
-  const handleAllSuggestions = () => {
+  const handleDashboard = () => {
     if (userBand) {
-      navigate(`/band/${userBand.id}/suggestions`)
+      navigate(`/band/${userBand.id}`)
     }
   }
 
@@ -91,13 +91,13 @@ export function Header({ actions }: HeaderProps) {
           {/* Right side navigation */}
           <div className="flex items-center space-x-3">
             {actions}
-            {/* All Suggestions Button */}
+            {/* Dashboard Button */}
             {userBand && (
               <button
-                onClick={handleAllSuggestions}
-                className={getButtonClasses(isActiveRoute('/suggestions'))}
+                onClick={handleDashboard}
+                className={getButtonClasses(isActiveRoute('/'))}
               >
-                All Suggestions
+                Dashboard
               </button>
             )}
             {/* AI Song Finder Button */}

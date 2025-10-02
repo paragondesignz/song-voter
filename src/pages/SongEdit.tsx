@@ -1,20 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { useSongDetails, useUpdateSong } from '@/hooks/useSongs'
-import { ArrowLeft, Save, Trash2, Music, Clock, Album, User, Link, FileText, Star } from 'lucide-react'
+import { useSongDetails, useUpdateSong, useRateSong } from '@/hooks/useSongs'
+import { ArrowLeft, Save, Trash2, Music, Clock, User, FileText, Star, ExternalLink } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { StarRating } from '@/components/StarRating'
+import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+import { formatDistanceToNow } from 'date-fns'
 
 interface SongEditForm {
   title: string
   artist: string
   album?: string
   duration_ms?: number
-  album_art_url?: string
   preview_url?: string
   spotify_track_id?: string
   notes?: string
   status?: 'suggested' | 'in_rehearsal' | 'practiced'
+  bpm?: number
+  musical_key?: string
+  vocal_type?: string
 }
 
 export function SongEdit() {
@@ -22,7 +27,9 @@ export function SongEdit() {
   const navigate = useNavigate()
   const { data: song, isLoading } = useSongDetails(songId!)
   const updateSong = useUpdateSong()
+  const rateSong = useRateSong()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [votingOnSong, setVotingOnSong] = useState<boolean>(false)
 
   const {
     register,
@@ -38,11 +45,13 @@ export function SongEdit() {
         artist: song.artist,
         album: song.album || '',
         duration_ms: song.duration_ms || undefined,
-        album_art_url: song.album_art_url || '',
         preview_url: song.preview_url || '',
         spotify_track_id: song.spotify_track_id || '',
         notes: song.notes || '',
         status: song.status || 'suggested',
+        bpm: song.bpm || undefined,
+        musical_key: song.musical_key || '',
+        vocal_type: song.vocal_type || '',
       })
     }
   }, [song, reset])
@@ -61,6 +70,22 @@ export function SongEdit() {
       navigate(`/band/${bandId}`)
     } catch (error) {
       toast.error('Failed to update song')
+    }
+  }
+
+  const handleRate = async (rating: number | null) => {
+    try {
+      setVotingOnSong(true)
+      await rateSong.mutateAsync({
+        songId: songId!,
+        bandId: bandId!,
+        rating
+      })
+      toast.success('Rating updated successfully')
+    } catch (error) {
+      toast.error('Failed to update rating')
+    } finally {
+      setVotingOnSong(false)
     }
   }
 
@@ -143,23 +168,91 @@ export function SongEdit() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-[var(--color-text)] flex items-center">
-              <Music className="h-6 w-6 mr-2 text-primary-500" />
-              Edit Song Details
-            </h1>
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Song Title and Actions */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold text-[var(--color-text)]">{song.title}</h1>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 border border-red-500/50 flex items-center disabled:opacity-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {isDeleting ? 'Deleting...' : 'Delete Song'}
+                </button>
+              </div>
 
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 border border-red-500/50 flex items-center disabled:opacity-50"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Deleting...' : 'Delete Song'}
-            </button>
-          </div>
+              {/* Basic Song Info */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4 text-sm text-gray-400">
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-1" />
+                    Suggested by {song.suggested_by_user?.display_name || 'Unknown'}
+                  </div>
+                  <span>•</span>
+                  <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
+                  {song.duration_ms && (
+                    <>
+                      <span>•</span>
+                      <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-1" />
+                        {formatDuration(song.duration_ms)}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {song.notes && (
+                  <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-blue-300 mb-2">Notes</h3>
+                    <p className="text-[var(--color-text)]">{song.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Spotify Player */}
+            {song.spotify_track_id && (
+              <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+                <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Listen to Song</h3>
+                <SpotifyEmbed trackId={song.spotify_track_id} height={152} />
+              </div>
+            )}
+
+            {/* Rating Section */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Rate This Song</h3>
+              <div className="flex items-center space-x-6">
+                <div className="text-center">
+                  <StarRating
+                    rating={song.user_rating || null}
+                    onRate={handleRate}
+                    readonly={votingOnSong}
+                    size="lg"
+                  />
+                  <p className="text-sm text-gray-400 mt-2">Your Rating</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[var(--color-text)]">
+                    {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Form */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <h2 className="text-xl font-bold text-[var(--color-text)] flex items-center mb-6">
+                <Music className="h-5 w-5 mr-2 text-primary-500" />
+                Edit Song Details
+              </h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -198,7 +291,6 @@ export function SongEdit() {
               {/* Album */}
               <div>
                 <label htmlFor="album" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                  <Album className="h-4 w-4 inline mr-1" />
                   Album
                 </label>
                 <input
@@ -207,6 +299,51 @@ export function SongEdit() {
                   {...register('album')}
                   className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
+              </div>
+
+              {/* BPM */}
+              <div>
+                <label htmlFor="bpm" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  BPM
+                </label>
+                <input
+                  type="number"
+                  id="bpm"
+                  {...register('bpm')}
+                  className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              {/* Musical Key */}
+              <div>
+                <label htmlFor="musical_key" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  Musical Key
+                </label>
+                <input
+                  type="text"
+                  id="musical_key"
+                  {...register('musical_key')}
+                  placeholder="e.g., C major, A minor"
+                  className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder-[var(--color-text-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              {/* Vocal Type */}
+              <div>
+                <label htmlFor="vocal_type" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                  Vocal Type
+                </label>
+                <select
+                  id="vocal_type"
+                  {...register('vocal_type')}
+                  className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="">Select vocal type...</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="duet">Duet</option>
+                  <option value="instrumental">Instrumental</option>
+                </select>
               </div>
 
               {/* Duration */}
@@ -270,35 +407,6 @@ export function SongEdit() {
               </div>
             </div>
 
-            {/* Album Art URL */}
-            <div>
-              <label htmlFor="album_art_url" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                <Link className="h-4 w-4 inline mr-1" />
-                Album Art URL
-              </label>
-              <input
-                type="url"
-                id="album_art_url"
-                {...register('album_art_url')}
-                placeholder="https://example.com/album-art.jpg"
-                className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder-[var(--color-text-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
-
-            {/* Preview URL */}
-            <div>
-              <label htmlFor="preview_url" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                <Link className="h-4 w-4 inline mr-1" />
-                Preview URL (30-second audio preview)
-              </label>
-              <input
-                type="url"
-                id="preview_url"
-                {...register('preview_url')}
-                placeholder="https://example.com/preview.mp3"
-                className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder-[var(--color-text-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
 
             {/* Notes */}
             <div>
@@ -315,19 +423,6 @@ export function SongEdit() {
               />
             </div>
 
-            {/* Album Art Preview */}
-            {song.album_art_url && (
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                  Current Album Art
-                </label>
-                <img
-                  src={song.album_art_url}
-                  alt={`${song.title} album art`}
-                  className="w-32 h-32 object-cover rounded-lg"
-                />
-              </div>
-            )}
 
             {/* Metadata */}
             <div className="border-t border-[var(--color-border)] pt-4">
@@ -367,6 +462,92 @@ export function SongEdit() {
               </button>
             </div>
           </form>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <button
+                  onClick={() => navigate(`/band/${bandId}`)}
+                  className="w-full btn-secondary text-sm flex items-center justify-center"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </button>
+                {song.spotify_track_id && (
+                  <a
+                    href={`https://open.spotify.com/track/${song.spotify_track_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full btn-primary text-sm flex items-center justify-center"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Open in Spotify
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Song Metadata */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Song Info</h3>
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  <div className="bg-[var(--color-surface-2)] p-3 rounded-lg">
+                    <label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">BPM</label>
+                    <p className="text-lg font-semibold text-[var(--color-text)]">
+                      {song.bpm || '—'}
+                    </p>
+                  </div>
+                  <div className="bg-[var(--color-surface-2)] p-3 rounded-lg">
+                    <label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">Key</label>
+                    <p className="text-lg font-semibold text-[var(--color-text)]">
+                      {song.musical_key || '—'}
+                    </p>
+                  </div>
+                  <div className="bg-[var(--color-surface-2)] p-3 rounded-lg">
+                    <label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">Vocal Type</label>
+                    <p className="text-lg font-semibold text-[var(--color-text)]">
+                      {song.vocal_type ? song.vocal_type.charAt(0).toUpperCase() + song.vocal_type.slice(1) : '—'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Song Status */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Status</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Current Status</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    song.status === 'suggested' ? 'bg-blue-100 text-blue-800' :
+                    song.status === 'in_rehearsal' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {song.status === 'suggested' ? 'Suggested' :
+                     song.status === 'in_rehearsal' ? 'In Rehearsal' :
+                     'Practiced'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Total Ratings</span>
+                  <span className="text-sm font-medium text-[var(--color-text)]">{song.total_ratings || 0}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--color-text-secondary)]">Average Rating</span>
+                  <span className="text-sm font-medium text-[var(--color-text)]">
+                    {song.average_rating ? song.average_rating.toFixed(1) : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>

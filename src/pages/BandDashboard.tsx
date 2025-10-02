@@ -285,9 +285,9 @@ export function BandDashboard() {
                           {userRole === 'admin' && (
                             <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                               <button
-                                onClick={() => navigate(`/band/${bandId}/song/${song.id}/edit`)}
+                                onClick={() => navigate(`/band/${bandId}/song/${song.id}`)}
                                 className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-primary-500/10 hover:text-primary-400 border border-[var(--color-border)]"
-                                title="Edit song details (Admin only)"
+                                title="View/edit song details (Admin only)"
                               >
                                 <Edit className="w-5 h-5" />
                               </button>

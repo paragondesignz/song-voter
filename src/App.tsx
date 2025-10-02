@@ -14,7 +14,6 @@ import { Dashboard } from '@/pages/Dashboard'
 import { BandSetup } from '@/pages/BandSetup'
 import { BandDashboard } from '@/pages/BandDashboard'
 import { SongSearch } from '@/pages/SongSearch'
-import { Suggestions } from '@/pages/Suggestions'
 import { AISongFinder } from '@/pages/AISongFinder'
 import { Rehearsals } from '@/pages/Rehearsals'
 import { RehearsalDetail } from '@/pages/RehearsalDetail'
@@ -23,7 +22,6 @@ import { Profile } from '@/pages/Profile'
 import { VotingAnalytics } from '@/pages/VotingAnalytics'
 import { BandMembers } from '@/pages/BandMembers'
 import { MemberProfile } from '@/pages/MemberProfile'
-import { SongDetail } from '@/pages/SongDetail'
 import { SongEdit } from '@/pages/SongEdit'
 import { AdminDiagnostics } from '@/pages/AdminDiagnostics'
 import { BulkInvite } from '@/pages/BulkInvite'
@@ -66,9 +64,7 @@ function AppContent() {
           <Route path="/band-setup" element={<BandSetup />} />
           <Route path="/band/:bandId" element={<BandDashboard />} />
           <Route path="/band/:bandId/search" element={<SongSearch />} />
-          <Route path="/band/:bandId/suggestions" element={<Suggestions />} />
-          <Route path="/band/:bandId/song/:songId" element={<SongDetail />} />
-          <Route path="/band/:bandId/song/:songId/edit" element={<SongEdit />} />
+          <Route path="/band/:bandId/song/:songId" element={<SongEdit />} />
           <Route path="/band/:bandId/ai-finder" element={<AISongFinder />} />
           <Route path="/band/:bandId/rehearsals" element={<Rehearsals />} />
           <Route path="/band/:bandId/rehearsal/:rehearsalId" element={<RehearsalDetail />} />
