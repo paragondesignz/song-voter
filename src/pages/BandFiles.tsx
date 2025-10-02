@@ -1,6 +1,16 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
+import {
+  useFolderContents,
+  useUploadFiles,
+  useDownloadFile,
+  useDeleteFile,
+  useCreateFolder,
+  useDeleteFolder,
+  BandFile,
+  FolderContent
+} from '@/hooks/useBandFiles'
 import { Header } from '@/components/Header'
 import { BandSidebar } from '@/components/BandSidebar'
 import {
@@ -19,30 +29,6 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-// Placeholder interfaces - these would be replaced with real hooks
-interface BandFile {
-  id: string
-  band_id: string
-  uploaded_by: string
-  uploader: {
-    display_name: string
-    avatar_url?: string
-  }
-  name: string
-  size: number
-  type: string
-  folder_path: string
-  url: string
-  created_at: string
-}
-
-interface BandFolder {
-  id: string
-  name: string
-  path: string
-  created_at: string
-  file_count: number
-}
 
 export function BandFiles() {
   const { bandId } = useParams<{ bandId: string }>()
@@ -53,81 +39,17 @@ export function BandFiles() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const [showCreateFolder, setShowCreateFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
 
-  // Mock data - replace with real hooks
-  const folders: BandFolder[] = [
-    {
-      id: '1',
-      name: 'Sheet Music',
-      path: '/sheet-music',
-      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      file_count: 12
-    },
-    {
-      id: '2',
-      name: 'Recordings',
-      path: '/recordings',
-      created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-      file_count: 8
-    },
-    {
-      id: '3',
-      name: 'Setlists',
-      path: '/setlists',
-      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      file_count: 5
-    }
-  ]
-
-  const files: BandFile[] = [
-    {
-      id: '1',
-      band_id: bandId!,
-      uploaded_by: 'user1',
-      uploader: {
-        display_name: 'John Doe',
-        avatar_url: undefined
-      },
-      name: 'Sweet Child O Mine - Tabs.pdf',
-      size: 2456789,
-      type: 'application/pdf',
-      folder_path: '/sheet-music',
-      url: '/files/sweet-child-tabs.pdf',
-      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: '2',
-      band_id: bandId!,
-      uploaded_by: 'user2',
-      uploader: {
-        display_name: 'Jane Smith',
-        avatar_url: undefined
-      },
-      name: 'Band Logo.png',
-      size: 156789,
-      type: 'image/png',
-      folder_path: '/',
-      url: '/files/band-logo.png',
-      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: '3',
-      band_id: bandId!,
-      uploaded_by: 'user3',
-      uploader: {
-        display_name: 'Mike Johnson',
-        avatar_url: undefined
-      },
-      name: 'Practice Recording - Dec 15.mp3',
-      size: 8456789,
-      type: 'audio/mpeg',
-      folder_path: '/recordings',
-      url: '/files/practice-dec-15.mp3',
-      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  ]
+  // Real hooks for file operations
+  const { data: folderContents, isLoading: isLoadingContents, refetch } = useFolderContents(bandId!, currentPath)
+  const uploadFiles = useUploadFiles()
+  const downloadFile = useDownloadFile()
+  const deleteFile = useDeleteFile()
+  const createFolder = useCreateFolder()
+  const deleteFolder = useDeleteFolder()
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -137,56 +59,133 @@ export function BandFiles() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const getFileIcon = (type: string) => {
-    if (type.startsWith('image/')) return <FileImage className="h-5 w-5 text-green-600" />
-    if (type.startsWith('audio/')) return <FileAudio className="h-5 w-5 text-purple-600" />
-    if (type.startsWith('video/')) return <FileVideo className="h-5 w-5 text-red-600" />
-    if (type === 'application/pdf') return <FileText className="h-5 w-5 text-red-600" />
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.startsWith('image/')) return <FileImage className="h-5 w-5 text-green-600" />
+    if (mimeType.startsWith('audio/')) return <FileAudio className="h-5 w-5 text-purple-600" />
+    if (mimeType.startsWith('video/')) return <FileVideo className="h-5 w-5 text-red-600" />
+    if (mimeType === 'application/pdf') return <FileText className="h-5 w-5 text-red-600" />
+    if (mimeType === 'folder') return <Folder className="h-5 w-5 text-blue-600" />
     return <File className="h-5 w-5 text-gray-600" />
   }
 
-  const filteredFiles = files.filter(file =>
-    file.folder_path === currentPath &&
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter and separate folders and files from folderContents
+  const folders = (folderContents || []).filter(item =>
+    item.type === 'folder' &&
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const filteredFolders = folders.filter(folder =>
-    folder.path.startsWith(currentPath) &&
-    folder.path !== currentPath &&
-    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const files = (folderContents || []).filter(item =>
+    item.type === 'file' &&
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedFiles) return
+    if (!selectedFiles || !bandId) return
 
-    // TODO: Implement file upload to Supabase Storage
-    console.log('Uploading files:', Array.from(selectedFiles).map(f => f.name))
-    setSelectedFiles(null)
-    setShowUploadForm(false)
+    setIsUploading(true)
+    try {
+      await uploadFiles.mutateAsync({
+        bandId,
+        folderPath: currentPath,
+        files: selectedFiles
+      })
+      setSelectedFiles(null)
+      setShowUploadForm(false)
+      refetch()
+    } catch (error) {
+      console.error('Upload error:', error)
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleCreateFolder = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newFolderName.trim()) return
+    if (!newFolderName.trim() || !bandId) return
 
-    // TODO: Implement folder creation
-    console.log('Creating folder:', newFolderName)
-    setNewFolderName('')
-    setShowCreateFolder(false)
+    try {
+      await createFolder.mutateAsync({
+        bandId,
+        name: newFolderName,
+        parentPath: currentPath
+      })
+      setNewFolderName('')
+      setShowCreateFolder(false)
+      refetch()
+    } catch (error) {
+      console.error('Create folder error:', error)
+    }
   }
 
-  const handleDownload = (file: BandFile) => {
-    // TODO: Implement file download from Supabase Storage
-    console.log('Downloading file:', file.name)
+  const handleDownload = (item: FolderContent) => {
+    if (item.type !== 'file') return
+
+    const file: BandFile = {
+      id: item.id,
+      band_id: bandId!,
+      folder_id: null,
+      uploaded_by: item.uploaded_by,
+      file_name: item.name,
+      file_size: item.size,
+      mime_type: item.mime_type,
+      storage_path: '', // Will be looked up by the hook
+      folder_path: currentPath,
+      description: null,
+      is_public: false,
+      download_count: item.download_count,
+      created_at: item.created_at,
+      updated_at: item.updated_at
+    }
+
+    downloadFile.mutate(file)
   }
 
-  const handleDelete = (fileId: string) => {
-    // TODO: Implement file deletion
-    console.log('Deleting file:', fileId)
+  const handleDelete = async (item: FolderContent) => {
+    if (!window.confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      if (item.type === 'file') {
+        const file: BandFile = {
+          id: item.id,
+          band_id: bandId!,
+          folder_id: null,
+          uploaded_by: item.uploaded_by,
+          file_name: item.name,
+          file_size: item.size,
+          mime_type: item.mime_type,
+          storage_path: '', // Will be looked up by the hook
+          folder_path: currentPath,
+          description: null,
+          is_public: false,
+          download_count: item.download_count,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        }
+        await deleteFile.mutateAsync(file)
+      } else {
+        const folder = {
+          id: item.id,
+          band_id: bandId!,
+          created_by: item.uploaded_by,
+          name: item.name,
+          parent_folder_id: null,
+          folder_path: currentPath === '/' ? `/${item.name}` : `${currentPath}/${item.name}`,
+          description: null,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        }
+        await deleteFolder.mutateAsync(folder)
+      }
+      refetch()
+    } catch (error) {
+      console.error('Delete error:', error)
+    }
   }
 
-  if (!band) {
+  if (!band || isLoadingContents) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -295,11 +294,11 @@ export function BandFiles() {
                     </button>
                     <button
                       type="submit"
-                      disabled={!selectedFiles}
+                      disabled={!selectedFiles || isUploading}
                       className="btn-primary"
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      Upload
+                      {isUploading ? 'Uploading...' : 'Upload'}
                     </button>
                   </div>
                 </form>
@@ -335,10 +334,11 @@ export function BandFiles() {
                     </button>
                     <button
                       type="submit"
+                      disabled={createFolder.isPending}
                       className="btn-primary"
                     >
                       <FolderPlus className="h-4 w-4 mr-2" />
-                      Create
+                      {createFolder.isPending ? 'Creating...' : 'Create'}
                     </button>
                   </div>
                 </form>
@@ -349,25 +349,36 @@ export function BandFiles() {
             <div className="card">
               <div className="space-y-4">
                 {/* Folders */}
-                {filteredFolders.length > 0 && (
+                {folders.length > 0 && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 mb-3">Folders</h3>
                     <div className="space-y-2">
-                      {filteredFolders.map((folder) => (
+                      {folders.map((folder) => (
                         <div
                           key={folder.id}
-                          onClick={() => setCurrentPath(folder.path)}
-                          className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                          className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
                         >
-                          <div className="flex items-center space-x-3">
+                          <div
+                            className="flex items-center space-x-3 flex-1 cursor-pointer"
+                            onClick={() => setCurrentPath(currentPath === '/' ? `/${folder.name}` : `${currentPath}/${folder.name}`)}
+                          >
                             <Folder className="h-5 w-5 text-blue-600" />
                             <div>
                               <p className="font-medium text-gray-900">{folder.name}</p>
                               <p className="text-sm text-gray-500">
-                                {folder.file_count} files • {formatDistanceToNow(new Date(folder.created_at), { addSuffix: true })}
+                                {folder.file_count} files • Created by {folder.uploader_name} • {formatDistanceToNow(new Date(folder.created_at), { addSuffix: true })}
                               </p>
                             </div>
                           </div>
+                          {userRole === 'admin' && (
+                            <button
+                              onClick={() => handleDelete(folder)}
+                              className="p-2 text-gray-400 hover:text-red-600"
+                              title="Delete folder"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -375,21 +386,21 @@ export function BandFiles() {
                 )}
 
                 {/* Files */}
-                {filteredFiles.length > 0 && (
+                {files.length > 0 && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-700 mb-3">Files</h3>
                     <div className="space-y-2">
-                      {filteredFiles.map((file) => (
+                      {files.map((file) => (
                         <div
                           key={file.id}
                           className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
                         >
                           <div className="flex items-center space-x-3 flex-1">
-                            {getFileIcon(file.type)}
+                            {getFileIcon(file.mime_type)}
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-gray-900 truncate">{file.name}</p>
                               <p className="text-sm text-gray-500">
-                                {formatFileSize(file.size)} • Uploaded by {file.uploader.display_name} • {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}
+                                {formatFileSize(file.size)} • Uploaded by {file.uploader_name} • {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })} • {file.download_count} downloads
                               </p>
                             </div>
                           </div>
@@ -397,7 +408,8 @@ export function BandFiles() {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => handleDownload(file)}
-                              className="p-2 text-gray-400 hover:text-blue-600"
+                              disabled={downloadFile.isPending}
+                              className="p-2 text-gray-400 hover:text-blue-600 disabled:opacity-50"
                               title="Download"
                             >
                               <Download className="h-4 w-4" />
@@ -410,8 +422,9 @@ export function BandFiles() {
                             </button>
                             {userRole === 'admin' && (
                               <button
-                                onClick={() => handleDelete(file.id)}
-                                className="p-2 text-gray-400 hover:text-red-600"
+                                onClick={() => handleDelete(file)}
+                                disabled={deleteFile.isPending}
+                                className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-50"
                                 title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -425,7 +438,7 @@ export function BandFiles() {
                 )}
 
                 {/* Empty State */}
-                {filteredFiles.length === 0 && filteredFolders.length === 0 && (
+                {files.length === 0 && folders.length === 0 && (
                   <div className="text-center py-12">
                     <Folder className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-xl font-medium text-gray-900 mb-2">
