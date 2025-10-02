@@ -11,7 +11,7 @@ export function SpotifyEmbed({ trackId, compact = false, height = 352 }: Spotify
   const [hasError, setHasError] = useState(false)
 
   const embedHeight = compact ? 152 : height
-  const embedUrl = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator`
+  const embedUrl = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`
 
   const handleLoad = () => {
     setIsLoading(false)
@@ -55,7 +55,6 @@ export function SpotifyEmbed({ trackId, compact = false, height = 352 }: Spotify
         width="100%"
         height={embedHeight}
         frameBorder="0"
-        allowFullScreen
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"
         onLoad={handleLoad}
