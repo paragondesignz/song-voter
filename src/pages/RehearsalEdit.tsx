@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
 import { useRehearsal, useUpdateRehearsal } from '@/hooks/useRehearsals'
 import { Header } from '@/components/Header'
+import { DatePicker } from '@/components/DatePicker'
+import { TimePicker } from '@/components/TimePicker'
+import { DateTimePicker } from '@/components/DateTimePicker'
 
 export function RehearsalEdit() {
   const { bandId, rehearsalId } = useParams<{ bandId: string; rehearsalId: string }>()
@@ -93,24 +96,20 @@ export function RehearsalEdit() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-              <input
-                type="date"
+              <DatePicker
                 name="rehearsal_date"
                 value={form.rehearsal_date}
                 onChange={handleChange}
-                className="input-field"
+                label="Date"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Start Time (Optional)</label>
-              <input
-                type="time"
+              <TimePicker
                 name="start_time"
                 value={form.start_time}
                 onChange={handleChange}
-                className="input-field"
+                label="Start Time (Optional)"
               />
             </div>
             <div>
@@ -140,13 +139,11 @@ export function RehearsalEdit() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Selection Deadline (Optional)</label>
-            <input
-              type="datetime-local"
+            <DateTimePicker
               name="selection_deadline"
               value={form.selection_deadline}
               onChange={handleChange}
-              className="input-field"
+              label="Selection Deadline (Optional)"
             />
           </div>
 

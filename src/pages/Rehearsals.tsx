@@ -3,8 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { Header } from '@/components/Header'
 import { BandSidebar } from '@/components/BandSidebar'
+import { DatePicker } from '@/components/DatePicker'
+import { TimePicker } from '@/components/TimePicker'
+import { DateTimePicker } from '@/components/DateTimePicker'
 import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist } from '@/hooks/useRehearsals'
-import { 
+import {
   Calendar,
   Plus,
   MapPin,
@@ -50,6 +53,15 @@ export function Rehearsals() {
   const { bandId } = useParams<{ bandId: string }>()
   const navigate = useNavigate()
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    rehearsal_date: '',
+    start_time: '',
+    location: '',
+    songs_to_learn: '5',
+    selection_deadline: '',
+    description: ''
+  })
   
   const { data: band } = useBand(bandId!)
   const { data: userRole } = useUserBandRole(bandId!)
@@ -59,20 +71,33 @@ export function Rehearsals() {
 
   const handleCreateRehearsal = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    
+
     await createRehearsal.mutateAsync({
       band_id: bandId!,
-      name: formData.get('name') as string,
-      rehearsal_date: formData.get('rehearsal_date') as string,
-      start_time: formData.get('start_time') as string || undefined,
-      location: formData.get('location') as string || undefined,
-      songs_to_learn: parseInt(formData.get('songs_to_learn') as string),
-      selection_deadline: formData.get('selection_deadline') as string || undefined,
-      description: formData.get('description') as string || undefined,
+      name: formData.name,
+      rehearsal_date: formData.rehearsal_date,
+      start_time: formData.start_time || undefined,
+      location: formData.location || undefined,
+      songs_to_learn: parseInt(formData.songs_to_learn),
+      selection_deadline: formData.selection_deadline || undefined,
+      description: formData.description || undefined,
     })
-    
+
+    setFormData({
+      name: '',
+      rehearsal_date: '',
+      start_time: '',
+      location: '',
+      songs_to_learn: '5',
+      selection_deadline: '',
+      description: ''
+    })
     setShowCreateForm(false)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleDeleteRehearsal = async (rehearsalId: string) => {
@@ -137,31 +162,29 @@ export function Rehearsals() {
                   <input
                     type="text"
                     name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
                     required
                     className="input-field"
                     placeholder="Weekly Practice Session"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date
-                  </label>
-                  <input
-                    type="date"
+                  <DatePicker
                     name="rehearsal_date"
+                    value={formData.rehearsal_date}
+                    onChange={handleInputChange}
+                    label="Date"
                     required
-                    className="input-field"
                     min={new Date().toISOString().split('T')[0]}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Start Time (Optional)
-                  </label>
-                  <input
-                    type="time"
+                  <TimePicker
                     name="start_time"
-                    className="input-field"
+                    value={formData.start_time}
+                    onChange={handleInputChange}
+                    label="Start Time (Optional)"
                   />
                 </div>
                 <div>
@@ -170,9 +193,10 @@ export function Rehearsals() {
                   </label>
                   <select
                     name="songs_to_learn"
+                    value={formData.songs_to_learn}
+                    onChange={handleInputChange}
                     required
                     className="input-field"
-                    defaultValue="5"
                   >
                     {[1,2,3,4,5,6,7,8,9,10].map(num => (
                       <option key={num} value={num}>{num} song{num > 1 ? 's' : ''}</option>
@@ -188,19 +212,19 @@ export function Rehearsals() {
                 <input
                   type="text"
                   name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
                   className="input-field"
                   placeholder="Studio A, John's Garage, etc."
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Selection Deadline (Optional)
-                </label>
-                <input
-                  type="datetime-local"
+                <DateTimePicker
                   name="selection_deadline"
-                  className="input-field"
+                  value={formData.selection_deadline}
+                  onChange={handleInputChange}
+                  label="Selection Deadline (Optional)"
                 />
               </div>
               
@@ -210,6 +234,8 @@ export function Rehearsals() {
                 </label>
                 <textarea
                   name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
                   rows={3}
                   className="input-field"
                   placeholder="Additional notes for this rehearsal..."
