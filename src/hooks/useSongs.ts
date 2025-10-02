@@ -433,9 +433,12 @@ export function useUpdateSong() {
         throw new Error('You must be logged in')
       }
 
+      // Filter out metadata fields that don't exist in production yet
+      const { bpm, musical_key, vocal_type, ...safeUpdates } = updates
+
       const { data, error } = await supabase
         .from('song_suggestions')
-        .update(updates)
+        .update(safeUpdates)
         .eq('id', songId)
         .select()
         .single()
