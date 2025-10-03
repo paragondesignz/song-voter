@@ -425,21 +425,6 @@ export function SongEdit() {
             </div>
 
 
-            {/* Metadata */}
-            <div className="border-t border-[var(--color-border)] pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-[var(--color-text-secondary)]">
-                <div>
-                  Created: {new Date(song.created_at).toLocaleDateString()}
-                </div>
-                {song.average_rating && (
-                  <div>
-                    <Star className="h-4 w-4 inline mr-1" />
-                    Average Rating: {song.average_rating.toFixed(1)} ({song.total_ratings} ratings)
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Action Buttons */}
             <div className="flex justify-end space-x-4 pt-6">
               <button
