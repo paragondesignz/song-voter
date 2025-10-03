@@ -4,11 +4,11 @@ import { useAuth } from '@/context/AuthContext'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
-import { 
-  ArrowLeft, 
-  User, 
-  Mail, 
-  Lock, 
+import { Header } from '@/components/Header'
+import {
+  User,
+  Mail,
+  Lock,
   Camera,
   Save,
   Shield
@@ -136,25 +136,16 @@ export function MemberProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <button
-              onClick={() => navigate(`/band/${bandId}`)}
-              className="mr-4 text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <User className="h-6 w-6 text-primary-600 mr-3" />
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">My Profile</h1>
-              <p className="text-xs text-gray-500">{band?.name}</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6 flex items-center">
+          <User className="h-6 w-6 text-primary-600 mr-3" />
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">My Profile</h1>
+            <p className="text-xs text-gray-500">{band?.name}</p>
+          </div>
+        </div>
         {/* Role Badge */}
         {isAdmin && (
           <div className="mb-6">

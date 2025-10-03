@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSongDetails, useUpdateSong, useRateSong } from '@/hooks/useSongs'
-import { ArrowLeft, Save, Trash2, Music, Clock, User, FileText, Star } from 'lucide-react'
+import { Save, Trash2, Music, Clock, User, FileText, Star } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { StarRating } from '@/components/StarRating'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
+import { Header } from '@/components/Header'
 import { formatDistanceToNow } from 'date-fns'
 
 interface SongEditForm {
@@ -155,27 +156,16 @@ export function SongEdit() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
-      <header className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button
-              onClick={() => navigate(`/band/${bandId}`)}
-              className="flex items-center text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back to Dashboard
-            </button>
-
-            {isDirty && (
-              <span className="text-sm text-orange-400">
-                You have unsaved changes
-              </span>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {isDirty && (
+          <div className="mb-4 text-center">
+            <span className="text-sm text-orange-400">
+              You have unsaved changes
+            </span>
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
