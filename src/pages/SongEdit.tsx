@@ -374,28 +374,6 @@ export function SongEdit() {
                   <option value="practiced">Practiced</option>
                 </select>
               </div>
-
-              {/* Spotify Track ID */}
-              <div>
-                <label htmlFor="spotify_track_id" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                  <Music className="h-4 w-4 inline mr-1" />
-                  Spotify Track ID or URL
-                </label>
-                <input
-                  type="text"
-                  id="spotify_track_id"
-                  {...register('spotify_track_id', {
-                    setValueAs: (value) => {
-                      if (!value) return value
-                      // Extract track ID from URL if it's a full URL
-                      const urlMatch = value.match(/track\/([a-zA-Z0-9]{22})/)
-                      return urlMatch ? urlMatch[1] : value
-                    }
-                  })}
-                  placeholder="e.g., 3n3Ppam7vgaVa1iaRUc9Lp or https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUc9Lp"
-                  className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] placeholder-[var(--color-text-tertiary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
             </div>
 
 
