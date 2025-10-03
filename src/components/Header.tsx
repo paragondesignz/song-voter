@@ -100,15 +100,6 @@ export function Header({ actions }: HeaderProps) {
                 Dashboard
               </button>
             )}
-            {/* AI Song Finder Button */}
-            {userBand && (
-              <button
-                onClick={() => navigate(`/band/${userBand.id}/ai-finder`)}
-                className={getButtonClasses(isActiveRoute('/ai-finder'))}
-              >
-                AI Song Detail Finder
-              </button>
-            )}
             {/* Analytics Button */}
             {userBand && (
               <button

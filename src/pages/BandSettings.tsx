@@ -45,11 +45,11 @@ export function BandSettings() {
         max_songs_per_rehearsal: band.max_songs_per_rehearsal || 5,
         allow_member_song_suggestions: band.allow_member_song_suggestions ?? true,
         auto_select_songs: band.auto_select_songs ?? false,
-        notification_preferences: band.notification_preferences || {
-          new_song_suggestions: true,
-          rehearsal_reminders: true,
-          voting_deadlines: true,
-          member_updates: true
+        notification_preferences: {
+          new_song_suggestions: band.notification_preferences?.new_song_suggestions ?? true,
+          rehearsal_reminders: band.notification_preferences?.rehearsal_reminders ?? true,
+          voting_deadlines: band.notification_preferences?.voting_deadlines ?? true,
+          member_updates: band.notification_preferences?.member_updates ?? true
         }
       })
     }

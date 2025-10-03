@@ -12,6 +12,11 @@ export interface Band {
   role?: string
   member_count?: number
   shared_password?: string
+  voting_deadline_hours?: number
+  max_songs_per_rehearsal?: number
+  allow_member_song_suggestions?: boolean
+  auto_select_songs?: boolean
+  notification_preferences?: Record<string, any>
 }
 
 export interface BandMember {

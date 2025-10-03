@@ -1,5 +1,4 @@
 import { Calendar } from 'lucide-react'
-import { format } from 'date-fns'
 
 interface DatePickerProps {
   name: string
@@ -9,7 +8,6 @@ interface DatePickerProps {
   required?: boolean
   min?: string
   className?: string
-  placeholder?: string
 }
 
 export function DatePicker({
@@ -19,8 +17,7 @@ export function DatePicker({
   label,
   required = false,
   min,
-  className = "",
-  placeholder = "Select date"
+  className = ""
 }: DatePickerProps) {
   return (
     <div className={className}>
