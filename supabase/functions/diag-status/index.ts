@@ -45,7 +45,7 @@ serve(async (req) => {
     if (bandMembersError) throw bandMembersError
 
     // Check RLS status
-    const { data: rlsStatus, error: rlsError } = await adminClient
+    const { data: rlsStatus } = await adminClient
       .rpc("get_rls_status")
 
     const status = {

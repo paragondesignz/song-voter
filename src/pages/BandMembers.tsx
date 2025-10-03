@@ -100,8 +100,6 @@ export function BandMembers() {
       setBandPassword('')
       setConfirmPassword('')
     } catch (error: unknown) {
-      // eslint-disable-next-line no-console
-      console.error('Band password update error:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to set band password')
     } finally {
       setIsUpdatingPassword(false)
@@ -156,8 +154,6 @@ export function BandMembers() {
       setMemberName('')
       setMemberRole('member')
     } catch (error: unknown) {
-      // eslint-disable-next-line no-console
-      console.error('Create member error:', error)
       if (error instanceof Error) {
         if (error.message.includes('already exists')) {
           toast.error('A user with this email already exists')

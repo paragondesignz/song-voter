@@ -86,7 +86,7 @@ export function useSongSuggestions(bandId: string, options?: {
 
       // Fetch suggester profiles (best-effort; tolerate RLS)
       const suggesterIds = Array.from(new Set(suggestions.map(s => s.suggested_by)))
-      let profileMap: Record<string, { display_name: string; avatar_url?: string }> = {}
+      const profileMap: Record<string, { display_name: string; avatar_url?: string }> = {}
       if (suggesterIds.length > 0) {
         const { data: profilesData } = await supabase
           .from('profiles')
@@ -464,9 +464,6 @@ export function useUpdateSong() {
         .single()
 
       if (error) {
-        console.error('Supabase update error:', error)
-        console.error('Update payload:', updates)
-        console.error('Song ID:', songId)
         throw error
       }
       return data

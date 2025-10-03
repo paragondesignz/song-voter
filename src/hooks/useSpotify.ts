@@ -60,7 +60,7 @@ export function useSpotifyEmbed() {
       // Parse title from oEmbed data
       let title = 'Track from Spotify'
       let artist = 'Artist from Spotify'
-      let album = 'Album from Spotify'
+      const album = 'Album from Spotify'
       
       if (oembedData.title) {
         // oEmbed title is usually just the track name

@@ -27,8 +27,6 @@ export function VerifyEmail() {
           })
 
           if (error) {
-            // eslint-disable-next-line no-console
-            console.error('Error setting session:', error)
             setErrorMessage(error.message)
             setVerificationState('error')
           } else {
@@ -43,8 +41,6 @@ export function VerifyEmail() {
           setVerificationState('error')
         }
       } catch (error: unknown) {
-        // eslint-disable-next-line no-console
-        console.error('Verification error:', error)
         setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred')
         setVerificationState('error')
       }

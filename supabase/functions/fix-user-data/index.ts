@@ -55,7 +55,7 @@ serve(async (req) => {
     }
 
     // Get user's bands
-    const { data: bands, error: bandsError } = await supabase
+    const { data: bands } = await supabase
       .from('band_members')
       .select(`
         band_id,

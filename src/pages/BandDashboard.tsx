@@ -61,8 +61,7 @@ export function BandDashboard() {
       // Refetch to get updated ratings
       await refetch()
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Rating error:', error)
+      // Error handling is done by the rateSong hook via toast
     } finally {
       setVotingOnSong(null)
     }
@@ -83,18 +82,20 @@ export function BandDashboard() {
 
   const sortedSuggestions = [...filteredSuggestions].sort((a, b) => {
     switch (sortBy) {
-      case 'votes':
+      case 'votes': {
         // Sort by average rating first, then by total ratings for tie-breaking
         const avgRatingDiff = (b.average_rating || 0) - (a.average_rating || 0)
         if (Math.abs(avgRatingDiff) > 0.1) return avgRatingDiff
         return (b.total_ratings || 0) - (a.total_ratings || 0)
+      }
       case 'alphabetical':
         return a.title.localeCompare(b.title)
-      case 'your_votes':
+      case 'your_votes': {
         // Sort by user's rating (highest first), then by average rating
         const userRatingDiff = (b.user_rating || 0) - (a.user_rating || 0)
         if (userRatingDiff !== 0) return userRatingDiff
         return (b.average_rating || 0) - (a.average_rating || 0)
+      }
       case 'newest':
       default:
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

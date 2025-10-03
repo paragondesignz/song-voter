@@ -58,7 +58,7 @@ export function SongSearch() {
         })
       }
     } catch (err) {
-      console.error('Error fetching Spotify data:', err)
+      // Error already handled by useSpotifyEmbed hook
     }
   }
 
@@ -78,7 +78,7 @@ export function SongSearch() {
       setShowManualForm(false)
       navigate(`/band/${bandId}`)
     } catch (error) {
-      console.error('Error submitting manual song:', error)
+      // Error handling is done by the useSuggestSong hook via toast
     }
   }
 
@@ -106,7 +106,7 @@ export function SongSearch() {
       setSpotifyUrl('')
       navigate(`/band/${bandId}`)
     } catch (error) {
-      console.error('Error confirming Spotify track:', error)
+      // Error handling is done by the useSuggestSong hook via toast
     }
   }
 

@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { formatDistanceToNow, subDays } from 'date-fns'
+import { toast } from 'react-hot-toast'
 
 interface ActivityLog {
   id: string
@@ -227,7 +228,7 @@ export function MemberActivity() {
       }
 
     } catch (error) {
-      console.error('Error fetching activity data:', error)
+      toast.error('Failed to load activity data')
     } finally {
       setIsLoading(false)
     }

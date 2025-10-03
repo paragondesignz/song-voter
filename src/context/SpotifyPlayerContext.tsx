@@ -44,8 +44,8 @@ export function SpotifyPlayerProvider({ children }: { children: React.ReactNode 
       setCurrentTime(0)
     }
     
-    const handleError = (e: Event) => {
-      console.error('Audio playback error:', e)
+    const handleError = () => {
+      // Audio playback failed silently - reset playing state
       setIsPlaying(false)
     }
     
@@ -79,15 +79,14 @@ export function SpotifyPlayerProvider({ children }: { children: React.ReactNode 
       // For demonstration, we'll use the oEmbed endpoint which doesn't require auth
       const response = await fetch(`https://open.spotify.com/oembed?url=spotify:track:${trackId}`)
       if (response.ok) {
-        const data = await response.json()
+        await response.json()
         // The oEmbed doesn't provide preview_url directly
         // In a real implementation, you'd need to use the Spotify Web API
-        
+
         // For now, return null and suggest using the Spotify Web API
-        console.log('Track data:', data)
       }
     } catch (error) {
-      console.error('Error fetching track preview:', error)
+      // Failed to fetch track preview - continue silently
     }
     
     return null
@@ -108,9 +107,7 @@ export function SpotifyPlayerProvider({ children }: { children: React.ReactNode 
         }
         
         if (!url) {
-          // If still no URL, we can't play
-          console.warn(`No preview URL available for track ${trackId}`)
-          // Open Spotify instead
+          // If still no URL, we can't play - open Spotify instead
           window.open(`https://open.spotify.com/track/${trackId}`, '_blank')
           return
         }
@@ -130,7 +127,7 @@ export function SpotifyPlayerProvider({ children }: { children: React.ReactNode 
       await audioRef.current.play()
       setIsPlaying(true)
     } catch (error) {
-      console.error('Error playing audio:', error)
+      // Audio playback failed - reset playing state
       setIsPlaying(false)
     }
   }

@@ -32,7 +32,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 // Safe no-op on server
 try {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).supabase = supabase
+  (globalThis as any).supabase = supabase
 } catch {
   // ignore
 }
