@@ -182,7 +182,27 @@ export function SongEdit() {
             {/* Song Title and Actions */}
             <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold text-[var(--color-text)]">{song.title}</h1>
+                <div>
+                  <h1 className="text-3xl font-bold text-[var(--color-text)] mb-2">{song.title}</h1>
+                  <div className="flex items-center space-x-4 text-sm text-gray-400">
+                    <div className="flex items-center">
+                      <User className="w-4 h-4 mr-1" />
+                      <span className="font-medium">Suggested by:</span>
+                      <span className="ml-1">{song.suggested_by_user?.display_name || 'Unknown'}</span>
+                    </div>
+                    <span>•</span>
+                    <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
+                    {song.duration_ms && (
+                      <>
+                        <span>•</span>
+                        <div className="flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {formatDuration(song.duration_ms)}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
@@ -195,24 +215,6 @@ export function SongEdit() {
 
               {/* Basic Song Info */}
               <div className="space-y-4">
-                <div className="flex items-center space-x-4 text-sm text-gray-400">
-                  <div className="flex items-center">
-                    <User className="w-4 h-4 mr-1" />
-                    Suggested by {song.suggested_by_user?.display_name || 'Unknown'}
-                  </div>
-                  <span>•</span>
-                  <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
-                  {song.duration_ms && (
-                    <>
-                      <span>•</span>
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {formatDuration(song.duration_ms)}
-                      </div>
-                    </>
-                  )}
-                </div>
-
                 {song.notes && (
                   <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-4">
                     <h3 className="text-sm font-medium text-blue-300 mb-2">Notes</h3>
@@ -434,10 +436,6 @@ export function SongEdit() {
             {/* Metadata */}
             <div className="border-t border-[var(--color-border)] pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-[var(--color-text-secondary)]">
-                <div>
-                  <User className="h-4 w-4 inline mr-1" />
-                  Suggested by: {song.suggested_by || 'Unknown'}
-                </div>
                 <div>
                   Created: {new Date(song.created_at).toLocaleDateString()}
                 </div>
