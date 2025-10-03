@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSongDetails, useUpdateSong, useRateSong } from '@/hooks/useSongs'
-import { Save, Trash2, Music, Clock, User, FileText, Star } from 'lucide-react'
+import { useSongComments } from '@/hooks/useComments'
+import { Save, Trash2, Music, Clock, User, FileText, Star, MessageCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { StarRating } from '@/components/StarRating'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { Header } from '@/components/Header'
+import { CommentList } from '@/components/CommentList'
+import { CommentForm } from '@/components/CommentForm'
 import { formatDistanceToNow } from 'date-fns'
 
 interface SongEditForm {
@@ -29,6 +32,7 @@ export function SongEdit() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data: song, isLoading } = useSongDetails(songId!)
+  const { data: comments = [], isLoading: commentsLoading } = useSongComments(songId!)
   const updateSong = useUpdateSong()
   const rateSong = useRateSong()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -236,6 +240,24 @@ export function SongEdit() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Comments Section */}
+            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+              <h3 className="text-lg font-semibold text-[var(--color-text)] flex items-center mb-4">
+                <MessageCircle className="h-5 w-5 mr-2 text-primary-500" />
+                Comments ({comments.length})
+              </h3>
+
+              <div className="mb-6">
+                <CommentForm songId={songId!} bandId={bandId!} />
+              </div>
+
+              {commentsLoading ? (
+                <div className="text-center py-4 text-gray-400">Loading comments...</div>
+              ) : (
+                <CommentList comments={comments} songId={songId!} />
+              )}
             </div>
 
             {/* Edit Form */}
