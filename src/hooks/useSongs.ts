@@ -51,7 +51,7 @@ export function useSongSuggestions(bandId: string, options?: {
       // Base suggestions query without embedded joins to avoid schema introspection under RLS
       let query = supabase
         .from('song_suggestions')
-        .select('*')
+        .select('id, band_id, suggested_by, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, created_at')
         .eq('band_id', bandId)
         .neq('status', 'practiced')
 
@@ -132,7 +132,7 @@ export function useLeaderboard(bandId: string, timeFrame: 'all' | 'month' | 'wee
       // Get all songs for this band
       const { data: songs, error: songsError } = await supabase
         .from('song_suggestions')
-        .select('*')
+        .select('id, band_id, suggested_by, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, created_at')
         .eq('band_id', bandId)
         .order('created_at', { ascending: false })
 
@@ -381,7 +381,7 @@ export function useSongDetails(songId: string) {
       // Get song details without embedded joins to avoid RLS issues
       const { data: song, error } = await supabase
         .from('song_suggestions')
-        .select('*')
+        .select('id, band_id, suggested_by, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, created_at')
         .eq('id', songId)
         .single()
 
@@ -622,7 +622,7 @@ export function useUserVoteStats(bandId: string) {
       // Get user's ratings for songs in this band
       const { data, error } = await supabase
         .from('song_ratings')
-        .select('*')
+        .select('id, song_suggestion_id, user_id, rating, created_at, updated_at')
         .in('song_suggestion_id', songIds)
         .eq('user_id', user.id)
 
