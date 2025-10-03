@@ -66,6 +66,7 @@ export function SongEdit() {
         updates: {
           ...data,
           duration_ms: data.duration_ms ? Number(data.duration_ms) : null,
+          bpm: data.bpm ? Number(data.bpm) : null,
           vocal_type: data.vocal_type === '' ? null : data.vocal_type as 'male' | 'female' | 'duet' | 'instrumental' | null,
         },
       })
