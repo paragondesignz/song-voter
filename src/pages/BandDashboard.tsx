@@ -10,12 +10,12 @@ import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 import { Search, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User, Edit } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
-type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes'
+type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes' | 'rating'
 
 export function BandDashboard() {
   const { bandId } = useParams<{ bandId: string }>()
   const navigate = useNavigate()
-  const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const [sortBy, setSortBy] = useState<SortOption>('rating')
   const [searchQuery, setSearchQuery] = useState('')
   const [votingOnSong, setVotingOnSong] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -143,6 +143,7 @@ export function BandDashboard() {
                       onChange={(e) => setSortBy(e.target.value as SortOption)}
                       className="select-field"
                     >
+                      <option value="rating">Highest Rated</option>
                       <option value="newest">Newest First</option>
                       <option value="votes">Most Voted</option>
                       <option value="alphabetical">Alphabetical</option>

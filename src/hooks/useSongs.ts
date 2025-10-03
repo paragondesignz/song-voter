@@ -20,8 +20,13 @@ export interface SongSuggestion {
   bpm: number | null
   musical_key: string | null
   vocal_type: 'male' | 'female' | 'duet' | 'instrumental' | null
+  assigned_to: string | null
   created_at: string
   suggested_by_user?: {
+    display_name: string
+    avatar_url?: string
+  }
+  assigned_to_user?: {
     display_name: string
     avatar_url?: string
   }
@@ -41,7 +46,7 @@ export interface SongVote {
 }
 
 export function useSongSuggestions(bandId: string, options?: {
-  sortBy?: 'newest' | 'votes' | 'alphabetical' | 'your_votes'
+  sortBy?: 'newest' | 'votes' | 'alphabetical' | 'your_votes' | 'rating'
 }) {
   const { user } = useAuth()
 
@@ -51,7 +56,7 @@ export function useSongSuggestions(bandId: string, options?: {
       // Base suggestions query without embedded joins to avoid schema introspection under RLS
       let query = supabase
         .from('song_suggestions')
-        .select('id, band_id, suggested_by, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, created_at')
+        .select('id, band_id, suggested_by, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, assigned_to, created_at')
         .eq('band_id', bandId)
         .neq('status', 'practiced')
 
@@ -84,14 +89,16 @@ export function useSongSuggestions(bandId: string, options?: {
         ratings = ratingsData || []
       }
 
-      // Fetch suggester profiles (best-effort; tolerate RLS)
+      // Fetch suggester and assigned-to profiles (best-effort; tolerate RLS)
       const suggesterIds = Array.from(new Set(suggestions.map(s => s.suggested_by)))
+      const assignedIds = Array.from(new Set(suggestions.map(s => s.assigned_to).filter(Boolean)))
+      const allProfileIds = Array.from(new Set([...suggesterIds, ...assignedIds]))
       const profileMap: Record<string, { display_name: string; avatar_url?: string }> = {}
-      if (suggesterIds.length > 0) {
+      if (allProfileIds.length > 0) {
         const { data: profilesData } = await supabase
           .from('profiles')
           .select('id, display_name, avatar_url')
-          .in('id', suggesterIds)
+          .in('id', allProfileIds)
         for (const p of profilesData || []) {
           profileMap[p.id] = { display_name: p.display_name, avatar_url: p.avatar_url }
         }
@@ -103,7 +110,7 @@ export function useSongSuggestions(bandId: string, options?: {
         return acc
       }, {} as Record<string, any[]>)
 
-      return suggestions.map((song: any) => {
+      const enrichedSuggestions = suggestions.map((song: any) => {
         const songRatings = groupedRatings[song.id] || []
         const userRating = songRatings.find((rating: any) => rating.user_id === user?.id)
         const ratingValues = songRatings.map((rating: any) => rating.rating).filter((rating: number) => !isNaN(rating))
@@ -113,11 +120,25 @@ export function useSongSuggestions(bandId: string, options?: {
         return {
           ...song,
           suggested_by_user: profileMap[song.suggested_by],
+          assigned_to_user: song.assigned_to ? profileMap[song.assigned_to] : undefined,
           average_rating: Math.round(averageRating * 10) / 10,
           total_ratings: totalRatings,
           user_rating: userRating ? userRating.rating : null,
         }
-      }) as SongSuggestion[]
+      })
+
+      // Apply client-side sorting for rating-based sorts
+      if (options?.sortBy === 'rating') {
+        enrichedSuggestions.sort((a, b) => {
+          // Sort by average rating descending, then by total ratings as tiebreaker
+          if (b.average_rating !== a.average_rating) {
+            return b.average_rating - a.average_rating
+          }
+          return b.total_ratings - a.total_ratings
+        })
+      }
+
+      return enrichedSuggestions as SongSuggestion[]
     },
     enabled: !!bandId && !!user,
   })
@@ -724,6 +745,45 @@ export function useRemoveSuggestion() {
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'Failed to remove suggestion')
+    },
+  })
+}
+
+export function useAssignSong() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      songId,
+      bandId: _bandId,
+      assignedTo
+    }: {
+      songId: string
+      bandId: string
+      assignedTo: string | null
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('You must be logged in')
+      }
+
+      const { data, error } = await supabase
+        .from('song_suggestions')
+        .update({ assigned_to: assignedTo })
+        .eq('id', songId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (_, { bandId }) => {
+      queryClient.invalidateQueries({ queryKey: ['song-suggestions', bandId] })
+      queryClient.invalidateQueries({ queryKey: ['song-details'] })
+      toast.success(_.assigned_to ? 'Song assigned successfully!' : 'Assignment removed successfully!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to assign song')
     },
   })
 }
