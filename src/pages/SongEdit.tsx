@@ -224,14 +224,6 @@ export function SongEdit() {
               </div>
             </div>
 
-            {/* Spotify Player */}
-            {song.spotify_track_id && (
-              <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
-                <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Listen to Song</h3>
-                <SpotifyEmbed trackId={song.spotify_track_id} height={152} />
-              </div>
-            )}
-
             {/* Rating Section */}
             <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
               <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Rate This Song</h3>
@@ -472,6 +464,14 @@ export function SongEdit() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Spotify Player */}
+            {song.spotify_track_id && (
+              <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
+                <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Listen on Spotify</h3>
+                <SpotifyEmbed trackId={song.spotify_track_id} height={352} />
+              </div>
+            )}
+
             {/* Quick Actions */}
             <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
               <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Quick Actions</h3>
