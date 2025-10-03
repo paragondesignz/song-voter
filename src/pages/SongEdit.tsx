@@ -70,7 +70,6 @@ export function SongEdit() {
           vocal_type: data.vocal_type === '' ? null : data.vocal_type as 'male' | 'female' | 'duet' | 'instrumental' | null,
         },
       })
-      toast.success('Song updated successfully')
       navigate(`/band/${bandId}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update song')
