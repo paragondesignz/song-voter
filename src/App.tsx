@@ -28,8 +28,6 @@ import { BulkInvite } from '@/pages/BulkInvite'
 import { MemberActivity } from '@/pages/MemberActivity'
 import { ExportMembers } from '@/pages/ExportMembers'
 import { BandSettings } from '@/pages/BandSettings'
-import { BandPosts } from '@/pages/BandPosts'
-import { BandFiles } from '@/pages/BandFiles'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,8 +77,6 @@ function AppContent() {
           <Route path="/band/:bandId/members/export" element={<ExportMembers />} />
           <Route path="/band/:bandId/profile" element={<MemberProfile />} />
           <Route path="/band/:bandId/settings" element={<BandSettings />} />
-          <Route path="/band/:bandId/posts" element={<BandPosts />} />
-          <Route path="/band/:bandId/files" element={<BandFiles />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin/diagnostics" element={<AdminDiagnostics />} />
         </Route>
