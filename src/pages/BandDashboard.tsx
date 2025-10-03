@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useUserBandRole } from '@/hooks/useBands'
-import { useSongSuggestions, useRateSong, useRemoveSuggestion } from '@/hooks/useSongs'
+import { useUserBandRole, useBandMembers } from '@/hooks/useBands'
+import { useSongSuggestions, useRateSong, useRemoveSuggestion, useAssignSong } from '@/hooks/useSongs'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
 
-import { Search, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User, Edit } from 'lucide-react'
+import { Search, Filter, ExternalLink, Trash2, Clock, ChevronLeft, ChevronRight, User, Edit, UserCheck } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes' | 'rating'
@@ -22,8 +22,10 @@ export function BandDashboard() {
   
   const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
   const { data: userRole } = useUserBandRole(bandId!)
+  const { data: bandMembers } = useBandMembers(bandId!)
   const rateSong = useRateSong()
   const removeSuggestion = useRemoveSuggestion()
+  const assignSong = useAssignSong()
 
   const ITEMS_PER_PAGE = 10
 
@@ -74,6 +76,14 @@ export function BandDashboard() {
         bandId: bandId!
       })
     }
+  }
+
+  const handleAssignSong = async (songId: string, assignedTo: string | null) => {
+    await assignSong.mutateAsync({
+      songId,
+      bandId: bandId!,
+      assignedTo
+    })
   }
 
   const filteredSuggestions = suggestions?.filter(song =>
@@ -211,6 +221,15 @@ export function BandDashboard() {
                                 <User className="w-3 h-3 mr-1" />
                                 Added by: {song.suggested_by_user?.display_name}
                               </div>
+                              {song.assigned_to_user && (
+                                <>
+                                  <span>•</span>
+                                  <div className="flex items-center font-medium" style={{ color: 'var(--color-primary)' }}>
+                                    <UserCheck className="w-3 h-3 mr-1" />
+                                    Assigned to: {song.assigned_to_user.display_name}
+                                  </div>
+                                </>
+                              )}
                               <span>•</span>
                               <span>{formatDistanceToNow(new Date(song.created_at), { addSuffix: true })}</span>
                               
@@ -289,6 +308,20 @@ export function BandDashboard() {
                           {/* Admin controls */}
                           {userRole === 'admin' && (
                             <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                              {/* Assignment dropdown */}
+                              <select
+                                value={song.assigned_to || ''}
+                                onChange={(e) => handleAssignSong(song.id, e.target.value || null)}
+                                className="select-field text-sm py-2 px-3"
+                                title="Assign to member (Admin only)"
+                              >
+                                <option value="">Not assigned</option>
+                                {bandMembers?.map((member) => (
+                                  <option key={member.user_id} value={member.user_id}>
+                                    {member.user?.display_name || 'Unknown'}
+                                  </option>
+                                ))}
+                              </select>
                               <button
                                 onClick={() => navigate(`/band/${bandId}/song/${song.id}`)}
                                 className="p-3 rounded-full transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-primary-500/10 hover:text-primary-400 border border-[var(--color-border)]"
