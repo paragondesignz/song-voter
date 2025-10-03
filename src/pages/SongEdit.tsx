@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSongDetails, useUpdateSong, useRateSong } from '@/hooks/useSongs'
-import { ArrowLeft, Save, Trash2, Music, Clock, User, FileText, Star, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Music, Clock, User, FileText, Star } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { StarRating } from '@/components/StarRating'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
@@ -471,58 +471,6 @@ export function SongEdit() {
                 <SpotifyEmbed trackId={song.spotify_track_id} height={352} />
               </div>
             )}
-
-            {/* Quick Actions */}
-            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
-              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <button
-                  onClick={() => navigate(`/band/${bandId}`)}
-                  className="w-full btn-secondary text-sm flex items-center justify-center"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </button>
-                {song.spotify_track_id && (
-                  <a
-                    href={`https://open.spotify.com/track/${song.spotify_track_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full btn-primary text-sm flex items-center justify-center"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Open in Spotify
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Song Metadata */}
-            <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
-              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Song Info</h3>
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3 text-sm">
-                  <div className="bg-[var(--color-surface-2)] p-3 rounded-lg">
-                    <label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">BPM</label>
-                    <p className="text-lg font-semibold text-[var(--color-text)]">
-                      {song.bpm || '—'}
-                    </p>
-                  </div>
-                  <div className="bg-[var(--color-surface-2)] p-3 rounded-lg">
-                    <label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">Key</label>
-                    <p className="text-lg font-semibold text-[var(--color-text)]">
-                      {song.musical_key || '—'}
-                    </p>
-                  </div>
-                  <div className="bg-[var(--color-surface-2)] p-3 rounded-lg">
-                    <label className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">Vocal Type</label>
-                    <p className="text-lg font-semibold text-[var(--color-text)]">
-                      {song.vocal_type ? song.vocal_type.charAt(0).toUpperCase() + song.vocal_type.slice(1) : '—'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Song Status */}
             <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6">
