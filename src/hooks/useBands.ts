@@ -382,3 +382,62 @@ export function useUpdateBandName() {
   })
 }
 
+export function useUpdateBandSettings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ 
+      bandId, 
+      settings 
+    }: { 
+      bandId: string
+      settings: {
+        name?: string
+        shared_password?: string
+        voting_deadline_hours?: number
+        max_songs_per_rehearsal?: number
+        allow_member_song_suggestions?: boolean
+        auto_select_songs?: boolean
+        notification_preferences?: {
+          new_song_suggestions?: boolean
+          rehearsal_reminders?: boolean
+          voting_deadlines?: boolean
+          member_updates?: boolean
+        }
+      }
+    }) => {
+      // Prepare update data, excluding undefined values
+      const updateData: any = {}
+      
+      if (settings.name !== undefined) updateData.name = settings.name
+      if (settings.shared_password !== undefined) {
+        updateData.shared_password = settings.shared_password
+        updateData.password_updated_at = new Date().toISOString()
+      }
+      if (settings.voting_deadline_hours !== undefined) updateData.voting_deadline_hours = settings.voting_deadline_hours
+      if (settings.max_songs_per_rehearsal !== undefined) updateData.max_songs_per_rehearsal = settings.max_songs_per_rehearsal
+      if (settings.allow_member_song_suggestions !== undefined) updateData.allow_member_song_suggestions = settings.allow_member_song_suggestions
+      if (settings.auto_select_songs !== undefined) updateData.auto_select_songs = settings.auto_select_songs
+      if (settings.notification_preferences !== undefined) updateData.notification_preferences = settings.notification_preferences
+
+      const { data, error } = await supabase
+        .from('bands')
+        .update(updateData)
+        .eq('id', bandId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (band) => {
+      queryClient.invalidateQueries({ queryKey: ['bands'] })
+      queryClient.invalidateQueries({ queryKey: ['band', band.id] })
+      toast.success('Band settings updated successfully!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to update band settings')
+    },
+  })
+}
+

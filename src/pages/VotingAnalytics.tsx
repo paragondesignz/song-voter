@@ -31,68 +31,65 @@ export function VotingAnalytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Voting Analytics</h1>
-          {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>Voting Analytics</h1>
+          {band?.name && <p className="text-lg mt-2" style={{ color: 'var(--color-text-secondary)' }}>{band.name}</p>}
         </div>
         
-        <div className="space-y-8">
-
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Stats Overview */}
-            <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Stats Overview */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Overall Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="card">
                 <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-blue-600" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)' }}>
+                    <BarChart3 className="h-6 w-6" style={{ color: 'var(--color-primary)' }} />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Ratings</p>
-                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.totalRatings || 0}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Total Ratings</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{ratingStats?.totalRatings || 0}</p>
                   </div>
                 </div>
               </div>
 
               <div className="card">
                 <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <Star className="h-6 w-6 text-yellow-600" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
+                    <Star className="h-6 w-6" style={{ color: 'var(--color-accent)' }} />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.averageRating || '—'}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Average Rating</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{ratingStats?.averageRating || '—'}</p>
                   </div>
                 </div>
               </div>
 
               <div className="card">
                 <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Heart className="h-6 w-6 text-green-600" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)' }}>
+                    <Heart className="h-6 w-6" style={{ color: '#22C55E' }} />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">High Ratings (4-5★)</p>
-                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.highRatings || 0}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>High Ratings (4-5★)</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{ratingStats?.highRatings || 0}</p>
                   </div>
                 </div>
               </div>
 
               <div className="card">
                 <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(168, 85, 247, 0.15)' }}>
+                    <TrendingUp className="h-6 w-6" style={{ color: 'var(--color-secondary)' }} />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">This Week</p>
-                    <p className="text-2xl font-bold text-gray-900">{ratingStats?.recentRatings || 0}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>This Week</p>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{ratingStats?.recentRatings || 0}</p>
                   </div>
                 </div>
               </div>
@@ -101,15 +98,20 @@ export function VotingAnalytics() {
             {/* Highest Rated Songs */}
             {topSongs && topSongs.length > 0 && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-6 flex items-center">
-                  <Trophy className="h-6 w-6 text-yellow-500 mr-2" />
+                <h2 className="text-xl font-semibold mb-6 flex items-center" style={{ color: 'var(--color-text)' }}>
+                  <Trophy className="h-6 w-6 mr-2" style={{ color: 'var(--color-accent)' }} />
                   Highest Rated Songs
                 </h2>
                 <div className="space-y-4">
                   {topSongs.slice(0, 5).map((song, index) => (
-                    <div key={song.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                    <div key={song.id} className="flex items-center justify-between p-4 rounded-lg border" style={{ 
+                      backgroundColor: 'var(--color-surface-2)', 
+                      borderColor: 'var(--color-border)' 
+                    }}>
                       <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white" style={{ 
+                          background: 'linear-gradient(135deg, var(--color-accent), #F97316)' 
+                        }}>
                           {index + 1}
                         </div>
                         {song.album_art_url ? (
@@ -119,14 +121,14 @@ export function VotingAnalytics() {
                             className="w-12 h-12 rounded-md shadow-sm"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
-                            <Music className="w-6 h-6 text-gray-400" />
+                          <div className="w-12 h-12 rounded-md flex items-center justify-center" style={{ backgroundColor: 'var(--color-border)' }}>
+                            <Music className="w-6 h-6" style={{ color: 'var(--color-text-secondary)' }} />
                           </div>
                         )}
                         <div>
-                          <h3 className="font-semibold text-gray-900 text-lg">{song.title}</h3>
+                          <h3 className="font-semibold text-lg" style={{ color: 'var(--color-text)' }}>{song.title}</h3>
                           {song.suggested_by_user && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                               Suggested by {song.suggested_by_user.display_name}
                             </p>
                           )}
@@ -135,13 +137,13 @@ export function VotingAnalytics() {
                       <div className="flex items-center space-x-4">
                         <div className="text-center">
                           <div className="flex items-center space-x-1 mb-1">
-                            <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                            <span className="text-xl font-bold text-gray-900">
+                            <Star className="h-5 w-5 fill-current" style={{ color: 'var(--color-accent)' }} />
+                            <span className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
                               {song.average_rating ? song.average_rating.toFixed(1) : '—'}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500">
-                            {song.vote_count || 0} rating{(song.vote_count || 0) !== 1 ? 's' : ''}
+                          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                            {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
                           </p>
                         </div>
                         <StarRating
@@ -156,7 +158,7 @@ export function VotingAnalytics() {
                 </div>
                 {topSongs.length > 5 && (
                   <div className="text-center mt-4">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                       Showing top 5 of {topSongs.length} rated songs
                     </p>
                   </div>
@@ -167,19 +169,19 @@ export function VotingAnalytics() {
             {/* Your Rating Activity */}
             {userRatingStats && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Your Rating Activity</h2>
+                <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Your Rating Activity</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">{userRatingStats.totalRatings}</p>
-                    <p className="text-sm text-blue-800">Total Ratings Given</p>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>{userRatingStats.totalRatings}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Total Ratings Given</p>
                   </div>
-                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                    <p className="text-2xl font-bold text-yellow-600">{userRatingStats.averageRating}</p>
-                    <p className="text-sm text-yellow-800">Your Avg Rating</p>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--color-accent)' }}>{userRatingStats.averageRating}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Your Avg Rating</p>
                   </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{userRatingStats.highRatings}</p>
-                    <p className="text-sm text-green-800">High Ratings (4-5★)</p>
+                  <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                    <p className="text-2xl font-bold" style={{ color: '#22C55E' }}>{userRatingStats.highRatings}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>High Ratings (4-5★)</p>
                   </div>
                 </div>
               </div>
@@ -188,7 +190,7 @@ export function VotingAnalytics() {
             {/* Rating Distribution */}
             {ratingStats?.ratingDistribution && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Rating Distribution</h2>
+                <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Rating Distribution</h2>
                 <div className="space-y-4">
                   {Object.entries(ratingStats.ratingDistribution).map(([rating, count]) => {
                     const percentage = ratingStats.totalRatings > 0 
@@ -197,22 +199,25 @@ export function VotingAnalytics() {
                     return (
                       <div key={rating} className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2 w-16">
-                          <span className="text-sm font-medium">{rating}</span>
-                          <Star className="h-4 w-4 text-yellow-400" />
+                          <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{rating}</span>
+                          <Star className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
                         </div>
                         <div className="flex-1">
-                          <div className="bg-gray-200 rounded-full h-3">
+                          <div className="rounded-full h-3" style={{ backgroundColor: 'var(--color-border)' }}>
                             <div
-                              className="bg-yellow-400 h-3 rounded-full transition-all duration-300"
-                              style={{ width: `${percentage}%` }}
+                              className="h-3 rounded-full transition-all duration-300"
+                              style={{ 
+                                width: `${percentage}%`,
+                                backgroundColor: 'var(--color-accent)'
+                              }}
                             />
                           </div>
                         </div>
                         <div className="w-12 text-right">
-                          <span className="text-sm text-gray-600">{count}</span>
+                          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{count}</span>
                         </div>
                         <div className="w-10 text-right">
-                          <span className="text-xs text-gray-500">{percentage}%</span>
+                          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{percentage}%</span>
                         </div>
                       </div>
                     )
@@ -224,12 +229,12 @@ export function VotingAnalytics() {
             {/* Recent Rating History */}
             {ratingHistory && ratingHistory.length > 0 && (
               <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Your Recent Ratings</h2>
+                <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Your Recent Ratings</h2>
                 <div className="space-y-3">
                   {ratingHistory.slice(0, 10).map((rating: any) => (
-                    <div key={rating.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={rating.id} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'var(--color-surface-2)' }}>
                       <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-yellow-100 rounded-full">
+                        <div className="p-2 rounded-full" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
                           <StarRating 
                             rating={parseInt(rating.vote_type)} 
                             readonly={true}
@@ -237,19 +242,19 @@ export function VotingAnalytics() {
                           />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium" style={{ color: 'var(--color-text)' }}>
                             {rating.song_suggestion?.title}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                             by {rating.song_suggestion?.artist}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-yellow-600">
+                        <div className="text-lg font-bold" style={{ color: 'var(--color-accent)' }}>
                           {rating.vote_type}★
                         </div>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                           {formatDistanceToNow(new Date(rating.created_at), { addSuffix: true })}
                         </p>
                       </div>
@@ -259,36 +264,32 @@ export function VotingAnalytics() {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-
-
-
+          {/* Sidebar */}
+          <div className="space-y-6">
             {/* Quick Stats */}
             <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Quick Facts</h3>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Quick Facts</h3>
               <div className="space-y-3">
                 {ratingStats && (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">High Rating Rate</span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>High Rating Rate</span>
+                      <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                         {ratingStats.totalRatings > 0 
                           ? Math.round((ratingStats.highRatings / ratingStats.totalRatings) * 100)
                           : 0}%
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Activity This Week</span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Activity This Week</span>
+                      <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                         {ratingStats.recentRatings} ratings
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Most Popular Rating</span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Most Popular Rating</span>
+                      <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                         {ratingStats.ratingDistribution && (() => {
                           const entries = Object.entries(ratingStats.ratingDistribution)
                           const mostPopular = entries.reduce((a, b) => a[1] > b[1] ? a : b)

@@ -187,8 +187,8 @@ export function Profile() {
                     </div>
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-50">
-                  <Camera className="w-4 h-4 text-gray-600" />
+                <label className="absolute bottom-0 right-0 rounded-full p-2 shadow-lg cursor-pointer transition-colors" style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}>
+                  <Camera className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
                   <input
                     type="file"
                     accept="image/*"

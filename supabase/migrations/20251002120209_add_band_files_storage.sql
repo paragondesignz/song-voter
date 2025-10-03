@@ -56,7 +56,8 @@ VALUES (
     'text/plain',
     'application/zip'
   ]
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- Add indexes for performance
 CREATE INDEX idx_band_folders_band_id ON band_folders(band_id);

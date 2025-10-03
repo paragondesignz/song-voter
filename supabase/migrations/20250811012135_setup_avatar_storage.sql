@@ -6,7 +6,8 @@ values (
   true,
   5242880, -- 5MB limit
   array['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-);
+)
+on conflict (id) do nothing;
 -- Enable RLS on storage.objects
 create policy "Avatar images are publicly accessible" on storage.objects
   for select using (bucket_id = 'avatars');

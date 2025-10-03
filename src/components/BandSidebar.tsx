@@ -22,10 +22,13 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
       {/* Upcoming Rehearsals */}
       <div className="card">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Upcoming Rehearsals</h3>
+          <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Upcoming Rehearsals</h3>
           <button
             onClick={() => navigate(`/band/${bandId}/rehearsals`)}
-            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            className="text-sm font-medium transition-colors"
+            style={{ color: 'var(--color-primary)' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-secondary)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
           >
             {userRole === 'admin' ? 'Manage' : 'View All'}
           </button>
@@ -43,13 +46,16 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
               .map((rehearsal) => (
                 <div
                   key={rehearsal.id}
-                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="p-4 rounded-lg transition-colors cursor-pointer"
+                  style={{ backgroundColor: 'var(--color-surface-2)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'}
                   onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}`)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{rehearsal.name}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium" style={{ color: 'var(--color-text)' }}>{rehearsal.name}</h4>
+                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                         {new Date(rehearsal.rehearsal_date).toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
@@ -61,7 +67,7 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
                         )}
                       </p>
                       {rehearsal.selection_deadline && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                           Song selection cutoff: {new Date(rehearsal.selection_deadline).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -70,7 +76,7 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
                       )}
                     </div>
                     <div className="ml-4">
-                      <Calendar className="h-5 w-5 text-gray-400" />
+                      <Calendar className="h-5 w-5" style={{ color: 'var(--color-text-secondary)' }} />
                     </div>
                   </div>
                 </div>
@@ -78,8 +84,8 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
           </div>
         ) : (
           <div className="text-center py-8">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 text-sm">No upcoming rehearsals scheduled</p>
+            <Calendar className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--color-text-secondary)' }} />
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>No upcoming rehearsals scheduled</p>
           </div>
         )}
       </div>
@@ -87,9 +93,9 @@ export function BandSidebar({ bandId }: BandSidebarProps) {
       {/* Band members */}
       <div className="card">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{band?.name}</h2>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--color-text)' }}>{band?.name}</h2>
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Band Members</h3>
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Band Members</h3>
             {userRole === 'admin' && (
               <button
                 onClick={() => navigate(`/band/${bandId}/members`)}

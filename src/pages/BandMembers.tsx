@@ -461,16 +461,19 @@ export function BandMembers() {
                           </button>
                           
                           {selectedMember === member.id && (
-                            <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-48">
-                              <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+                            <div className="absolute right-0 top-10 rounded-lg shadow-lg border py-2 z-10 min-w-48" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+                              <div className="px-4 py-2 text-xs border-b" style={{ color: 'var(--color-text-secondary)', borderColor: 'var(--color-border)' }}>
                                 {member.user?.display_name}
                               </div>
-                              
+
                               {member.role === 'member' ? (
                                 <button
                                   onClick={() => handleUpdateRole(member.user_id, 'admin', member.user?.display_name || 'User')}
                                   disabled={updateMemberRole.isPending}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                  className="w-full px-4 py-2 text-left text-sm transition-colors"
+                                  style={{ color: 'var(--color-text)' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
                                   Promote to Admin
                                 </button>
@@ -478,16 +481,21 @@ export function BandMembers() {
                                 <button
                                   onClick={() => handleUpdateRole(member.user_id, 'member', member.user?.display_name || 'User')}
                                   disabled={updateMemberRole.isPending}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                                  className="w-full px-4 py-2 text-left text-sm transition-colors"
+                                  style={{ color: 'var(--color-text)' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
                                   Demote to Member
                                 </button>
                               )}
-                              
+
                               <button
                                 onClick={() => handleRemoveMember(member.user_id, member.user?.display_name || 'User')}
                                 disabled={removeMember.isPending}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600"
+                                className="w-full px-4 py-2 text-left text-sm text-red-400 transition-colors"
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                               >
                                 Remove from Band
                               </button>

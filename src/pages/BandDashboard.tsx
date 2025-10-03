@@ -112,7 +112,7 @@ export function BandDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -124,7 +124,7 @@ export function BandDashboard() {
             <div className="card">
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: 'var(--color-text-secondary)' }} />
                   <input
                     type="text"
                     value={searchQuery}
@@ -136,7 +136,7 @@ export function BandDashboard() {
                 
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
-                    <Filter className="h-4 w-4 text-gray-500 mr-2" />
+                    <Filter className="h-4 w-4 mr-2" style={{ color: 'var(--color-text-secondary)' }} />
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -148,7 +148,7 @@ export function BandDashboard() {
                       <option value="your_votes">Your Most Voted</option>
                     </select>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     {sortedSuggestions.length} songs
                   </span>
                 </div>
@@ -157,8 +157,8 @@ export function BandDashboard() {
 
             {/* Current Leaderboard Title */}
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Current Leaderboard</h2>
-              <div className="text-sm text-gray-500">
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Current Leaderboard</h2>
+              <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                 Showing {startIndex + 1}-{Math.min(endIndex, sortedSuggestions.length)} of {sortedSuggestions.length} songs
               </div>
             </div>
@@ -179,19 +179,19 @@ export function BandDashboard() {
                           {/* Ranking Position */}
                           <div className="mr-4 flex-shrink-0">
                             {position === 1 ? (
-                              <div className="w-8 h-8 bg-yellow-100 text-yellow-800 rounded-full flex items-center justify-center font-bold text-sm">
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', color: 'var(--color-accent)' }}>
                                 🥇
                               </div>
                             ) : position === 2 ? (
-                              <div className="w-8 h-8 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center font-bold text-sm">
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-surface-2)', color: 'var(--color-text-secondary)' }}>
                                 🥈
                               </div>
                             ) : position === 3 ? (
-                              <div className="w-8 h-8 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center font-bold text-sm">
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: 'var(--color-accent)' }}>
                                 🥉
                               </div>
                             ) : (
-                              <div className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-sm">
+                              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)', color: 'var(--color-primary)' }}>
                                 {position}
                               </div>
                             )}
@@ -200,12 +200,12 @@ export function BandDashboard() {
                           <div className="flex-1 min-w-0">
                             {/* Song Title */}
                             <div className="flex items-center justify-between mb-1">
-                              <h3 className="font-semibold text-gray-900 truncate">{song.title}</h3>
+                              <h3 className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>{song.title}</h3>
                             </div>
                             
                             {/* Song Metadata */}
-                            <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">
-                              <div className="flex items-center font-medium text-gray-600">
+                            <div className="flex items-center mt-2 space-x-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                              <div className="flex items-center font-medium">
                                 <User className="w-3 h-3 mr-1" />
                                 Added by: {song.suggested_by_user?.display_name}
                               </div>
@@ -229,7 +229,10 @@ export function BandDashboard() {
                                     href={`https://open.spotify.com/track/${song.spotify_track_id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-primary-600 hover:text-primary-700 flex items-center"
+                                    className="flex items-center transition-colors"
+                                    style={{ color: 'var(--color-primary)' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-secondary)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <ExternalLink className="w-3 h-3 mr-1" />
@@ -241,7 +244,7 @@ export function BandDashboard() {
                             
                             {/* Notes */}
                             {song.notes && (
-                              <div className="mt-2 p-2 bg-blue-50 rounded text-xs text-blue-800">
+                              <div className="mt-2 p-2 rounded text-xs" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', color: 'var(--color-primary)' }}>
                                 <strong>Note:</strong> {song.notes}
                               </div>
                             )}
@@ -272,10 +275,10 @@ export function BandDashboard() {
                             
                             {/* Rating Info */}
                             <div className="text-center">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                                 {song.average_rating ? song.average_rating.toFixed(1) : '—'}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                                 {song.total_ratings || 0} rating{(song.total_ratings || 0) !== 1 ? 's' : ''}
                               </div>
                             </div>
@@ -311,23 +314,26 @@ export function BandDashboard() {
               <div className="card text-center py-12">
                 {searchQuery ? (
                   <>
-                    <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No songs found</h3>
-                    <p className="text-gray-600 mb-4">
+                    <Search className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--color-text-secondary)' }} />
+                    <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--color-text)' }}>No songs found</h3>
+                    <p className="mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                       No songs match your search "{searchQuery}"
                     </p>
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="text-primary-600 hover:text-primary-700 font-medium"
+                      className="font-medium transition-colors"
+                      style={{ color: 'var(--color-primary)' }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-secondary)'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
                     >
                       Clear search
                     </button>
                   </>
                 ) : (
                   <>
-                    <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No songs suggested yet</h3>
-                    <p className="text-gray-600 mb-6">
+                    <Search className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--color-text-secondary)' }} />
+                    <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--color-text)' }}>No songs suggested yet</h3>
+                    <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>
                       Be the first to suggest a song for your band to practice!
                     </p>
                     <button
@@ -347,7 +353,22 @@ export function BandDashboard() {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  style={{ 
+                    borderColor: 'var(--color-border)',
+                    backgroundColor: 'var(--color-surface)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-surface)'
+                    }
+                  }}
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -357,11 +378,25 @@ export function BandDashboard() {
                     <button
                       key={page}
                       onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                        currentPage === page
-                          ? 'bg-primary-600 text-white'
-                          : 'border border-gray-300 hover:bg-gray-50'
-                      }`}
+                      className="px-3 py-2 text-sm rounded-lg transition-colors"
+                      style={currentPage === page ? {
+                        backgroundColor: 'var(--color-primary)',
+                        color: 'white'
+                      } : {
+                        borderColor: 'var(--color-border)',
+                        backgroundColor: 'var(--color-surface)',
+                        color: 'var(--color-text)'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (currentPage !== page) {
+                          e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (currentPage !== page) {
+                          e.currentTarget.style.backgroundColor = 'var(--color-surface)'
+                        }
+                      }}
                     >
                       {page}
                     </button>
@@ -371,7 +406,22 @@ export function BandDashboard() {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  style={{ 
+                    borderColor: 'var(--color-border)',
+                    backgroundColor: 'var(--color-surface)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-surface)'
+                    }
+                  }}
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
