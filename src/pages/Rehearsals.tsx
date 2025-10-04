@@ -7,7 +7,7 @@ import { DatePicker } from '@/components/DatePicker'
 import { TimePicker } from '@/components/TimePicker'
 import { DateTimePicker } from '@/components/DateTimePicker'
 import { RecurringRehearsalForm, RecurringRehearsalData } from '@/components/RecurringRehearsalForm'
-import { useBandRehearsals, useCreateRehearsal, useDeleteRehearsal, useRehearsalSetlist, useBandRehearsalSeries, useCreateRehearsalSeries, useDeleteRehearsalSeries, useGenerateRehearsalsFromSeries } from '@/hooks/useRehearsals'
+import { useBandRehearsals, useCreateRehearsal, useRehearsalSetlist, useBandRehearsalSeries, useCreateRehearsalSeries, useDeleteRehearsalSeries, useGenerateRehearsalsFromSeries } from '@/hooks/useRehearsals'
 import {
   Calendar,
   Plus,
@@ -15,7 +15,6 @@ import {
   Clock,
   Music,
   Trash2,
-  Edit,
   CheckCircle,
   AlertCircle,
   Repeat
@@ -71,7 +70,6 @@ export function Rehearsals() {
   const { data: rehearsals, isLoading } = useBandRehearsals(bandId!)
   const { data: rehearsalSeries } = useBandRehearsalSeries(bandId!)
   const createRehearsal = useCreateRehearsal()
-  const deleteRehearsal = useDeleteRehearsal()
   const createRehearsalSeries = useCreateRehearsalSeries()
   const deleteRehearsalSeries = useDeleteRehearsalSeries()
   const generateRehearsals = useGenerateRehearsalsFromSeries()
@@ -110,12 +108,6 @@ export function Rehearsals() {
   const handleCreateRecurringSeries = async (data: RecurringRehearsalData) => {
     await createRehearsalSeries.mutateAsync({ ...data, bandId: bandId! })
     setShowRecurringForm(false)
-  }
-
-  const handleDeleteRehearsal = async (rehearsalId: string) => {
-    if (window.confirm('Are you sure you want to delete this rehearsal? This action cannot be undone.')) {
-      await deleteRehearsal.mutateAsync(rehearsalId)
-    }
   }
 
   const getStatusColor = (status: string) => {
@@ -344,7 +336,11 @@ export function Rehearsals() {
         {rehearsals && rehearsals.length > 0 ? (
           <div className="space-y-4">
             {rehearsals.map((rehearsal) => (
-              <div key={rehearsal.id} className="card hover:shadow-lg transition-shadow">
+              <div
+                key={rehearsal.id}
+                onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}`)}
+                className="card hover:shadow-lg transition-shadow cursor-pointer"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
@@ -356,7 +352,7 @@ export function Rehearsals() {
                         <span className="ml-1 capitalize">{rehearsal.status.replace('_', ' ')}</span>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="h-4 w-4 mr-2" />
@@ -368,19 +364,19 @@ export function Rehearsals() {
                           </span>
                         )}
                       </div>
-                      
+
                       {rehearsal.location && (
                         <div className="flex items-center text-sm text-gray-600">
                           <MapPin className="h-4 w-4 mr-2" />
                           {rehearsal.location}
                         </div>
                       )}
-                      
+
                       <div className="flex items-center text-sm text-gray-600">
                         <Music className="h-4 w-4 mr-2" />
                         {rehearsal.songs_to_learn} song{rehearsal.songs_to_learn > 1 ? 's' : ''} to learn
                       </div>
-                      
+
                       {rehearsal.selection_deadline && (
                         <div className="flex items-center text-sm text-gray-600">
                           <AlertCircle className="h-4 w-4 mr-2" />
@@ -388,45 +384,17 @@ export function Rehearsals() {
                         </div>
                       )}
                     </div>
-                    
+
                     {rehearsal.description && (
                       <p className="mt-3 text-sm text-gray-600">{rehearsal.description}</p>
                     )}
-                    
+
                     {/* Show selected songs after cutoff date */}
-                    {rehearsal.selection_deadline && 
-                     new Date() > new Date(rehearsal.selection_deadline) && 
+                    {rehearsal.selection_deadline &&
+                     new Date() > new Date(rehearsal.selection_deadline) &&
                      rehearsal.status !== 'planning' && (
                       <RehearsalSelectedSongs rehearsalId={rehearsal.id} maxSongs={5} />
                     )}
-                    
-                    <div className="mt-4 flex space-x-3">
-                      <button
-                        onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}`)}
-                        className="btn-primary text-sm"
-                      >
-                        View Details
-                      </button>
-                      {userRole === 'admin' && (
-                        <>
-                          <button
-                            onClick={() => navigate(`/band/${bandId}/rehearsal/${rehearsal.id}/edit`)}
-                            className="btn-secondary text-sm"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRehearsal(rehearsal.id)}
-                            disabled={deleteRehearsal.isPending}
-                            className="btn-secondary text-sm text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
