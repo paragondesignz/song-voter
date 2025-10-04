@@ -67,12 +67,6 @@ export function Header({ actions }: HeaderProps) {
     navigate('/profile')
   }
 
-  const handleAnalytics = () => {
-    if (userBand) {
-      navigate(`/band/${userBand.id}/voting-analytics`)
-    }
-  }
-
   const handleRehearsals = () => {
     if (userBand) {
       navigate(`/band/${userBand.id}/rehearsals`)
@@ -104,15 +98,6 @@ export function Header({ actions }: HeaderProps) {
                 className={getButtonClasses(isActiveRoute('/'))}
               >
                 Dashboard
-              </button>
-            )}
-            {/* Analytics Button */}
-            {userBand && (
-              <button
-                onClick={handleAnalytics}
-                className={getButtonClasses(isActiveRoute('/voting-analytics'))}
-              >
-                Analytics
               </button>
             )}
             {/* Rehearsals Button */}
