@@ -4,7 +4,7 @@ import { useBand, useBandMembers, useUserBandRole, useRemoveBandMember, useUpdat
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Header } from '@/components/Header'
-import { 
+import {
   Users,
   UserPlus,
   MoreVertical,
@@ -16,9 +16,7 @@ import {
   Settings,
   MessageSquare,
   Folder,
-  Download,
-  Activity,
-  Send
+  Activity
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'react-hot-toast'
@@ -589,29 +587,11 @@ export function BandMembers() {
               <ul className="space-y-3">
                 <li>
                   <button
-                    onClick={() => navigate(`/band/${bandId}/members/bulk-invite`)}
-                    className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
-                  >
-                    <Send className="h-4 w-4 mr-2 text-gray-500" />
-                    Bulk Invite Members
-                  </button>
-                </li>
-                <li>
-                  <button
                     onClick={() => navigate(`/band/${bandId}/members/activity`)}
                     className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
                   >
                     <Activity className="h-4 w-4 mr-2 text-gray-500" />
                     Member Activity
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/members/export`)}
-                    className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
-                  >
-                    <Download className="h-4 w-4 mr-2 text-gray-500" />
-                    Export Members
                   </button>
                 </li>
               </ul>
