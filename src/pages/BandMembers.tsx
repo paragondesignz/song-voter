@@ -561,14 +561,14 @@ export function BandMembers() {
               <div className="space-y-3">
                 <button
                   onClick={() => setShowPasswordForm(true)}
-                  className="w-full btn-secondary text-sm justify-center"
+                  className="w-full btn-secondary text-sm flex items-center justify-center"
                 >
                   <Lock className="h-4 w-4 mr-2" />
                   Set Band Password
                 </button>
                 <button
                   onClick={() => setShowAddMemberForm(true)}
-                  className="w-full btn-primary text-sm justify-center"
+                  className="w-full btn-primary text-sm flex items-center justify-center"
                   disabled={members && members.length >= 10}
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
