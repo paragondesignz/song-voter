@@ -163,51 +163,56 @@ export function Rehearsals() {
           {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
         </div>
 
-        {/* Calendar Subscription */}
-        <div className="card mb-8 border-2 border-blue-200 bg-blue-50">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center mb-2">
-                <Link2 className="h-5 w-5 text-blue-600 mr-2" />
-                <h3 className="text-lg font-semibold text-gray-900">Subscribe to Rehearsal Calendar</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Add this calendar feed to your calendar app (Google Calendar, Apple Calendar, Outlook) to automatically sync all future rehearsals. Updates are reflected automatically.
-              </p>
-              <div className="bg-white rounded-lg border border-blue-300 p-3 flex items-center justify-between">
-                <code className="text-xs text-gray-700 flex-1 truncate mr-4">
-                  {getCalendarSubscriptionUrl()}
-                </code>
-                <button
-                  onClick={copySubscriptionUrl}
-                  className="btn-secondary text-xs flex items-center whitespace-nowrap"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-3 w-3 mr-1" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3 w-3 mr-1" />
-                      Copy URL
-                    </>
-                  )}
-                </button>
-              </div>
-              <details className="mt-3">
-                <summary className="text-sm text-blue-600 cursor-pointer hover:text-blue-700">
-                  How to subscribe
-                </summary>
-                <div className="mt-2 space-y-2 text-sm text-gray-600">
-                  <p><strong>Google Calendar:</strong> Settings → Add calendar → From URL → Paste the URL</p>
-                  <p><strong>Apple Calendar:</strong> File → New Calendar Subscription → Paste the URL</p>
-                  <p><strong>Outlook:</strong> Add calendar → Subscribe from web → Paste the URL</p>
-                </div>
-              </details>
+        {/* Calendar Subscription - Collapsible */}
+        <details className="card mb-6">
+          <summary className="cursor-pointer flex items-center justify-between">
+            <div className="flex items-center">
+              <Link2 className="h-4 w-4 mr-2" style={{ color: 'var(--color-primary)' }} />
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                Subscribe to Calendar
+              </span>
             </div>
+          </summary>
+          <div className="mt-4 space-y-3">
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              Add this URL to your calendar app to automatically sync all future rehearsals.
+            </p>
+            <div className="rounded-lg border p-3 flex items-center justify-between" style={{
+              backgroundColor: 'var(--color-surface-2)',
+              borderColor: 'var(--color-border)'
+            }}>
+              <code className="text-xs flex-1 truncate mr-4" style={{ color: 'var(--color-text)' }}>
+                {getCalendarSubscriptionUrl()}
+              </code>
+              <button
+                onClick={copySubscriptionUrl}
+                className="btn-secondary text-xs flex items-center whitespace-nowrap"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3 w-3 mr-1" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3 mr-1" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+            <details className="mt-2">
+              <summary className="text-xs cursor-pointer" style={{ color: 'var(--color-primary)' }}>
+                How to subscribe
+              </summary>
+              <div className="mt-2 space-y-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                <p><strong>Google Calendar:</strong> Settings → Add calendar → From URL</p>
+                <p><strong>Apple Calendar:</strong> File → New Calendar Subscription</p>
+                <p><strong>Outlook:</strong> Add calendar → Subscribe from web</p>
+              </div>
+            </details>
           </div>
-        </div>
+        </details>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
