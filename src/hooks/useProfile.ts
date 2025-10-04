@@ -122,9 +122,13 @@ export function useUploadAvatar() {
     mutationFn: async (file: File) => {
       if (!user) throw new Error('Not authenticated')
 
+      console.log('Starting avatar upload for file:', file.name, file.type)
+
       // Get current session for auth token
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
+
+      console.log('Session obtained, converting file to base64...')
 
       // Convert file to base64
       const reader = new FileReader()
@@ -134,14 +138,18 @@ export function useUploadAvatar() {
         reader.readAsDataURL(file)
       })
 
+      console.log('File converted, uploading via edge function...')
+
       // Upload via edge function (bypasses RLS using service role)
-      const { error } = await supabase.functions.invoke('upload-avatar', {
+      const { data, error } = await supabase.functions.invoke('upload-avatar', {
         body: {
           fileData,
           fileName: file.name,
           contentType: file.type
         },
       })
+
+      console.log('Edge function response:', { data, error })
 
       if (error) throw error
 
@@ -153,6 +161,7 @@ export function useUploadAvatar() {
         .single()
 
       if (profileError) throw profileError
+      console.log('Profile updated successfully')
       return profile as Profile
     },
     onSuccess: () => {
