@@ -1,5 +1,3 @@
-import { Calendar } from 'lucide-react'
-
 interface DatePickerProps {
   name: string
   value: string
@@ -27,20 +25,15 @@ export function DatePicker({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      <div className="relative">
-        <input
-          type="date"
-          name={name}
-          value={value}
-          onChange={onChange}
-          required={required}
-          min={min}
-          className="input-field pl-12"
-        />
-        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-          <Calendar className="h-5 w-5" style={{ color: 'var(--color-text-secondary)' }} />
-        </div>
-      </div>
+      <input
+        type="date"
+        name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        min={min}
+        className="input-field"
+      />
     </div>
   )
 }

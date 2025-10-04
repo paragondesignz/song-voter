@@ -1,5 +1,3 @@
-import { Clock } from 'lucide-react'
-
 interface TimePickerProps {
   name: string
   value: string
@@ -26,19 +24,14 @@ export function TimePicker({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      <div className="relative">
-        <input
-          type="time"
-          name={name}
-          value={value}
-          onChange={onChange}
-          required={required}
-          className="input-field pl-12"
-        />
-        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-          <Clock className="h-5 w-5" style={{ color: 'var(--color-text-secondary)' }} />
-        </div>
-      </div>
+      <input
+        type="time"
+        name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="input-field"
+      />
     </div>
   )
 }
