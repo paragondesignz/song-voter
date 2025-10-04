@@ -91,13 +91,13 @@ export function Header({ actions }: HeaderProps) {
           {/* Right side navigation */}
           <div className="flex items-center space-x-3">
             {actions}
-            {/* Leaderboard Button */}
+            {/* Songs Button */}
             {userBand && (
               <button
                 onClick={handleDashboard}
                 className={getButtonClasses(isActiveRoute('/'))}
               >
-                Leaderboard
+                Songs
               </button>
             )}
             {/* Rehearsals Button */}
