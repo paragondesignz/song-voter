@@ -21,7 +21,7 @@
     --color-bg: #0B0F14;             /* deep neutral background */
     --color-surface: #111827;        /* card surface */
     --color-surface-2: #0F172A;      /* secondary surface */
-    --color-border: rgba(148, 163, 184, 0.12); /* slate-400/12 */
+    --color-border: rgba(75, 85, 99, 0.3); /* subtle gray border */
     --color-text: #E5E7EB;           /* light text */
     --color-text-secondary: #9CA3AF; /* muted text */
     --color-primary: #0A84FF;        /* bright blue accents */
@@ -72,10 +72,15 @@
 
   /* Inputs */
   .input-field {
-    @apply w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow placeholder:text-gray-500;
+    @apply w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow;
     background-color: var(--color-surface);
     color: var(--color-text);
-    border-color: var(--color-border, #E5E7EB);
+    border-color: var(--color-border);
+  }
+
+  .input-field::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.6;
   }
 
   /* Date and time picker - light mode for picker popup only */
