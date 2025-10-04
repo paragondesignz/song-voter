@@ -444,29 +444,29 @@ export function Profile() {
           </div>
 
           {/* Danger Zone */}
-          <div className="card border-red-200">
+          <div className="card border-red-900/50">
             <div className="flex items-center mb-6">
-              <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
-              <h2 className="text-xl font-semibold text-red-600">Danger Zone</h2>
+              <AlertTriangle className="w-5 h-5 text-red-400 mr-2" />
+              <h2 className="text-xl font-semibold text-red-400">Danger Zone</h2>
             </div>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="font-medium text-red-800 mb-2">Delete Account</h3>
-              <p className="text-sm text-red-700 mb-4">
+            <div className="bg-red-950/30 border border-red-900/50 rounded-lg p-4">
+              <h3 className="font-medium text-red-300 mb-2">Delete Account</h3>
+              <p className="text-sm text-red-400/80 mb-4">
                 Permanently delete your account and all associated data. This action cannot be undone.
               </p>
-              
+
               {!showDeleteConfirm ? (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="btn-secondary text-red-600 border-red-300 hover:bg-red-50"
+                  className="btn-secondary text-red-400 border-red-900/50 hover:bg-red-950/30 flex items-center"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete Account
                 </button>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-sm font-medium text-red-800">
+                  <p className="text-sm font-medium text-red-300">
                     Are you absolutely sure? This will permanently delete your account and all data.
                   </p>
                   <div className="flex space-x-3">
