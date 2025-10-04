@@ -157,10 +157,30 @@ export function Rehearsals() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Rehearsals</h1>
-          {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
+        {/* Page Title & Actions */}
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Rehearsals</h1>
+            {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
+          </div>
+          {userRole === 'admin' && (
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowCreateForm(!showCreateForm)}
+                className="btn-primary flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                {showCreateForm ? 'Cancel' : 'Add Rehearsal'}
+              </button>
+              <button
+                onClick={() => setShowRecurringForm(!showRecurringForm)}
+                className="btn-secondary flex items-center"
+              >
+                <Repeat className="h-4 w-4 mr-1" />
+                {showRecurringForm ? 'Cancel' : 'Recurring Series'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Calendar Subscription - Collapsible */}
@@ -471,30 +491,12 @@ export function Rehearsals() {
           <div className="card text-center py-12">
             <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-gray-900 mb-2">No Rehearsals Scheduled</h3>
-            <p className="text-gray-600 mb-6">
-              {userRole === 'admin' 
-                ? "Schedule your first rehearsal to get started with organized practice sessions!"
+            <p className="text-gray-600">
+              {userRole === 'admin'
+                ? "Click 'Add Rehearsal' above to schedule your first practice session!"
                 : "Your band admin hasn't scheduled any rehearsals yet."
               }
             </p>
-            {userRole === 'admin' && (
-              <div className="space-y-3">
-                <button
-                  onClick={() => setShowCreateForm(true)}
-                  className="btn-primary mr-3"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Schedule First Rehearsal
-                </button>
-                <button
-                  onClick={() => setShowRecurringForm(true)}
-                  className="btn-secondary"
-                >
-                  <Repeat className="h-4 w-4 mr-1" />
-                  Create Recurring Series
-                </button>
-              </div>
-            )}
           </div>
         )}
           </div>
