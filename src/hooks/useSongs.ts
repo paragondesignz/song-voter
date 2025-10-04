@@ -402,7 +402,7 @@ export function useSongDetails(songId: string) {
       // Get song details without embedded joins to avoid RLS issues
       const { data: song, error } = await supabase
         .from('song_suggestions')
-        .select('id, band_id, suggested_by, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, created_at')
+        .select('id, band_id, suggested_by, assigned_to, spotify_track_id, title, artist, album, duration_ms, album_art_url, preview_url, notes, status, bpm, musical_key, vocal_type, created_at')
         .eq('id', songId)
         .single()
 
@@ -428,6 +428,18 @@ export function useSongDetails(songId: string) {
         suggested_by_user = profileData
       }
 
+      // Fetch assigned-to profile
+      let assigned_to_user = null
+      if (song.assigned_to) {
+        const { data: assignedProfileData } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .eq('id', song.assigned_to)
+          .single()
+
+        assigned_to_user = assignedProfileData
+      }
+
       // Calculate ratings
       const userRating = user ? ratings.find((r: any) => r.user_id === user.id) : null
       const ratingValues = ratings.map((rating: any) => rating.rating).filter((rating: number) => !isNaN(rating))
@@ -437,6 +449,7 @@ export function useSongDetails(songId: string) {
       return {
         ...song,
         suggested_by_user,
+        assigned_to_user,
         average_rating: Math.round(averageRating * 10) / 10,
         total_ratings: totalRatings,
         user_rating: userRating ? userRating.rating : null,
