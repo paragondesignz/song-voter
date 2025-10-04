@@ -122,35 +122,30 @@ export function useUploadAvatar() {
     mutationFn: async (file: File) => {
       if (!user) throw new Error('Not authenticated')
 
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
-      const filePath = `${user.id}/${fileName}`
+      // Get current session for auth token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
 
-      // Upload file to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        })
+      // Create form data
+      const formData = new FormData()
+      formData.append('file', file)
 
-      if (uploadError) throw uploadError
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
-
-      // Update profile with new avatar URL
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', user.id)
-        .select()
-        .single()
+      // Upload via edge function (bypasses RLS using service role)
+      const { error } = await supabase.functions.invoke('upload-avatar', {
+        body: formData,
+      })
 
       if (error) throw error
-      return data as Profile
+
+      // Fetch updated profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) throw profileError
+      return profile as Profile
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
