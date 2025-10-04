@@ -126,13 +126,21 @@ export function useUploadAvatar() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Not authenticated')
 
-      // Create form data
-      const formData = new FormData()
-      formData.append('file', file)
+      // Convert file to base64
+      const reader = new FileReader()
+      const fileData = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
 
       // Upload via edge function (bypasses RLS using service role)
       const { error } = await supabase.functions.invoke('upload-avatar', {
-        body: formData,
+        body: {
+          fileData,
+          fileName: file.name,
+          contentType: file.type
+        },
       })
 
       if (error) throw error

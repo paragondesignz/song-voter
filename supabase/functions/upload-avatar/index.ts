@@ -28,26 +28,29 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    // Get the file from the request
-    const formData = await req.formData()
-    const file = formData.get('file') as File
+    // Get the file data from request body
+    const { fileData, fileName, contentType } = await req.json()
 
-    if (!file) {
+    if (!fileData || !fileName) {
       throw new Error('No file provided')
     }
 
+    // Convert base64 to binary
+    const base64Data = fileData.split(',')[1] || fileData
+    const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))
+
     // Get file extension
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
-    const filePath = `${user.id}/${fileName}`
+    const fileExt = fileName.split('.').pop()
+    const newFileName = `${Math.random()}.${fileExt}`
+    const filePath = `${user.id}/${newFileName}`
 
     // Upload to storage using service role (bypasses RLS)
     const { error: uploadError } = await supabaseClient.storage
       .from('avatars')
-      .upload(filePath, file, {
+      .upload(filePath, binaryData, {
         cacheControl: '3600',
         upsert: true,
-        contentType: file.type
+        contentType: contentType || 'image/png'
       })
 
     if (uploadError) {
