@@ -9,12 +9,14 @@ export interface SongComment {
   user_id: string
   band_id: string
   comment: string
+  parent_id: string | null
   created_at: string
   updated_at: string
   user?: {
     display_name: string
     avatar_url?: string
   }
+  replies?: SongComment[]
 }
 
 export function useSongComments(songId: string) {
@@ -25,7 +27,7 @@ export function useSongComments(songId: string) {
     queryFn: async () => {
       const { data: comments, error } = await supabase
         .from('song_comments')
-        .select('id, song_suggestion_id, user_id, band_id, comment, created_at, updated_at')
+        .select('id, song_suggestion_id, user_id, band_id, comment, parent_id, created_at, updated_at')
         .eq('song_suggestion_id', songId)
         .order('created_at', { ascending: true })
 
@@ -47,10 +49,33 @@ export function useSongComments(songId: string) {
         return acc
       }, {} as Record<string, { display_name: string; avatar_url?: string }>)
 
-      return (comments || []).map(comment => ({
+      const commentsWithUsers = (comments || []).map(comment => ({
         ...comment,
-        user: profileMap[comment.user_id]
+        user: profileMap[comment.user_id],
+        replies: []
       })) as SongComment[]
+
+      // Build threaded structure
+      const commentMap = new Map<string, SongComment>()
+      const rootComments: SongComment[] = []
+
+      commentsWithUsers.forEach(comment => {
+        commentMap.set(comment.id, comment)
+      })
+
+      commentsWithUsers.forEach(comment => {
+        if (comment.parent_id) {
+          const parent = commentMap.get(comment.parent_id)
+          if (parent) {
+            if (!parent.replies) parent.replies = []
+            parent.replies.push(comment)
+          }
+        } else {
+          rootComments.push(comment)
+        }
+      })
+
+      return rootComments
     },
     enabled: !!songId && !!user,
   })
@@ -63,11 +88,13 @@ export function useCreateComment() {
     mutationFn: async ({
       songId,
       bandId,
-      comment
+      comment,
+      parentId
     }: {
       songId: string
       bandId: string
       comment: string
+      parentId?: string | null
     }) => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
@@ -80,7 +107,8 @@ export function useCreateComment() {
           song_suggestion_id: songId,
           user_id: session.user.id,
           band_id: bandId,
-          comment: comment.trim()
+          comment: comment.trim(),
+          parent_id: parentId || null
         })
         .select()
         .single()
@@ -90,7 +118,7 @@ export function useCreateComment() {
     },
     onSuccess: (_, { songId }) => {
       queryClient.invalidateQueries({ queryKey: ['song-comments', songId] })
-      toast.success('Comment added!')
+      toast.success(_.parent_id ? 'Reply added!' : 'Comment added!')
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : 'Failed to add comment')

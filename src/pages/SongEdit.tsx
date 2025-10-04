@@ -256,7 +256,7 @@ export function SongEdit() {
               {commentsLoading ? (
                 <div className="text-center py-4 text-gray-400">Loading comments...</div>
               ) : (
-                <CommentList comments={comments} songId={songId!} />
+                <CommentList comments={comments} songId={songId!} bandId={bandId!} />
               )}
             </div>
 
