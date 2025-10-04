@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useBand, useUserBandRole } from '@/hooks/useBands'
-import { useRehearsal, useRehearsalSetlist, useAutoSelectSongs, useRemoveFromSetlist } from '@/hooks/useRehearsals'
-import { useLeaderboard } from '@/hooks/useSongs'
+import { useRehearsal, useRehearsalSetlist, useRemoveFromSetlist } from '@/hooks/useRehearsals'
 import { Header } from '@/components/Header'
 
 import {
@@ -10,7 +8,6 @@ import {
   MapPin,
   Clock,
   Music,
-  Shuffle,
   CheckCircle,
   AlertCircle,
   Trash2,
@@ -22,23 +19,12 @@ import { format } from 'date-fns'
 export function RehearsalDetail() {
   const { bandId, rehearsalId } = useParams<{ bandId: string; rehearsalId: string }>()
   const navigate = useNavigate()
-  const [showAutoSelectConfirm, setShowAutoSelectConfirm] = useState(false)
-  
+
   const { data: band } = useBand(bandId!)
   const { data: userRole } = useUserBandRole(bandId!)
   const { data: rehearsal, isLoading: rehearsalLoading } = useRehearsal(rehearsalId!)
   const { data: setlist, isLoading: setlistLoading } = useRehearsalSetlist(rehearsalId!)
-  const { data: leaderboard } = useLeaderboard(bandId!)
-  const autoSelectSongs = useAutoSelectSongs()
   const removeFromSetlist = useRemoveFromSetlist()
-
-  const handleAutoSelect = async () => {
-    await autoSelectSongs.mutateAsync({
-      rehearsalId: rehearsalId!,
-      bandId: bandId!
-    })
-    setShowAutoSelectConfirm(false)
-  }
 
   const handleRemoveFromSetlist = async (setlistItemId: string) => {
     if (window.confirm('Remove this song from the rehearsal setlist?')) {
@@ -154,48 +140,6 @@ export function RehearsalDetail() {
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <h3 className="font-medium mb-2">Description</h3>
                 <p className="text-sm text-gray-600">{rehearsal.description}</p>
-              </div>
-            )}
-
-            {userRole === 'admin' && rehearsal.status === 'planning' && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                {!showAutoSelectConfirm ? (
-                  <button
-                    onClick={() => setShowAutoSelectConfirm(true)}
-                    className="w-full btn-primary flex items-center justify-center"
-                    disabled={!leaderboard || leaderboard.length === 0}
-                  >
-                    <Shuffle className="h-4 w-4 mr-2" />
-                    Auto-Select Songs from Leaderboard
-                  </button>
-                ) : (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-sm text-yellow-800 mb-3">
-                      This will select the top {rehearsal.songs_to_learn} songs from your leaderboard and add them to this rehearsal.
-                    </p>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={handleAutoSelect}
-                        disabled={autoSelectSongs.isPending}
-                        className="btn-primary text-sm"
-                      >
-                        {autoSelectSongs.isPending ? 'Selecting...' : 'Confirm'}
-                      </button>
-                      <button
-                        onClick={() => setShowAutoSelectConfirm(false)}
-                        className="btn-secondary text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {(!leaderboard || leaderboard.length === 0) && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    No songs available on leaderboard. Add some song suggestions first!
-                  </p>
-                )}
               </div>
             )}
             </div>
@@ -325,22 +269,12 @@ export function RehearsalDetail() {
                 <div className="text-center py-12">
                   <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No Songs Selected</h3>
-                  <p className="text-gray-600 mb-6">
-                    {userRole === 'admin' 
+                  <p className="text-gray-600">
+                    {userRole === 'admin'
                       ? "Use the auto-select feature or manually add songs to create your rehearsal setlist."
                       : "The admin hasn't selected songs for this rehearsal yet."
                     }
                   </p>
-                  {userRole === 'admin' && rehearsal.status === 'planning' && (
-                    <button
-                      onClick={() => setShowAutoSelectConfirm(true)}
-                      className="btn-primary flex items-center"
-                      disabled={!leaderboard || leaderboard.length === 0}
-                    >
-                      <Shuffle className="h-4 w-4 mr-2" />
-                      Auto-Select from Leaderboard
-                    </button>
-                  )}
                 </div>
               )}
             </div>
