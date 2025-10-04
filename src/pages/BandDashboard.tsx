@@ -5,7 +5,7 @@ import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 
-import { Search, Filter, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes' | 'rating'
 
@@ -215,23 +215,6 @@ export function BandDashboard() {
                                 <>
                                   <span>•</span>
                                   <span>{formatDuration(song.duration_ms)}</span>
-                                </>
-                              )}
-
-                              {song.spotify_track_id && (
-                                <>
-                                  <span>•</span>
-                                  <a
-                                    href={`https://open.spotify.com/track/${song.spotify_track_id}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center transition-colors hover:underline"
-                                    style={{ color: 'var(--color-primary)' }}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <ExternalLink className="w-3 h-3 mr-0.5" />
-                                    Spotify
-                                  </a>
                                 </>
                               )}
                             </div>
