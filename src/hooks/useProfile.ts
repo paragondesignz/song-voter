@@ -123,8 +123,8 @@ export function useUploadAvatar() {
       if (!user) throw new Error('Not authenticated')
 
       const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
+      const fileName = `${Math.random()}.${fileExt}`
+      const filePath = `${user.id}/${fileName}`
 
       // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage
