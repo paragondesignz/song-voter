@@ -139,7 +139,7 @@ export function Header({ actions }: HeaderProps) {
                   )}
                 </div>
                 <span className="text-sm font-medium hidden sm:block">
-                  {user?.user_metadata?.display_name || user?.email?.split('@')[0]}
+                  {profile?.display_name || user?.email?.split('@')[0]}
                 </span>
                 <ChevronDown className="h-4 w-4" />
               </button>
