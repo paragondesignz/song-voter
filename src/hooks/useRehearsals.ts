@@ -346,6 +346,86 @@ export function useRemoveFromSetlist() {
   })
 }
 
+export function useAddToSetlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      rehearsalId,
+      songId,
+      position
+    }: {
+      rehearsalId: string
+      songId: string
+      position?: number
+    }) => {
+      // Get current setlist count for position
+      const { data: currentSetlist } = await supabase
+        .from('rehearsal_setlists')
+        .select('position')
+        .eq('rehearsal_id', rehearsalId)
+        .order('position', { ascending: false })
+        .limit(1)
+
+      const nextPosition = position ?? ((currentSetlist?.[0]?.position ?? 0) + 1)
+
+      const { data, error } = await supabase
+        .from('rehearsal_setlists')
+        .insert({
+          rehearsal_id: rehearsalId,
+          song_suggestion_id: songId,
+          position: nextPosition,
+          selection_reason: 'Manually added'
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['rehearsal-setlist', data.rehearsal_id] })
+      toast.success('Song added to setlist!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to add song to setlist')
+    },
+  })
+}
+
+export function useReorderSetlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      rehearsalId,
+      reorderedItems
+    }: {
+      rehearsalId: string
+      reorderedItems: { id: string; position: number }[]
+    }) => {
+      // Update all positions in a single transaction
+      const updates = reorderedItems.map(item =>
+        supabase
+          .from('rehearsal_setlists')
+          .update({ position: item.position })
+          .eq('id', item.id)
+      )
+
+      await Promise.all(updates)
+
+      return rehearsalId
+    },
+    onSuccess: (rehearsalId) => {
+      queryClient.invalidateQueries({ queryKey: ['rehearsal-setlist', rehearsalId] })
+      toast.success('Setlist reordered!')
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to reorder setlist')
+    },
+  })
+}
+
 // Recurring Rehearsal Interfaces
 export interface RehearsalSeries {
   id: string
