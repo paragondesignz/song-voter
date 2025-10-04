@@ -160,8 +160,10 @@ export function BandDashboard() {
             {/* Songs list */}
             {currentSuggestions.length > 0 ? (
               <div className="space-y-2">
-                {currentSuggestions.map((song, index) => {
-                  const position = startIndex + index + 1
+                {currentSuggestions.map((song) => {
+                  const avgRating = song.average_rating || 0
+                  const hasRatings = (song.total_ratings || 0) > 0
+
                   return (
                     <div
                       key={song.id}
@@ -170,23 +172,23 @@ export function BandDashboard() {
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center flex-1 min-w-0 gap-3">
-                          {/* Ranking Position */}
+                          {/* Rating Badge */}
                           <div className="flex-shrink-0">
-                            {position === 1 ? (
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', color: 'var(--color-accent)' }}>
+                            {hasRatings && avgRating >= 4.5 ? (
+                              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', color: 'var(--color-accent)' }} title="Highly Rated (4.5+ stars)">
                                 🥇
                               </div>
-                            ) : position === 2 ? (
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-surface-2)', color: 'var(--color-text-secondary)' }}>
+                            ) : hasRatings && avgRating >= 4.0 ? (
+                              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-surface-2)', color: 'var(--color-text-secondary)' }} title="Great (4.0+ stars)">
                                 🥈
                               </div>
-                            ) : position === 3 ? (
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: 'var(--color-accent)' }}>
+                            ) : hasRatings && avgRating >= 3.5 ? (
+                              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: 'var(--color-accent)' }} title="Good (3.5+ stars)">
                                 🥉
                               </div>
                             ) : (
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)', color: 'var(--color-primary)' }}>
-                                {position}
+                              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)', color: 'var(--color-primary)' }} title={hasRatings ? `${avgRating.toFixed(1)} stars` : 'Not rated yet'}>
+                                {hasRatings ? avgRating.toFixed(1) : '—'}
                               </div>
                             )}
                           </div>
