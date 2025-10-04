@@ -254,11 +254,11 @@ export function Rehearsals() {
         {/* Create Rehearsal Form */}
         {showCreateForm && (
           <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Schedule New Rehearsal</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-text)' }}>Schedule New Rehearsal</h2>
             <form onSubmit={handleCreateRehearsal} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                     Rehearsal Name
                   </label>
                   <input
@@ -290,7 +290,7 @@ export function Rehearsals() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                     Songs to Learn
                   </label>
                   <select
@@ -306,9 +306,9 @@ export function Rehearsals() {
                   </select>
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                   Location (Optional)
                 </label>
                 <input
@@ -320,7 +320,7 @@ export function Rehearsals() {
                   placeholder="Studio A, John's Garage, etc."
                 />
               </div>
-              
+
               <div>
                 <DateTimePicker
                   name="selection_deadline"
@@ -329,9 +329,9 @@ export function Rehearsals() {
                   label="Selection Deadline (Optional)"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                   Description (Optional)
                 </label>
                 <textarea

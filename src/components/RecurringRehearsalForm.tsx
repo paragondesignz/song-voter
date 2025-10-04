@@ -105,14 +105,14 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Series Info */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <Repeat className="h-5 w-5 mr-2 text-blue-600" />
+        <h3 className="text-lg font-semibold mb-4 flex items-center" style={{ color: 'var(--color-text)' }}>
+          <Repeat className="h-5 w-5 mr-2" style={{ color: 'var(--color-primary)' }} />
           Recurring Series Details
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Series Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -127,7 +127,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Rehearsal Name Template <span className="text-red-500">*</span>
             </label>
             <input
@@ -145,8 +145,8 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
       {/* Template Settings */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <Calendar className="h-5 w-5 mr-2 text-green-600" />
+        <h3 className="text-lg font-semibold mb-4 flex items-center" style={{ color: 'var(--color-text)' }}>
+          <Calendar className="h-5 w-5 mr-2" style={{ color: 'var(--color-accent)' }} />
           Rehearsal Template
         </h3>
 
@@ -161,7 +161,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Songs to Learn
             </label>
             <select
@@ -177,7 +177,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Location
             </label>
             <input
@@ -191,7 +191,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Selection Deadline (hours before)
             </label>
             <input
@@ -208,7 +208,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
         </div>
 
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
             Description Template
           </label>
           <textarea
@@ -224,14 +224,14 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
       {/* Recurrence Pattern */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-purple-600" />
+        <h3 className="text-lg font-semibold mb-4 flex items-center" style={{ color: 'var(--color-text)' }}>
+          <Clock className="h-5 w-5 mr-2" style={{ color: 'var(--color-secondary)' }} />
           Recurrence Pattern
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Repeat Type
             </label>
             <select
@@ -250,7 +250,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
           {(formData.recurrenceType === 'daily' || formData.recurrenceType === 'custom') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                 Repeat Every (days)
               </label>
               <input
@@ -267,7 +267,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
           {formData.recurrenceType === 'weekly' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                 Repeat Every (weeks)
               </label>
               <input
@@ -284,7 +284,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
           {formData.recurrenceType === 'monthly' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
                 Repeat Every (months)
               </label>
               <input
@@ -302,7 +302,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
         {(formData.recurrenceType === 'weekly' || formData.recurrenceType === 'bi_weekly') && (
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Days of Week
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -316,7 +316,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
                     onChange={handleInputChange}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm">{day.label}</span>
+                  <span className="text-sm" style={{ color: 'var(--color-text)' }}>{day.label}</span>
                 </label>
               ))}
             </div>
@@ -336,7 +336,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               End Condition
             </label>
             <select
@@ -354,7 +354,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
         {formData.endType === 'after_count' && (
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Number of Rehearsals
             </label>
             <input
@@ -385,7 +385,7 @@ export function RecurringRehearsalForm({ onSubmit, isLoading, onCancel }: Recurr
 
       {/* Exceptions */}
       <div className="card">
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
           Skip Dates (Exceptions)
         </h3>
 
