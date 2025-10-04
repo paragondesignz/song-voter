@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSongDetails, useUpdateSong, useRateSong } from '@/hooks/useSongs'
 import { useSongComments } from '@/hooks/useComments'
-import { Save, Trash2, Music, Clock, User, FileText, Star, MessageCircle } from 'lucide-react'
+import { useBandMembers, useUserBandRole } from '@/hooks/useBands'
+import { Save, Trash2, Music, Clock, User, FileText, Star, MessageCircle, UserCog } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { StarRating } from '@/components/StarRating'
 import { SpotifyEmbed } from '@/components/SpotifyEmbed'
@@ -25,6 +26,7 @@ interface SongEditForm {
   bpm?: number
   musical_key?: string
   vocal_type?: 'male' | 'female' | 'duet' | 'instrumental' | ''
+  suggested_by?: string
 }
 
 export function SongEdit() {
@@ -33,10 +35,14 @@ export function SongEdit() {
   const queryClient = useQueryClient()
   const { data: song, isLoading } = useSongDetails(songId!)
   const { data: comments = [], isLoading: commentsLoading } = useSongComments(songId!)
+  const { data: members = [] } = useBandMembers(bandId!)
+  const { data: userRole } = useUserBandRole(bandId!)
   const updateSong = useUpdateSong()
   const rateSong = useRateSong()
   const [isDeleting, setIsDeleting] = useState(false)
   const [votingOnSong, setVotingOnSong] = useState<boolean>(false)
+
+  const isAdmin = userRole === 'admin'
 
   const {
     register,
@@ -59,6 +65,7 @@ export function SongEdit() {
         bpm: song.bpm || undefined,
         musical_key: song.musical_key || '',
         vocal_type: song.vocal_type || '',
+        suggested_by: song.suggested_by || '',
       })
     }
   }, [song, reset])
@@ -383,6 +390,27 @@ export function SongEdit() {
                   <option value="practiced">Practiced</option>
                 </select>
               </div>
+
+              {/* Suggested By (Admin Only) */}
+              {isAdmin && (
+                <div>
+                  <label htmlFor="suggested_by" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                    <UserCog className="h-4 w-4 inline mr-1" />
+                    Suggested By
+                  </label>
+                  <select
+                    id="suggested_by"
+                    {...register('suggested_by')}
+                    className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {members.map(member => (
+                      <option key={member.user_id} value={member.user_id}>
+                        {member.user?.display_name || member.user?.email || 'Unknown'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
 
