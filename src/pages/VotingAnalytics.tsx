@@ -2,12 +2,11 @@ import { useParams } from 'react-router-dom'
 import { useBand } from '@/hooks/useBands'
 import { useVoteStats, useUserVoteStats, useVoteHistory, useLeaderboard } from '@/hooks/useSongs'
 import { Header } from '@/components/Header'
-import { 
+import {
   BarChart3,
   TrendingUp,
   Star,
   Heart,
-  Music,
   Trophy
 } from 'lucide-react'
 import { StarRating } from '@/components/StarRating'
@@ -109,24 +108,14 @@ export function VotingAnalytics() {
                       borderColor: 'var(--color-border)' 
                     }}>
                       <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white" style={{ 
-                          background: 'linear-gradient(135deg, var(--color-accent), #F97316)' 
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white" style={{
+                          background: 'linear-gradient(135deg, var(--color-accent), #F97316)'
                         }}>
                           {index + 1}
                         </div>
-                        {song.album_art_url ? (
-                          <img
-                            src={song.album_art_url}
-                            alt="Album art"
-                            className="w-12 h-12 rounded-md shadow-sm"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-md flex items-center justify-center" style={{ backgroundColor: 'var(--color-border)' }}>
-                            <Music className="w-6 h-6" style={{ color: 'var(--color-text-secondary)' }} />
-                          </div>
-                        )}
                         <div>
                           <h3 className="font-semibold text-lg" style={{ color: 'var(--color-text)' }}>{song.title}</h3>
+                          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{song.artist}</p>
                           {song.suggested_by_user && (
                             <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                               Suggested by {song.suggested_by_user.display_name}

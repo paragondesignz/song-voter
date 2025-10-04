@@ -232,17 +232,6 @@ export function SongSearch() {
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="album">Album</label>
-                  <input
-                    {...register('album')}
-                    type="text"
-                    id="album"
-                    className="input-field"
-                    placeholder="Enter album name (optional)"
-                  />
-                </div>
-
-                <div>
                   <label className="label" htmlFor="notes">Notes</label>
                   <textarea
                     {...register('notes')}
@@ -284,14 +273,7 @@ export function SongSearch() {
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
                 Confirm Song Details
               </h3>
-              <div className="flex gap-4">
-                {editableTrack.album_art_url && (
-                  <img
-                    src={editableTrack.album_art_url}
-                    alt={`${editableTrack.album} artwork`}
-                    className="w-24 h-24 rounded-lg object-cover"
-                  />
-                )}
+              <div>
                 <div className="flex-1">
                   <div className="space-y-3">
                     <div>
@@ -309,15 +291,6 @@ export function SongSearch() {
                         type="text"
                         value={editableTrack.artist}
                         onChange={(e) => setEditableTrack({ ...editableTrack, artist: e.target.value })}
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Album</label>
-                      <input
-                        type="text"
-                        value={editableTrack.album}
-                        onChange={(e) => setEditableTrack({ ...editableTrack, album: e.target.value })}
                         className="input-field"
                       />
                     </div>

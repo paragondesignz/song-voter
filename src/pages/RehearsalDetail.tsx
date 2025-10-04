@@ -412,24 +412,11 @@ export function RehearsalDetail() {
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="font-semibold text-gray-900 truncate">
-                                  {item.song_suggestion?.title}
-                                </h3>
-                                <p className="text-gray-600 truncate">{item.song_suggestion?.artist}</p>
-                                {item.song_suggestion?.album && (
-                                  <p className="text-sm text-gray-500 truncate">{item.song_suggestion?.album}</p>
-                                )}
-                              </div>
-
-                              {item.song_suggestion?.album_art_url && (
-                                <img
-                                  src={item.song_suggestion.album_art_url}
-                                  alt={item.song_suggestion.album || 'Album art'}
-                                  className="w-12 h-12 rounded-md ml-4"
-                                />
-                              )}
+                            <div>
+                              <h3 className="font-semibold text-gray-900 truncate">
+                                {item.song_suggestion?.title}
+                              </h3>
+                              <p className="text-gray-600 truncate">{item.song_suggestion?.artist}</p>
                             </div>
 
                             <div className="flex items-center mt-2 space-x-4 text-xs text-gray-500">

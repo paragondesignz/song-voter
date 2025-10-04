@@ -301,19 +301,6 @@ export function SongEdit() {
                 )}
               </div>
 
-              {/* Album */}
-              <div>
-                <label htmlFor="album" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                  Album
-                </label>
-                <input
-                  type="text"
-                  id="album"
-                  {...register('album')}
-                  className="w-full px-3 py-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
               {/* BPM */}
               <div>
                 <label htmlFor="bpm" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
