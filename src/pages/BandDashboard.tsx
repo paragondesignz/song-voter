@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useUserBandRole } from '@/hooks/useBands'
-import { useSongSuggestions, useRateSong, useRemoveSuggestion } from '@/hooks/useSongs'
+import { useSongSuggestions, useRateSong } from '@/hooks/useSongs'
 import { BandSidebar } from '@/components/BandSidebar'
 import { StarRating } from '@/components/StarRating'
 import { Header } from '@/components/Header'
 
-import { Search, Filter, ExternalLink, Trash2, ChevronLeft, ChevronRight, Edit } from 'lucide-react'
+import { Search, Filter, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 
 type SortOption = 'newest' | 'votes' | 'alphabetical' | 'your_votes' | 'rating'
 
@@ -19,9 +18,7 @@ export function BandDashboard() {
   const [currentPage, setCurrentPage] = useState(1)
   
   const { data: suggestions, refetch } = useSongSuggestions(bandId!, { sortBy })
-  const { data: userRole } = useUserBandRole(bandId!)
   const rateSong = useRateSong()
-  const removeSuggestion = useRemoveSuggestion()
 
   const ITEMS_PER_PAGE = 10
 
@@ -62,15 +59,6 @@ export function BandDashboard() {
       // Error handling is done by the rateSong hook via toast
     } finally {
       setVotingOnSong(null)
-    }
-  }
-
-  const handleRemoveSuggestion = async (suggestionId: string) => {
-    if (window.confirm('Are you sure you want to remove this suggestion? This action cannot be undone.')) {
-      await removeSuggestion.mutateAsync({
-        suggestionId,
-        bandId: bandId!
-      })
     }
   }
 
@@ -261,27 +249,6 @@ export function BandDashboard() {
                               </div>
                             </div>
                           </div>
-
-                          {/* Admin controls */}
-                          {userRole === 'admin' && (
-                            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                              <button
-                                onClick={() => navigate(`/band/${bandId}/song/${song.id}`)}
-                                className="p-2 rounded transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-primary-500/10 hover:text-primary-400 border border-[var(--color-border)]"
-                                title="View/edit song"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleRemoveSuggestion(song.id)}
-                                disabled={removeSuggestion.isPending}
-                                className="p-2 rounded transition-colors bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:bg-red-500/10 hover:text-red-400 border border-[var(--color-border)]"
-                                title="Remove song"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
