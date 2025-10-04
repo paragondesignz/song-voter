@@ -7,7 +7,8 @@ import {
   useRemoveFromSetlist,
   useAddToSetlist,
   useReorderSetlist,
-  useUpdateRehearsal
+  useUpdateRehearsal,
+  useDeleteRehearsal
 } from '@/hooks/useRehearsals'
 import { useSongSuggestions } from '@/hooks/useSongs'
 import { Header } from '@/components/Header'
@@ -25,7 +26,8 @@ import {
   Save,
   X,
   GripVertical,
-  Plus
+  Plus,
+  Download
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -42,6 +44,7 @@ export function RehearsalDetail() {
   const addToSetlist = useAddToSetlist()
   const reorderSetlist = useReorderSetlist()
   const updateRehearsal = useUpdateRehearsal()
+  const deleteRehearsal = useDeleteRehearsal()
 
   const [isEditingDetails, setIsEditingDetails] = useState(false)
   const [editForm, setEditForm] = useState({
@@ -92,6 +95,40 @@ export function RehearsalDetail() {
 
   const handleCancelEdit = () => {
     setIsEditingDetails(false)
+  }
+
+  const handleDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete "${rehearsal?.name}"? This action cannot be undone.`)) {
+      await deleteRehearsal.mutateAsync(rehearsalId!)
+      navigate(`/band/${bandId}/rehearsals`)
+    }
+  }
+
+  const handleExportIcal = () => {
+    if (!rehearsal) return
+
+    // Create iCal format
+    const ical = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Rehearsalist//Band Rehearsal//EN',
+      'BEGIN:VEVENT',
+      `UID:${rehearsalId}@rehearsalist.app`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+      `DTSTART:${rehearsal.rehearsal_date.replace(/-/g, '')}${rehearsal.start_time ? 'T' + rehearsal.start_time.replace(':', '') + '00' : ''}`,
+      `SUMMARY:${rehearsal.name}`,
+      rehearsal.location ? `LOCATION:${rehearsal.location}` : '',
+      rehearsal.description ? `DESCRIPTION:${rehearsal.description}` : '',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].filter(Boolean).join('\r\n')
+
+    // Create download
+    const blob = new Blob([ical], { type: 'text/calendar;charset=utf-8' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `${rehearsal.name.replace(/[^a-z0-9]/gi, '_')}.ics`
+    link.click()
   }
 
   const handleDragStart = (e: React.DragEvent, itemId: string) => {
@@ -193,9 +230,30 @@ export function RehearsalDetail() {
               <p className="text-xs text-gray-500">{band?.name}</p>
             </div>
           </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusColor(rehearsal.status)}`}>
-            {getStatusIcon(rehearsal.status)}
-            <span className="ml-1 capitalize">{rehearsal.status.replace('_', ' ')}</span>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleExportIcal}
+              className="btn-secondary text-sm flex items-center"
+              title="Export to calendar"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </button>
+            {isAdmin && (
+              <button
+                onClick={handleDelete}
+                disabled={deleteRehearsal.isPending}
+                className="btn-secondary text-sm flex items-center text-red-600 hover:bg-red-50"
+                title="Delete rehearsal"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </button>
+            )}
+            <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusColor(rehearsal.status)}`}>
+              {getStatusIcon(rehearsal.status)}
+              <span className="ml-1 capitalize">{rehearsal.status.replace('_', ' ')}</span>
+            </div>
           </div>
         </div>
 
