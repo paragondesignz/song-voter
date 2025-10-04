@@ -162,7 +162,7 @@ export function RehearsalDetail() {
                 {!showAutoSelectConfirm ? (
                   <button
                     onClick={() => setShowAutoSelectConfirm(true)}
-                    className="w-full btn-primary"
+                    className="w-full btn-primary flex items-center justify-center"
                     disabled={!leaderboard || leaderboard.length === 0}
                   >
                     <Shuffle className="h-4 w-4 mr-2" />
@@ -334,7 +334,7 @@ export function RehearsalDetail() {
                   {userRole === 'admin' && rehearsal.status === 'planning' && (
                     <button
                       onClick={() => setShowAutoSelectConfirm(true)}
-                      className="btn-primary"
+                      className="btn-primary flex items-center"
                       disabled={!leaderboard || leaderboard.length === 0}
                     >
                       <Shuffle className="h-4 w-4 mr-2" />
