@@ -12,11 +12,7 @@ import {
   Search,
   Lock,
   Mail,
-  User,
-  Settings,
-  MessageSquare,
-  Folder,
-  Activity
+  User
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'react-hot-toast'
@@ -579,65 +575,6 @@ export function BandMembers() {
                   Add Member
                 </button>
               </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <ul className="space-y-3">
-                <li>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/members/activity`)}
-                    className="w-full flex items-center text-sm text-gray-700 hover:text-primary-600 text-left"
-                  >
-                    <Activity className="h-4 w-4 mr-2 text-gray-500" />
-                    Member Activity
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Quick Links */}
-            <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-3">
-                <li>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}`)}
-                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
-                  >
-                    <Shield className="h-4 w-4 mr-2 text-gray-500" />
-                    Band Dashboard
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/settings`)}
-                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
-                  >
-                    <Settings className="h-4 w-4 mr-2 text-gray-500" />
-                    Band Settings
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/posts`)}
-                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
-                    Band Posts
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => navigate(`/band/${bandId}/files`)}
-                    className="flex items-center text-sm text-gray-700 hover:text-primary-600 w-full text-left"
-                  >
-                    <Folder className="h-4 w-4 mr-2 text-gray-500" />
-                    Band Files
-                  </button>
-                </li>
-              </ul>
             </div>
           </div>
         </div>
