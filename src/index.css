@@ -9,6 +9,8 @@
     --color-accent: #FFD60A;
     --color-bg: #F9FAFB;
     --color-surface: #FFFFFF;
+    --color-surface-2: #F3F4F6;
+    --color-border: #E5E7EB;
     --color-text: #111827;
     --color-text-secondary: #6B7280;
     --radius: 12px;
@@ -71,9 +73,33 @@
   /* Inputs */
   .input-field {
     @apply w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-shadow placeholder:text-gray-500;
-    background-color: var(--color-surface-2);
+    background-color: var(--color-surface);
     color: var(--color-text);
-    border-color: var(--color-border);
+    border-color: var(--color-border, #E5E7EB);
+  }
+
+  /* Date and time picker specific styles */
+  input[type="date"].input-field,
+  input[type="time"].input-field {
+    @apply appearance-none;
+    color-scheme: light;
+  }
+
+  .theme-darkboard input[type="date"].input-field,
+  .theme-darkboard input[type="time"].input-field {
+    color-scheme: dark;
+  }
+
+  /* Ensure picker icon is visible */
+  input[type="date"].input-field::-webkit-calendar-picker-indicator,
+  input[type="time"].input-field::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0);
+  }
+
+  .theme-darkboard input[type="date"].input-field::-webkit-calendar-picker-indicator,
+  .theme-darkboard input[type="time"].input-field::-webkit-calendar-picker-indicator {
+    filter: invert(1);
   }
   .select-field {
     @apply rounded-md px-3 py-2 border text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/60;
