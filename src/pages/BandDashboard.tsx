@@ -209,7 +209,7 @@ export function BandDashboard() {
 
                             {/* Song Metadata - Condensed */}
                             <div className="flex items-center mt-0.5 space-x-3 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                              <span className="truncate">{song.suggested_by_user?.display_name}</span>
+                              <span className="truncate">Suggested by: {song.suggested_by_user?.display_name}</span>
 
                               {song.duration_ms && (
                                 <>
