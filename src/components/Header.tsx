@@ -73,6 +73,12 @@ export function Header({ actions }: HeaderProps) {
     }
   }
 
+  const handleRehearsals = () => {
+    if (userBand) {
+      navigate(`/band/${userBand.id}/rehearsals`)
+    }
+  }
+
   return (
     <header className="bg-[var(--color-surface)]/90 backdrop-blur border-b border-[var(--color-border)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,6 +113,15 @@ export function Header({ actions }: HeaderProps) {
                 className={getButtonClasses(isActiveRoute('/voting-analytics'))}
               >
                 Analytics
+              </button>
+            )}
+            {/* Rehearsals Button */}
+            {userBand && (
+              <button
+                onClick={handleRehearsals}
+                className={getButtonClasses(isActiveRoute('/rehearsals'))}
+              >
+                Rehearsals
               </button>
             )}
 
