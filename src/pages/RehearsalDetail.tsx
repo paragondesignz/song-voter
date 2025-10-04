@@ -107,101 +107,97 @@ export function RehearsalDetail() {
             <span className="ml-1 capitalize">{rehearsal.status.replace('_', ' ')}</span>
           </div>
         </div>
-        <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Rehearsal Info */}
+          <div className="lg:col-span-1">
+            <div className="card">
+            <h2 className="text-xl font-semibold mb-4">Rehearsal Details</h2>
 
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Rehearsal Info */}
-            <div className="lg:col-span-1">
-              <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Rehearsal Details</h2>
-              
-              <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <Calendar className="h-5 w-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="font-medium">{format(new Date(rehearsal.rehearsal_date), 'EEEE, MMMM d, yyyy')}</p>
-                    {rehearsal.start_time && (
-                      <p className="text-gray-600 flex items-center mt-1">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {rehearsal.start_time}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                {rehearsal.location && (
-                  <div className="flex items-center text-sm">
-                    <MapPin className="h-5 w-5 text-gray-400 mr-3" />
-                    <p>{rehearsal.location}</p>
-                  </div>
-                )}
-                
-                <div className="flex items-center text-sm">
-                  <Music className="h-5 w-5 text-gray-400 mr-3" />
-                  <p>{rehearsal.songs_to_learn} song{rehearsal.songs_to_learn > 1 ? 's' : ''} to learn</p>
-                </div>
-                
-                {rehearsal.selection_deadline && (
-                  <div className="flex items-center text-sm">
-                    <AlertCircle className="h-5 w-5 text-gray-400 mr-3" />
-                    <div>
-                      <p className="font-medium">Selection Deadline</p>
-                      <p className="text-gray-600">{format(new Date(rehearsal.selection_deadline), 'MMM d, yyyy h:mm a')}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {rehearsal.description && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="font-medium mb-2">Description</h3>
-                  <p className="text-sm text-gray-600">{rehearsal.description}</p>
-                </div>
-              )}
-              
-              {userRole === 'admin' && rehearsal.status === 'planning' && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  {!showAutoSelectConfirm ? (
-                    <button
-                      onClick={() => setShowAutoSelectConfirm(true)}
-                      className="w-full btn-primary"
-                      disabled={!leaderboard || leaderboard.length === 0}
-                    >
-                      <Shuffle className="h-4 w-4 mr-2" />
-                      Auto-Select Songs from Leaderboard
-                    </button>
-                  ) : (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-yellow-800 mb-3">
-                        This will select the top {rehearsal.songs_to_learn} songs from your leaderboard and add them to this rehearsal.
-                      </p>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={handleAutoSelect}
-                          disabled={autoSelectSongs.isPending}
-                          className="btn-primary text-sm"
-                        >
-                          {autoSelectSongs.isPending ? 'Selecting...' : 'Confirm'}
-                        </button>
-                        <button
-                          onClick={() => setShowAutoSelectConfirm(false)}
-                          className="btn-secondary text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {(!leaderboard || leaderboard.length === 0) && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      No songs available on leaderboard. Add some song suggestions first!
+            <div className="space-y-3">
+              <div className="flex items-center text-sm">
+                <Calendar className="h-5 w-5 text-gray-400 mr-3" />
+                <div>
+                  <p className="font-medium">{format(new Date(rehearsal.rehearsal_date), 'EEEE, MMMM d, yyyy')}</p>
+                  {rehearsal.start_time && (
+                    <p className="text-gray-600 flex items-center mt-1">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {rehearsal.start_time}
                     </p>
                   )}
                 </div>
-              )}
               </div>
+
+              {rehearsal.location && (
+                <div className="flex items-center text-sm">
+                  <MapPin className="h-5 w-5 text-gray-400 mr-3" />
+                  <p>{rehearsal.location}</p>
+                </div>
+              )}
+
+              <div className="flex items-center text-sm">
+                <Music className="h-5 w-5 text-gray-400 mr-3" />
+                <p>{rehearsal.songs_to_learn} song{rehearsal.songs_to_learn > 1 ? 's' : ''} to learn</p>
+              </div>
+
+              {rehearsal.selection_deadline && (
+                <div className="flex items-center text-sm">
+                  <AlertCircle className="h-5 w-5 text-gray-400 mr-3" />
+                  <div>
+                    <p className="font-medium">Selection Deadline</p>
+                    <p className="text-gray-600">{format(new Date(rehearsal.selection_deadline), 'MMM d, yyyy h:mm a')}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {rehearsal.description && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="font-medium mb-2">Description</h3>
+                <p className="text-sm text-gray-600">{rehearsal.description}</p>
+              </div>
+            )}
+
+            {userRole === 'admin' && rehearsal.status === 'planning' && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                {!showAutoSelectConfirm ? (
+                  <button
+                    onClick={() => setShowAutoSelectConfirm(true)}
+                    className="w-full btn-primary"
+                    disabled={!leaderboard || leaderboard.length === 0}
+                  >
+                    <Shuffle className="h-4 w-4 mr-2" />
+                    Auto-Select Songs from Leaderboard
+                  </button>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p className="text-sm text-yellow-800 mb-3">
+                      This will select the top {rehearsal.songs_to_learn} songs from your leaderboard and add them to this rehearsal.
+                    </p>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleAutoSelect}
+                        disabled={autoSelectSongs.isPending}
+                        className="btn-primary text-sm"
+                      >
+                        {autoSelectSongs.isPending ? 'Selecting...' : 'Confirm'}
+                      </button>
+                      <button
+                        onClick={() => setShowAutoSelectConfirm(false)}
+                        className="btn-secondary text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {(!leaderboard || leaderboard.length === 0) && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    No songs available on leaderboard. Add some song suggestions first!
+                  </p>
+                )}
+              </div>
+            )}
             </div>
           </div>
 
