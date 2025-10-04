@@ -17,7 +17,10 @@ import {
   Trash2,
   CheckCircle,
   AlertCircle,
-  Repeat
+  Repeat,
+  Link2,
+  Copy,
+  Check
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -55,6 +58,7 @@ export function Rehearsals() {
   const navigate = useNavigate()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showRecurringForm, setShowRecurringForm] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     rehearsal_date: '',
@@ -128,6 +132,18 @@ export function Rehearsals() {
     }
   }
 
+  const getCalendarSubscriptionUrl = () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    return `${supabaseUrl}/functions/v1/calendar-feed?bandId=${bandId}`
+  }
+
+  const copySubscriptionUrl = async () => {
+    const url = getCalendarSubscriptionUrl()
+    await navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -145,6 +161,52 @@ export function Rehearsals() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Rehearsals</h1>
           {band?.name && <p className="text-lg text-gray-600 mt-2">{band.name}</p>}
+        </div>
+
+        {/* Calendar Subscription */}
+        <div className="card mb-8 border-2 border-blue-200 bg-blue-50">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center mb-2">
+                <Link2 className="h-5 w-5 text-blue-600 mr-2" />
+                <h3 className="text-lg font-semibold text-gray-900">Subscribe to Rehearsal Calendar</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Add this calendar feed to your calendar app (Google Calendar, Apple Calendar, Outlook) to automatically sync all future rehearsals. Updates are reflected automatically.
+              </p>
+              <div className="bg-white rounded-lg border border-blue-300 p-3 flex items-center justify-between">
+                <code className="text-xs text-gray-700 flex-1 truncate mr-4">
+                  {getCalendarSubscriptionUrl()}
+                </code>
+                <button
+                  onClick={copySubscriptionUrl}
+                  className="btn-secondary text-xs flex items-center whitespace-nowrap"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3 w-3 mr-1" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copy URL
+                    </>
+                  )}
+                </button>
+              </div>
+              <details className="mt-3">
+                <summary className="text-sm text-blue-600 cursor-pointer hover:text-blue-700">
+                  How to subscribe
+                </summary>
+                <div className="mt-2 space-y-2 text-sm text-gray-600">
+                  <p><strong>Google Calendar:</strong> Settings → Add calendar → From URL → Paste the URL</p>
+                  <p><strong>Apple Calendar:</strong> File → New Calendar Subscription → Paste the URL</p>
+                  <p><strong>Outlook:</strong> Add calendar → Subscribe from web → Paste the URL</p>
+                </div>
+              </details>
+            </div>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
