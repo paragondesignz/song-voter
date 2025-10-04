@@ -78,22 +78,27 @@
     border-color: var(--color-border, #E5E7EB);
   }
 
-  /* Date and time picker specific styles */
+  /* Date and time picker - always light mode with dark text */
   input[type="date"].input-field,
   input[type="time"].input-field {
     color-scheme: light;
+    background-color: #FFFFFF !important;
+    color: #111827 !important;
+    border-color: #D1D5DB;
   }
 
-  .theme-darkboard input[type="date"].input-field,
-  .theme-darkboard input[type="time"].input-field {
-    color-scheme: dark;
+  input[type="date"].input-field:focus,
+  input[type="time"].input-field:focus {
+    background-color: #FFFFFF !important;
+    border-color: var(--color-primary);
   }
 
-  /* Style picker icons */
+  /* Style picker icons - always dark for visibility on white background */
   input[type="date"].input-field::-webkit-calendar-picker-indicator,
   input[type="time"].input-field::-webkit-calendar-picker-indicator {
     cursor: pointer;
-    opacity: 0.7;
+    filter: invert(0);
+    opacity: 0.6;
   }
 
   input[type="date"].input-field::-webkit-calendar-picker-indicator:hover,
